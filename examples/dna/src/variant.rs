@@ -158,6 +158,88 @@ impl VariantCaller {
         })
     }
 
+    /// Detect insertions/deletions from pileup data
+    ///
+    /// Looks for gaps (represented as b'-') in the pileup bases that indicate
+    /// indels relative to the reference.
+    pub fn call_indel(
+        &self,
+        pileup: &PileupColumn,
+        reference_base: u8,
+        next_ref_bases: &[u8],
+    ) -> Option<VariantCall> {
+        let ref_base = reference_base.to_ascii_uppercase();
+        let mut del_count = 0usize;
+        let mut ins_count = 0usize;
+
+        for (i, &base) in pileup.bases.iter().enumerate() {
+            let qual = pileup.qualities.get(i).copied().unwrap_or(0);
+            if qual < self.config.min_quality {
+                continue;
+            }
+            if base == b'-' || base == b'*' {
+                del_count += 1;
+            } else if base == b'+' {
+                ins_count += 1;
+            }
+        }
+
+        let total = pileup.bases.len();
+        if total < self.config.min_depth {
+            return None;
+        }
+
+        // Check for deletion
+        if del_count > 0 {
+            let del_freq = del_count as f64 / total as f64;
+            if del_freq >= self.config.het_threshold {
+                let genotype = if del_freq >= self.config.hom_alt_threshold {
+                    Genotype::HomAlt
+                } else {
+                    Genotype::Het
+                };
+                let quality = -10.0 * (1.0 - del_freq).max(1e-10).log10() * (del_count as f64);
+                return Some(VariantCall {
+                    chromosome: pileup.chromosome,
+                    position: pileup.position,
+                    ref_allele: ref_base,
+                    alt_allele: b'-',
+                    quality,
+                    genotype,
+                    depth: total,
+                    allele_depth: del_count,
+                    filter_status: FilterStatus::Pass,
+                });
+            }
+        }
+
+        // Check for insertion
+        if ins_count > 0 {
+            let ins_freq = ins_count as f64 / total as f64;
+            if ins_freq >= self.config.het_threshold {
+                let genotype = if ins_freq >= self.config.hom_alt_threshold {
+                    Genotype::HomAlt
+                } else {
+                    Genotype::Het
+                };
+                let quality = -10.0 * (1.0 - ins_freq).max(1e-10).log10() * (ins_count as f64);
+                return Some(VariantCall {
+                    chromosome: pileup.chromosome,
+                    position: pileup.position,
+                    ref_allele: ref_base,
+                    alt_allele: b'+',
+                    quality,
+                    genotype,
+                    depth: total,
+                    allele_depth: ins_count,
+                    filter_status: FilterStatus::Pass,
+                });
+            }
+        }
+
+        None
+    }
+
     /// Apply quality and depth filters to a list of variant calls
     pub fn filter_variants(&self, calls: &mut [VariantCall]) {
         for call in calls.iter_mut() {
@@ -167,6 +249,45 @@ impl VariantCaller {
                 call.filter_status = FilterStatus::LowDepth;
             }
         }
+    }
+
+    /// Generate VCF-formatted output for variant calls
+    pub fn to_vcf(&self, calls: &[VariantCall], sample_name: &str) -> String {
+        let mut vcf = String::new();
+        vcf.push_str("##fileformat=VCFv4.3\n");
+        vcf.push_str(&format!("##source=RuVectorDNA\n"));
+        vcf.push_str("#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\t");
+        vcf.push_str(sample_name);
+        vcf.push('\n');
+
+        for call in calls {
+            let filter = match call.filter_status {
+                FilterStatus::Pass => "PASS",
+                FilterStatus::LowQuality => "LowQual",
+                FilterStatus::LowDepth => "LowDepth",
+            };
+            let gt = match call.genotype {
+                Genotype::HomRef => "0/0",
+                Genotype::Het => "0/1",
+                Genotype::HomAlt => "1/1",
+            };
+            vcf.push_str(&format!(
+                "chr{}\t{}\t.\t{}\t{}\t{:.1}\t{}\tDP={};AF={:.3}\tGT:DP:AD\t{}:{}:{}\n",
+                call.chromosome,
+                call.position,
+                call.ref_allele as char,
+                call.alt_allele as char,
+                call.quality,
+                filter,
+                call.depth,
+                call.allele_depth as f64 / call.depth as f64,
+                gt,
+                call.depth,
+                call.allele_depth,
+            ));
+        }
+
+        vcf
     }
 }
 

@@ -41,7 +41,7 @@ impl SmithWaterman {
         Self { config }
     }
 
-    /// Align query against reference using Smith-Waterman algorithm
+    /// Align query against reference using Smith-Waterman with affine gap penalties
     pub fn align(&self, query: &DnaSequence, reference: &DnaSequence) -> Result<AlignmentResult> {
         if query.is_empty() || reference.is_empty() {
             return Err(DnaError::AlignmentError(
@@ -49,45 +49,55 @@ impl SmithWaterman {
             ));
         }
 
-        let q_len = query.len();
-        let r_len = reference.len();
+        let q_bases = query.bases();
+        let r_bases = reference.bases();
+        let q_len = q_bases.len();
+        let r_len = r_bases.len();
+        let cols = r_len + 1;
 
-        // Initialize scoring matrix
-        let mut score_matrix = vec![vec![0i32; r_len + 1]; q_len + 1];
-        let mut traceback = vec![vec![0u8; r_len + 1]; q_len + 1]; // 0=stop, 1=diag, 2=up, 3=left
+        // Flat 1D arrays for cache-friendly row-major access
+        let mut h = vec![0i32; (q_len + 1) * cols];
+        let neg_inf = i32::MIN / 2;
+        let mut e = vec![neg_inf; (q_len + 1) * cols];
+        let mut f = vec![neg_inf; (q_len + 1) * cols];
+        let mut tb = vec![0u8; (q_len + 1) * cols]; // 0=stop, 1=diag, 2=up, 3=left
+
+        let match_sc = self.config.match_score;
+        let mismatch_sc = self.config.mismatch_penalty;
+        let gap_open = self.config.gap_open_penalty;
+        let gap_ext = self.config.gap_extend_penalty;
 
         let mut max_score = 0i32;
         let mut max_i = 0;
         let mut max_j = 0;
 
-        // Fill scoring matrix
+        // Fill scoring matrices with affine gap penalties
         for i in 1..=q_len {
+            let q_base = q_bases[i - 1];
+            let row = i * cols;
+            let prev_row = (i - 1) * cols;
+
             for j in 1..=r_len {
-                let q_base = query.get(i - 1).unwrap();
-                let r_base = reference.get(j - 1).unwrap();
+                let mm = if q_base == r_bases[j - 1] { match_sc } else { mismatch_sc };
 
-                let match_mismatch = if q_base == r_base {
-                    self.config.match_score
-                } else {
-                    self.config.mismatch_penalty
-                };
+                // E: gap in reference (insertion in query) — extend or open
+                let e_val = (e[prev_row + j] + gap_ext)
+                    .max(h[prev_row + j] + gap_open);
+                e[row + j] = e_val;
 
-                let diag = score_matrix[i - 1][j - 1] + match_mismatch;
-                let up = score_matrix[i - 1][j] + self.config.gap_open_penalty;
-                let left = score_matrix[i][j - 1] + self.config.gap_open_penalty;
+                // F: gap in query (deletion from reference) — extend or open
+                let f_val = (f[row + j - 1] + gap_ext)
+                    .max(h[row + j - 1] + gap_open);
+                f[row + j] = f_val;
 
-                let best = 0.max(diag).max(up).max(left);
-                score_matrix[i][j] = best;
+                let diag = h[prev_row + j - 1] + mm;
+                let best = 0.max(diag).max(e_val).max(f_val);
+                h[row + j] = best;
 
-                if best == 0 {
-                    traceback[i][j] = 0;
-                } else if best == diag {
-                    traceback[i][j] = 1;
-                } else if best == up {
-                    traceback[i][j] = 2;
-                } else {
-                    traceback[i][j] = 3;
-                }
+                tb[row + j] = if best == 0 { 0 }
+                    else if best == diag { 1 }
+                    else if best == e_val { 2 }
+                    else { 3 };
 
                 if best > max_score {
                     max_score = best;
@@ -102,8 +112,8 @@ impl SmithWaterman {
         let mut i = max_i;
         let mut j = max_j;
 
-        while i > 0 && j > 0 && score_matrix[i][j] > 0 {
-            match traceback[i][j] {
+        while i > 0 && j > 0 && h[i * cols + j] > 0 {
+            match tb[i * cols + j] {
                 1 => {
                     // Diagonal (match/mismatch)
                     cigar_ops.push(CigarOp::M(1));

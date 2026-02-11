@@ -93,7 +93,8 @@ impl KmerEncoder {
 
     /// Encode a DNA sequence into a k-mer frequency vector
     ///
-    /// Uses rolling hash to count k-mers, then normalizes to unit vector
+    /// Uses canonical k-mer hashing (min of forward/reverse-complement hash)
+    /// to count strand-agnostic k-mers, then normalizes to unit vector.
     pub fn encode_sequence(&self, seq: &[u8]) -> Result<Vec<f32>> {
         if seq.len() < self.k {
             return Err(KmerError::EmptySequence);
@@ -103,44 +104,70 @@ impl KmerEncoder {
         let mut total = 0u32;
 
         // Extract all k-mers using a sliding window
+        // Avoid Vec allocation by hashing both strands and taking min
         for window in seq.windows(self.k) {
-            // Use canonical k-mer to make encoding strand-agnostic
-            let canonical = canonical_kmer(window);
-
-            // Compute hash for feature hashing
-            let hash = self.hash_kmer(&canonical);
-            let index = hash % self.dimensions;
+            let fwd_hash = Self::fnv1a_hash(window);
+            let rc_hash = Self::fnv1a_hash_rc(window);
+            let canonical_hash = fwd_hash.min(rc_hash);
+            let index = canonical_hash % self.dimensions;
 
             counts[index] = counts[index].saturating_add(1);
             total = total.saturating_add(1);
         }
 
         // Normalize to frequency vector and then to unit vector
+        let inv_total = 1.0 / total as f32;
         let mut vector: Vec<f32> = counts
             .iter()
-            .map(|&count| count as f32 / total as f32)
+            .map(|&count| count as f32 * inv_total)
             .collect();
 
         // L2 normalization
         let norm: f32 = vector.iter().map(|x| x * x).sum::<f32>().sqrt();
         if norm > 0.0 {
-            vector.iter_mut().for_each(|x| *x /= norm);
+            let inv_norm = 1.0 / norm;
+            vector.iter_mut().for_each(|x| *x *= inv_norm);
         }
 
         Ok(vector)
     }
 
-    /// Hash a k-mer to an index using FNV-1a hash
-    fn hash_kmer(&self, kmer: &[u8]) -> usize {
+    /// FNV-1a hash of a byte slice
+    #[inline]
+    fn fnv1a_hash(data: &[u8]) -> usize {
         const FNV_OFFSET: u64 = 14695981039346656037;
         const FNV_PRIME: u64 = 1099511628211;
-
         let mut hash = FNV_OFFSET;
-        for &byte in kmer {
+        for &byte in data {
             hash ^= byte as u64;
             hash = hash.wrapping_mul(FNV_PRIME);
         }
         hash as usize
+    }
+
+    /// FNV-1a hash of reverse complement (avoids Vec allocation)
+    #[inline]
+    fn fnv1a_hash_rc(data: &[u8]) -> usize {
+        const FNV_OFFSET: u64 = 14695981039346656037;
+        const FNV_PRIME: u64 = 1099511628211;
+        let mut hash = FNV_OFFSET;
+        for &byte in data.iter().rev() {
+            let comp = match byte.to_ascii_uppercase() {
+                b'A' => b'T',
+                b'T' | b'U' => b'A',
+                b'C' => b'G',
+                b'G' => b'C',
+                n => n,
+            };
+            hash ^= comp as u64;
+            hash = hash.wrapping_mul(FNV_PRIME);
+        }
+        hash as usize
+    }
+
+    /// Hash a k-mer to an index using FNV-1a hash
+    fn hash_kmer(&self, kmer: &[u8]) -> usize {
+        Self::fnv1a_hash(kmer)
     }
 }
 

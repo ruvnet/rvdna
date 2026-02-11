@@ -35,12 +35,13 @@ pub use types::{
 pub use variant::{
     FilterStatus, Genotype, PileupColumn, VariantCall, VariantCaller, VariantCallerConfig,
 };
-pub use protein::{AminoAcid, translate_dna};
-pub use epigenomics::{CpGSite, HorvathClock, MethylationProfile};
+pub use protein::{AminoAcid, translate_dna, molecular_weight, isoelectric_point};
+pub use epigenomics::{CpGSite, HorvathClock, MethylationProfile, CancerSignalDetector, CancerSignalResult};
 pub use alignment::{AlignmentConfig, SmithWaterman};
 pub use pharma::{
     call_star_allele, get_recommendations, predict_phenotype, DrugRecommendation,
     MetabolizerPhenotype, PharmaVariant, StarAllele,
+    Cyp2c19Allele, call_cyp2c19_allele, predict_cyp2c19_phenotype,
 };
 pub use rvdna::{
     Codec, RvdnaHeader, RvdnaReader, RvdnaWriter, RvdnaStats,

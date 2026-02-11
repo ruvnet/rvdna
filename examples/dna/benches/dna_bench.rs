@@ -222,6 +222,95 @@ fn protein_benchmarks(c: &mut Criterion) {
 }
 
 // ============================================================================
+// RVDNA Format Benchmarks
+// ============================================================================
+
+fn rvdna_benchmarks(c: &mut Criterion) {
+    let mut group = c.benchmark_group("rvdna");
+
+    group.bench_function("encode_2bit_1kb", |b| {
+        let seq = random_dna(1_000, 42);
+        b.iter(|| black_box(dna_analyzer_example::encode_2bit(seq.bases())));
+    });
+
+    group.bench_function("encode_2bit_100kb", |b| {
+        let seq = random_dna(100_000, 42);
+        b.iter(|| black_box(dna_analyzer_example::encode_2bit(seq.bases())));
+    });
+
+    group.bench_function("fasta_to_rvdna_1kb", |b| {
+        let seq_str: String = random_dna(1_000, 42)
+            .bases()
+            .iter()
+            .map(|n| match n {
+                Nucleotide::A => 'A',
+                Nucleotide::C => 'C',
+                Nucleotide::G => 'G',
+                Nucleotide::T => 'T',
+                _ => 'N',
+            })
+            .collect();
+        b.iter(|| black_box(dna_analyzer_example::fasta_to_rvdna(&seq_str, 11, 256, 1000).unwrap()));
+    });
+
+    group.finish();
+}
+
+// ============================================================================
+// Epigenomics Benchmarks
+// ============================================================================
+
+fn epigenomics_benchmarks(c: &mut Criterion) {
+    let mut group = c.benchmark_group("epigenomics");
+
+    group.bench_function("cancer_signal_1000_sites", |b| {
+        let positions: Vec<(u8, u64)> = (0..1000).map(|i| (1u8, i as u64)).collect();
+        let betas: Vec<f32> = (0..1000).map(|i| (i as f32 / 1000.0)).collect();
+        let profile = dna_analyzer_example::MethylationProfile::from_beta_values(positions, betas);
+        let detector = dna_analyzer_example::CancerSignalDetector::new();
+        b.iter(|| black_box(detector.detect(&profile)));
+    });
+
+    group.bench_function("horvath_clock_1000_sites", |b| {
+        let positions: Vec<(u8, u64)> = (0..1000).map(|i| (1u8, i as u64)).collect();
+        let betas: Vec<f32> = (0..1000).map(|i| (i as f32 / 2000.0 + 0.25)).collect();
+        let profile = dna_analyzer_example::MethylationProfile::from_beta_values(positions, betas);
+        let clock = dna_analyzer_example::HorvathClock::default_clock();
+        b.iter(|| black_box(clock.predict_age(&profile)));
+    });
+
+    group.finish();
+}
+
+// ============================================================================
+// Protein Analysis Benchmarks (extended)
+// ============================================================================
+
+fn protein_extended_benchmarks(c: &mut Criterion) {
+    let mut group = c.benchmark_group("protein_analysis");
+
+    group.bench_function("molecular_weight_300aa", |b| {
+        let protein = dna_analyzer_example::translate_dna(&random_dna(900, 42)
+            .bases().iter().map(|n| match n {
+                Nucleotide::A => b'A', Nucleotide::C => b'C',
+                Nucleotide::G => b'G', Nucleotide::T => b'T', _ => b'N',
+            }).collect::<Vec<u8>>());
+        b.iter(|| black_box(dna_analyzer_example::molecular_weight(&protein)));
+    });
+
+    group.bench_function("isoelectric_point_300aa", |b| {
+        let protein = dna_analyzer_example::translate_dna(&random_dna(900, 42)
+            .bases().iter().map(|n| match n {
+                Nucleotide::A => b'A', Nucleotide::C => b'C',
+                Nucleotide::G => b'G', Nucleotide::T => b'T', _ => b'N',
+            }).collect::<Vec<u8>>());
+        b.iter(|| black_box(dna_analyzer_example::isoelectric_point(&protein)));
+    });
+
+    group.finish();
+}
+
+// ============================================================================
 // Full Pipeline Benchmarks
 // ============================================================================
 
@@ -305,6 +394,9 @@ criterion_group!(
     alignment_benchmarks,
     variant_benchmarks,
     protein_benchmarks,
+    rvdna_benchmarks,
+    epigenomics_benchmarks,
+    protein_extended_benchmarks,
     pipeline_benchmarks
 );
 
