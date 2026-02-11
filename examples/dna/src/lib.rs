@@ -10,6 +10,7 @@
 //! - **Epigenomics**: Methylation profiling and Horvath clock age prediction
 //! - **Pharmacogenomics**: CYP enzyme star allele calling and drug recommendations
 //! - **Pipeline**: DAG-based orchestration of analysis stages
+//! - **RVDNA Format**: AI-native binary file format with pre-computed tensors
 
 #![warn(missing_docs)]
 #![allow(clippy::all)]
@@ -23,6 +24,8 @@ pub mod protein;
 pub mod epigenomics;
 pub mod pharma;
 pub mod pipeline;
+pub mod rvdna;
+pub mod real_data;
 
 pub use error::{DnaError, Result};
 pub use types::{
@@ -38,6 +41,11 @@ pub use alignment::{AlignmentConfig, SmithWaterman};
 pub use pharma::{
     call_star_allele, get_recommendations, predict_phenotype, DrugRecommendation,
     MetabolizerPhenotype, PharmaVariant, StarAllele,
+};
+pub use rvdna::{
+    Codec, RvdnaHeader, RvdnaReader, RvdnaWriter, RvdnaStats,
+    SparseAttention, VariantTensor, KmerVectorBlock,
+    encode_2bit, decode_2bit, fasta_to_rvdna,
 };
 
 pub use ruvector_core::{
