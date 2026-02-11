@@ -1,0 +1,67 @@
+[package]
+name = "dna-analyzer-example"
+version = "0.1.0"
+edition = "2021"
+description = "RuVector DNA Analyzer - SOTA genomic analysis using vector computing, flash attention, GNN, and HNSW indexing"
+license = "MIT"
+publish = false
+
+[dependencies]
+# RuVector core for HNSW vector storage
+ruvector-core = { path = "../../crates/ruvector-core" }
+
+# Attention for sequence analysis
+ruvector-attention = { path = "../../crates/ruvector-attention" }
+
+# GNN for protein structure and interaction networks
+ruvector-gnn = { path = "../../crates/ruvector-gnn" }
+
+# Graph operations for biological networks
+ruvector-graph = { path = "../../crates/ruvector-graph" }
+
+# DAG pipeline orchestration
+ruvector-dag = { path = "../../crates/ruvector-dag" }
+
+# Math primitives
+ruvector-math = { path = "../../crates/ruvector-math" }
+
+# Filter expressions for metadata queries
+ruvector-filter = { path = "../../crates/ruvector-filter" }
+
+# Collections
+ruvector-collections = { path = "../../crates/ruvector-collections" }
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+bincode = { version = "2.0.0-rc.3", features = ["serde"] }
+
+# Math and numerics
+ndarray = { version = "0.16", features = ["serde"] }
+rand = "0.8"
+rand_distr = "0.4"
+
+# Async runtime
+tokio = { version = "1.41", features = ["rt-multi-thread", "macros", "time"] }
+
+# Error handling
+thiserror = "2.0"
+anyhow = "1.0"
+
+# Utilities
+uuid = { version = "1.11", features = ["v4"] }
+chrono = "0.4"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+[[bin]]
+name = "dna-analyzer"
+path = "src/main.rs"
+
+[dev-dependencies]
+criterion = { version = "0.5", features = ["html_reports"] }
+tempfile = "3.8"
+
+[[bench]]
+name = "dna_bench"
+harness = false
