@@ -195,13 +195,13 @@ impl MinHashSketch {
             return Err(KmerError::EmptySequence);
         }
 
-        let mut all_hashes = Vec::new();
+        let mut all_hashes = Vec::with_capacity(seq.len() - k + 1);
 
-        // Hash all k-mers
+        // Hash all k-mers using dual-hash (no Vec allocation per k-mer)
         for window in seq.windows(k) {
-            let canonical = canonical_kmer(window);
-            let hash = Self::hash_kmer_64(&canonical);
-            all_hashes.push(hash);
+            let fwd = Self::hash_kmer_64_slice(window);
+            let rc = Self::hash_kmer_64_rc(window);
+            all_hashes.push(fwd.min(rc));
         }
 
         // Sort and keep the smallest num_hashes values
@@ -244,23 +244,43 @@ impl MinHashSketch {
         1.0 - jaccard_similarity
     }
 
-    /// Hash a k-mer using MurmurHash3-like algorithm
-    fn hash_kmer_64(kmer: &[u8]) -> u64 {
+    /// Hash a k-mer using MurmurHash3-like algorithm (forward strand)
+    #[inline]
+    fn hash_kmer_64_slice(kmer: &[u8]) -> u64 {
         const C1: u64 = 0x87c37b91114253d5;
         const C2: u64 = 0x4cf5ad432745937f;
-
         let mut h = 0u64;
         for &byte in kmer {
             let mut k = byte as u64;
             k = k.wrapping_mul(C1);
             k = k.rotate_left(31);
             k = k.wrapping_mul(C2);
-
             h ^= k;
             h = h.rotate_left(27);
             h = h.wrapping_mul(5).wrapping_add(0x52dce729);
         }
+        h ^ kmer.len() as u64
+    }
 
+    /// Hash reverse complement of a k-mer (no Vec allocation)
+    #[inline]
+    fn hash_kmer_64_rc(kmer: &[u8]) -> u64 {
+        const C1: u64 = 0x87c37b91114253d5;
+        const C2: u64 = 0x4cf5ad432745937f;
+        let mut h = 0u64;
+        for &byte in kmer.iter().rev() {
+            let comp = match byte.to_ascii_uppercase() {
+                b'A' => b'T', b'T' | b'U' => b'A',
+                b'C' => b'G', b'G' => b'C', n => n,
+            };
+            let mut k = comp as u64;
+            k = k.wrapping_mul(C1);
+            k = k.rotate_left(31);
+            k = k.wrapping_mul(C2);
+            h ^= k;
+            h = h.rotate_left(27);
+            h = h.wrapping_mul(5).wrapping_add(0x52dce729);
+        }
         h ^ kmer.len() as u64
     }
 

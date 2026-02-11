@@ -55,11 +55,14 @@ impl SmithWaterman {
         let r_len = r_bases.len();
         let cols = r_len + 1;
 
-        // Flat 1D arrays for cache-friendly row-major access
-        let mut h = vec![0i32; (q_len + 1) * cols];
+        // Rolling 2-row DP: only prev+curr rows for H and E (~12KB vs ~600KB).
+        // F needs only a single scalar (left neighbor in same row).
+        // Full traceback matrix kept since tb==0 encodes the stop condition.
         let neg_inf = i32::MIN / 2;
-        let mut e = vec![neg_inf; (q_len + 1) * cols];
-        let mut f = vec![neg_inf; (q_len + 1) * cols];
+        let mut h_prev = vec![0i32; cols];
+        let mut h_curr = vec![0i32; cols];
+        let mut e_prev = vec![neg_inf; cols];
+        let mut e_curr = vec![neg_inf; cols];
         let mut tb = vec![0u8; (q_len + 1) * cols]; // 0=stop, 1=diag, 2=up, 3=left
 
         let match_sc = self.config.match_score;
@@ -74,29 +77,27 @@ impl SmithWaterman {
         // Fill scoring matrices with affine gap penalties
         for i in 1..=q_len {
             let q_base = q_bases[i - 1];
-            let row = i * cols;
-            let prev_row = (i - 1) * cols;
+            h_curr[0] = 0;
+            e_curr[0] = neg_inf;
+            let mut f_val = neg_inf; // F[i][0], reset per row
 
             for j in 1..=r_len {
                 let mm = if q_base == r_bases[j - 1] { match_sc } else { mismatch_sc };
 
                 // E: gap in reference (insertion in query) — extend or open
-                let e_val = (e[prev_row + j] + gap_ext)
-                    .max(h[prev_row + j] + gap_open);
-                e[row + j] = e_val;
+                let e_v = (e_prev[j] + gap_ext).max(h_prev[j] + gap_open);
+                e_curr[j] = e_v;
 
                 // F: gap in query (deletion from reference) — extend or open
-                let f_val = (f[row + j - 1] + gap_ext)
-                    .max(h[row + j - 1] + gap_open);
-                f[row + j] = f_val;
+                f_val = (f_val + gap_ext).max(h_curr[j - 1] + gap_open);
 
-                let diag = h[prev_row + j - 1] + mm;
-                let best = 0.max(diag).max(e_val).max(f_val);
-                h[row + j] = best;
+                let diag = h_prev[j - 1] + mm;
+                let best = 0.max(diag).max(e_v).max(f_val);
+                h_curr[j] = best;
 
-                tb[row + j] = if best == 0 { 0 }
+                tb[i * cols + j] = if best == 0 { 0 }
                     else if best == diag { 1 }
-                    else if best == e_val { 2 }
+                    else if best == e_v { 2 }
                     else { 3 };
 
                 if best > max_score {
@@ -105,14 +106,18 @@ impl SmithWaterman {
                     max_j = j;
                 }
             }
+
+            // Swap rows: current becomes previous for next iteration
+            std::mem::swap(&mut h_prev, &mut h_curr);
+            std::mem::swap(&mut e_prev, &mut e_curr);
         }
 
-        // Traceback to build CIGAR
+        // Traceback to build CIGAR (tb==0 encodes stop, same as h==0)
         let mut cigar_ops = Vec::new();
         let mut i = max_i;
         let mut j = max_j;
 
-        while i > 0 && j > 0 && h[i * cols + j] > 0 {
+        while i > 0 && j > 0 && tb[i * cols + j] != 0 {
             match tb[i * cols + j] {
                 1 => {
                     // Diagonal (match/mismatch)

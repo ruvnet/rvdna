@@ -119,6 +119,8 @@ impl DnaSequence {
     }
 
     /// Convert to k-mer frequency vector for indexing
+    ///
+    /// Uses rolling polynomial hash: O(1) per k-mer instead of O(k).
     pub fn to_kmer_vector(&self, k: usize, dims: usize) -> Result<Vec<f32>> {
         if k == 0 || k > 15 {
             return Err(DnaError::InvalidKmerSize(k));
@@ -129,21 +131,33 @@ impl DnaSequence {
             ));
         }
 
-        let mut vector = vec![0.0; dims];
+        let mut vector = vec![0.0f32; dims];
 
-        // Extract k-mers and hash to vector positions
-        for window in self.bases.windows(k) {
-            let hash = window.iter()
-                .fold(0u64, |acc, &b| acc * 5 + b.to_u8() as u64);
-            let idx = (hash as usize) % dims;
-            vector[idx] += 1.0;
+        // Precompute 5^k for rolling hash removal of leading nucleotide
+        let base: u64 = 5;
+        let pow_k = base.pow(k as u32 - 1);
+
+        // Compute initial hash for first k-mer
+        let mut hash = self.bases[..k].iter()
+            .fold(0u64, |acc, &b| acc.wrapping_mul(5).wrapping_add(b.to_u8() as u64));
+        vector[(hash as usize) % dims] += 1.0;
+
+        // Rolling hash: remove leading nucleotide, add trailing
+        for i in 1..=(self.bases.len() - k) {
+            let old = self.bases[i - 1].to_u8() as u64;
+            let new = self.bases[i + k - 1].to_u8() as u64;
+            hash = hash.wrapping_sub(old.wrapping_mul(pow_k))
+                .wrapping_mul(5)
+                .wrapping_add(new);
+            vector[(hash as usize) % dims] += 1.0;
         }
 
         // Normalize to unit vector
         let magnitude: f32 = vector.iter().map(|x| x * x).sum::<f32>().sqrt();
         if magnitude > 0.0 {
+            let inv = 1.0 / magnitude;
             for v in &mut vector {
-                *v /= magnitude;
+                *v *= inv;
             }
         }
 
