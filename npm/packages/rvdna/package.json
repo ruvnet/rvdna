@@ -1,0 +1,58 @@
+{
+  "name": "@ruvector/rvdna",
+  "version": "0.1.0",
+  "description": "rvDNA — AI-native genomic analysis and the .rvdna file format. Variant calling, protein prediction, and HNSW vector search powered by Rust via NAPI-RS.",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "author": "rUv <info@ruv.io> (https://ruv.io)",
+  "homepage": "https://github.com/ruvnet/ruvector/tree/main/examples/dna",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ruvnet/ruvector.git",
+    "directory": "npm/packages/rvdna"
+  },
+  "bugs": {
+    "url": "https://github.com/ruvnet/ruvector/issues"
+  },
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "files": [
+    "index.js",
+    "index.d.ts",
+    "README.md"
+  ],
+  "scripts": {
+    "build:napi": "napi build --platform --release --cargo-cwd ../../../examples/dna",
+    "test": "node test.js"
+  },
+  "devDependencies": {
+    "@napi-rs/cli": "^2.18.0"
+  },
+  "optionalDependencies": {
+    "@ruvector/rvdna-linux-x64-gnu": "0.1.0",
+    "@ruvector/rvdna-linux-arm64-gnu": "0.1.0",
+    "@ruvector/rvdna-darwin-x64": "0.1.0",
+    "@ruvector/rvdna-darwin-arm64": "0.1.0",
+    "@ruvector/rvdna-win32-x64-msvc": "0.1.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "keywords": [
+    "genomics",
+    "bioinformatics",
+    "dna",
+    "rvdna",
+    "variant-calling",
+    "protein",
+    "hnsw",
+    "vector-search",
+    "napi",
+    "rust",
+    "wasm",
+    "ai",
+    "machine-learning"
+  ]
+}

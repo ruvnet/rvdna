@@ -13,28 +13,28 @@ categories = ["science", "algorithms", "wasm"]
 
 [dependencies]
 # RuVector core for HNSW vector storage
-ruvector-core = { path = "../../crates/ruvector-core" }
+ruvector-core = { version = "2.0.2", path = "../../crates/ruvector-core" }
 
 # Attention for sequence analysis
-ruvector-attention = { path = "../../crates/ruvector-attention" }
+ruvector-attention = { version = "0.1.31", path = "../../crates/ruvector-attention" }
 
 # GNN for protein structure and interaction networks
-ruvector-gnn = { path = "../../crates/ruvector-gnn" }
+ruvector-gnn = { version = "2.0.2", path = "../../crates/ruvector-gnn" }
 
 # Graph operations for biological networks
-ruvector-graph = { path = "../../crates/ruvector-graph" }
+ruvector-graph = { version = "2.0.2", path = "../../crates/ruvector-graph" }
 
 # DAG pipeline orchestration
-ruvector-dag = { path = "../../crates/ruvector-dag" }
+ruvector-dag = { version = "0.1.0", path = "../../crates/ruvector-dag" }
 
 # Math primitives
-ruvector-math = { path = "../../crates/ruvector-math" }
+ruvector-math = { version = "2.0.2", path = "../../crates/ruvector-math" }
 
 # Filter expressions for metadata queries
-ruvector-filter = { path = "../../crates/ruvector-filter" }
+ruvector-filter = { version = "2.0.2", path = "../../crates/ruvector-filter" }
 
 # Collections
-ruvector-collections = { path = "../../crates/ruvector-collections" }
+ruvector-collections = { version = "2.0.2", path = "../../crates/ruvector-collections" }
 
 # Serialization
 serde = { version = "1.0", features = ["derive"] }
@@ -60,7 +60,7 @@ tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 
 [[bin]]
-name = "rvdna"
+name = "rvdna-cli"
 path = "src/main.rs"
 
 [dev-dependencies]

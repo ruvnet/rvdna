@@ -10,8 +10,8 @@
 //! - Pharmacogenomic star allele calling
 //! - RVDNA AI-native file format with pre-computed tensors
 
-use rvdna::prelude::*;
-use rvdna::{
+use ::rvdna::prelude::*;
+use ::rvdna::{
     alignment::{AlignmentConfig, SmithWaterman},
     epigenomics::{HorvathClock, MethylationProfile},
     pharma,

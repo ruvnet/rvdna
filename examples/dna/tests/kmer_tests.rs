@@ -3,7 +3,7 @@
 //! These tests use real VectorDB instances to validate k-mer encoding,
 //! indexing, and similarity search functionality.
 
-use rvdna::kmer::{
+use ::rvdna::kmer::{
     canonical_kmer, KmerEncoder, KmerIndex, MinHashSketch,
 };
 use tempfile::TempDir;

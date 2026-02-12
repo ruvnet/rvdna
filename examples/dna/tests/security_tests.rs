@@ -1,7 +1,7 @@
 //! Security validation tests for DNA analyzer - NO MOCKS, real computation only
-use rvdna::error::DnaError;
-use rvdna::types::*;
-use rvdna::VectorEntry;
+use ::rvdna::error::DnaError;
+use ::rvdna::types::*;
+use ::rvdna::VectorEntry;
 use std::sync::{Arc, Mutex};
 use std::thread;
 

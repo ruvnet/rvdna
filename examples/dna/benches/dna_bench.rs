@@ -8,8 +8,8 @@
 //! - Full pipeline integration
 
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
-use rvdna::prelude::*;
-use rvdna::types::KmerIndex as TypesKmerIndex;
+use ::rvdna::prelude::*;
+use ::rvdna::types::KmerIndex as TypesKmerIndex;
 use rand::rngs::StdRng;
 use rand::{Rng, SeedableRng};
 
