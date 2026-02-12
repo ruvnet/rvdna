@@ -1,13 +1,33 @@
 # rvDNA
 
+[![crates.io](https://img.shields.io/crates/v/rvdna.svg)](https://crates.io/crates/rvdna)
+[![npm](https://img.shields.io/npm/v/@ruvector/rvdna.svg)](https://www.npmjs.com/package/@ruvector/rvdna)
+[![MIT License](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+
 **Analyze DNA in milliseconds.** rvDNA is a genomic analysis toolkit written in Rust that runs natively and in the browser via WebAssembly. It reads real human genes, finds mutations, translates proteins, predicts biological age, and recommends drug dosing — all in a single 12 ms pipeline.
 
 It also introduces the **`.rvdna` file format** — a compact binary format that stores DNA sequences alongside pre-computed AI features so downstream tools can skip expensive re-encoding steps entirely.
 
 ```
-cargo add rvdna            # Rust
-npm install @ruvector/rvdna  # JavaScript / WASM
+cargo add rvdna              # Rust
+npm install @ruvector/rvdna  # JavaScript / TypeScript / WASM
 ```
+
+### Why This Exists
+
+Healthcare diagnostics are slow, expensive, and out of reach for most people. A single genomic analysis can take hours on specialized hardware and cost hundreds of dollars. That locks out billions of people from understanding their own DNA.
+
+rvDNA uses AI to change that. By pre-computing vectors, attention matrices, and variant probabilities into a single `.rvdna` file, the expensive work happens once. After that, any device — a phone, a laptop, a browser tab — can run instant diagnostics on the pre-computed data. No cloud. No GPU. No subscription.
+
+The goal is simple: **use AI to make the world a healthier place by making genomic diagnostics instant, private, and available to everyone.**
+
+| What | How rvDNA Helps |
+|---|---|
+| **Instant results** | 12 ms full pipeline vs 30-90 min with traditional tools |
+| **Runs anywhere** | Browser (WASM), laptop, edge device — no specialized hardware |
+| **Private by default** | Data stays on-device, never sent to a server |
+| **Free and open** | MIT licensed, no API keys, no usage fees |
+| **Pre-computed AI** | `.rvdna` files carry vectors + tensors so analysis is instant |
 
 ## What rvDNA Does
 
@@ -188,47 +208,143 @@ All sequences come from **NCBI RefSeq** (public domain, human genome reference G
 
 ## Architecture
 
-```
-                       rvDNA Pipeline (12 ms)
+<details>
+<summary>Pipeline Diagram</summary>
 
-  NCBI RefSeq Input
-  ┌──────┬──────┬───────┬────────┬─────┐
-  │ HBB  │ TP53 │ BRCA1 │ CYP2D6 │ INS │
-  └──┬───┴──┬───┴───┬───┴────┬───┴──┬──┘
-     │      │       │        │      │
-     ▼      ▼       ▼        ▼      ▼
-  ┌──────────────────────────────────────┐
-  │  K-mer Encoder (FNV-1a, d=512)       │
-  │  MinHash Sketch → HNSW Index         │
-  └──────────────┬───────────────────────┘
-                 │
-     ┌───────────┼───────────┐
-     ▼           ▼           ▼
-┌──────────┐ ┌──────────┐ ┌──────────────┐
-│ Smith-   │ │ Bayesian │ │ Protein      │
-│ Waterman │ │ Variant  │ │ Translation  │
-│ Aligner  │ │ Caller   │ │ + GNN Graph  │
-└──────────┘ └──────────┘ └──────────────┘
-                 │                │
-     ┌───────────┘                │
-     ▼                            ▼
-┌──────────────┐          ┌──────────────┐
-│ Horvath      │          │ CYP2D6       │
-│ Epigenetic   │          │ Star Allele  │
-│ Clock        │          │ + CPIC Recs  │
-└──────────────┘          └──────────────┘
-         │                        │
-         └──────────┬─────────────┘
-                    ▼
-          ┌──────────────────┐
-          │   .rvdna Output  │
-          │                  │
-          │  2-bit sequence  │
-          │  k-mer vectors   │
-          │  variant tensors │
-          │  protein graphs  │
-          └──────────────────┘
+```mermaid
+flowchart TD
+    subgraph Input["NCBI RefSeq Input"]
+        HBB["HBB<br/>Hemoglobin"]
+        TP53["TP53<br/>Tumor suppressor"]
+        BRCA1["BRCA1<br/>Cancer risk"]
+        CYP2D6["CYP2D6<br/>Drug metabolism"]
+        INS["INS<br/>Insulin"]
+    end
+
+    subgraph Encode["Stage 1-2: Encoding"]
+        KMER["K-mer Encoder<br/>FNV-1a, d=512"]
+        MINHASH["MinHash Sketch"]
+        HNSW["HNSW Vector Index"]
+    end
+
+    subgraph Analyze["Stage 3-5: Analysis"]
+        SW["Smith-Waterman<br/>Aligner"]
+        VC["Bayesian Variant<br/>Caller"]
+        PT["Protein Translation<br/>+ GNN Contact Graph"]
+    end
+
+    subgraph Clinical["Stage 6-7: Clinical"]
+        HC["Horvath Epigenetic<br/>Clock (353 CpG)"]
+        PGX["CYP2D6 Star Alleles<br/>+ CPIC Drug Recs"]
+    end
+
+    subgraph Output["Stage 8: Output"]
+        RVDNA[".rvdna File<br/>2-bit seq + vectors + tensors"]
+    end
+
+    Input --> KMER
+    KMER --> MINHASH --> HNSW
+    HNSW --> SW & VC & PT
+    VC --> HC
+    PT --> PGX
+    HC & PGX --> RVDNA
+    SW --> RVDNA
 ```
+
+</details>
+
+<details>
+<summary>.rvdna File Format Layout</summary>
+
+```mermaid
+block-beta
+    columns 1
+    magic["Magic: RVDNA\\x01\\x00\\x00 (8 bytes)"]
+    header["Header: version, flags, section offsets (64 bytes)"]
+    seq["Section 0: 2-bit Packed DNA Sequence (4 bases/byte)"]
+    kmer["Section 1: K-mer Vectors (HNSW-ready embeddings)"]
+    attn["Section 2: Attention Weights (Sparse COO matrices)"]
+    var["Section 3: Variant Tensor (f16 genotype likelihoods)"]
+    prot["Section 4: Protein Embeddings (GNN + contact graphs)"]
+    epi["Section 5: Epigenomic Tracks (methylation + clock)"]
+    meta["Section 6: Metadata (JSON provenance + CRC32)"]
+
+    style magic fill:#4a9,color:#fff
+    style header fill:#48b,color:#fff
+    style seq fill:#e74,color:#fff
+    style kmer fill:#f90,color:#fff
+    style attn fill:#c6e,color:#fff
+    style var fill:#5bc,color:#fff
+    style prot fill:#9c5,color:#fff
+    style epi fill:#db5,color:#000
+    style meta fill:#888,color:#fff
+```
+
+</details>
+
+<details>
+<summary>Data Flow: DNA to Diagnostics</summary>
+
+```mermaid
+flowchart LR
+    DNA["Raw DNA<br/>ACGTACGT..."] --> ENC["2-bit Encode<br/>4 bases/byte"]
+    ENC --> VEC["K-mer Vectors<br/>d=512, FNV-1a"]
+    VEC --> HNSW["HNSW Index<br/>O(log N) search"]
+
+    DNA --> SW["Smith-Waterman<br/>Alignment"]
+    SW --> CIGAR["CIGAR String<br/>+ Map Quality"]
+
+    DNA --> VC["Variant Caller<br/>Bayesian"]
+    VC --> SNP["SNPs + Indels<br/>Phred Quality"]
+
+    DNA --> PROT["Translate<br/>Codon Table"]
+    PROT --> GNN["GNN Contact<br/>Graph"]
+
+    SNP --> AGE["Horvath Clock<br/>Biological Age"]
+    SNP --> DRUG["CYP2D6 Calling<br/>Drug Dosing"]
+
+    ENC & VEC & SNP & GNN & AGE & DRUG --> RVDNA[".rvdna<br/>All-in-one file"]
+
+    style DNA fill:#e74,color:#fff
+    style RVDNA fill:#4a9,color:#fff
+```
+
+</details>
+
+<details>
+<summary>WASM Deployment Architecture</summary>
+
+```mermaid
+flowchart TB
+    subgraph Browser["Browser / Edge Device"]
+        WASM["rvDNA WASM Module<br/>< 2 MB gzipped"]
+        JS["JavaScript API<br/>@ruvector/rvdna"]
+        UI["Web UI / Dashboard"]
+    end
+
+    subgraph Local["Local Data (never leaves device)"]
+        FASTA["FASTA Input"]
+        RVFILE[".rvdna Files"]
+    end
+
+    subgraph Results["Instant Results (12 ms)"]
+        VAR["Variant Report"]
+        PROT["Protein Structure"]
+        AGE["Biological Age"]
+        DRUG["Drug Recommendations"]
+    end
+
+    FASTA --> JS
+    JS --> WASM
+    WASM --> RVFILE
+    RVFILE --> JS
+    WASM --> Results
+
+    style WASM fill:#f90,color:#fff
+    style JS fill:#48b,color:#fff
+```
+
+</details>
 
 ## Modules
 
@@ -290,11 +406,25 @@ See [ADR-012](adr/ADR-012-genomic-security-and-privacy.md) for the complete thre
 
 ## Install
 
+| Platform | Install | Registry |
+|---|---|---|
+| **Rust** | `cargo add rvdna` | [crates.io/crates/rvdna](https://crates.io/crates/rvdna) |
+| **npm** | `npm install @ruvector/rvdna` | [npmjs.com/package/@ruvector/rvdna](https://www.npmjs.com/package/@ruvector/rvdna) |
+| **From source** | `cargo run --release -p rvdna` | [GitHub](https://github.com/ruvnet/ruvector/tree/main/examples/dna) |
+
 ### Rust (crates.io)
 
 ```toml
 [dependencies]
 rvdna = "0.1"
+```
+
+```rust
+use rvdna::prelude::*;
+use rvdna::real_data::*;
+
+let seq = DnaSequence::from_str(HBB_CODING_SEQUENCE).unwrap();
+let protein = rvdna::translate_dna(seq.to_string().as_bytes());
 ```
 
 ### JavaScript / TypeScript (npm)
@@ -303,7 +433,40 @@ rvdna = "0.1"
 npm install @ruvector/rvdna
 ```
 
-The npm package provides WASM bindings. Use it in Node.js or any modern browser.
+```js
+const { encode2bit, decode2bit, translateDna, cosineSimilarity } = require('@ruvector/rvdna');
+
+// Encode DNA to compact 2-bit format (4 bases per byte)
+const packed = encode2bit('ACGTACGTACGT');
+
+// Translate DNA to protein
+const protein = translateDna('ATGGCCATTGTAATG'); // 'MAIV'
+
+// Compare k-mer vectors
+const sim = cosineSimilarity([1, 2, 3], [1, 2, 3]); // 1.0
+```
+
+The npm package uses Rust NAPI-RS bindings for native speed and falls back to pure JavaScript when native bindings aren't available.
+
+| npm Function | Description | Needs Native? |
+|---|---|---|
+| `encode2bit(seq)` | Pack DNA into 2-bit bytes | No (JS fallback) |
+| `decode2bit(buf, len)` | Unpack 2-bit bytes to DNA | No (JS fallback) |
+| `translateDna(seq)` | DNA to protein amino acids | No (JS fallback) |
+| `cosineSimilarity(a, b)` | Cosine similarity of two vectors | No (JS fallback) |
+| `fastaToRvdna(seq, opts)` | Convert FASTA to `.rvdna` format | Yes |
+| `readRvdna(buf)` | Parse a `.rvdna` file | Yes |
+| `isNativeAvailable()` | Check if native bindings loaded | No |
+
+**Native platform support (NAPI-RS):**
+
+| Platform | Architecture | Package |
+|---|---|---|
+| Linux | x64 | `@ruvector/rvdna-linux-x64-gnu` |
+| Linux | ARM64 | `@ruvector/rvdna-linux-arm64-gnu` |
+| macOS | Intel | `@ruvector/rvdna-darwin-x64` |
+| macOS | Apple Silicon | `@ruvector/rvdna-darwin-arm64` |
+| Windows | x64 | `@ruvector/rvdna-win32-x64-msvc` |
 
 ### From Source
 
@@ -319,6 +482,8 @@ MIT — see `LICENSE` in the repository root.
 
 ## Links
 
+- [npm package](https://www.npmjs.com/package/@ruvector/rvdna) — JavaScript/TypeScript bindings
+- [crates.io](https://crates.io/crates/rvdna) — Rust crate
 - [Architecture Decision Records](adr/) — 13 ADRs documenting design choices
 - [RVDNA Format Spec (ADR-013)](adr/ADR-013-rvdna-ai-native-format.md) — full binary format specification
 - [WASM Edge Genomics (ADR-008)](adr/ADR-008-wasm-edge-genomics.md) — WebAssembly deployment plan
