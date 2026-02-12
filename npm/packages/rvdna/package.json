@@ -1,6 +1,6 @@
 {
   "name": "@ruvector/rvdna",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "rvDNA — AI-native genomic analysis and the .rvdna file format. Variant calling, protein prediction, and HNSW vector search powered by Rust via NAPI-RS.",
   "main": "index.js",
   "types": "index.d.ts",
