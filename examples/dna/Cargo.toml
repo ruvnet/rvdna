@@ -50,7 +50,7 @@ rand_distr = "0.4"
 tokio = { version = "1.41", features = ["rt-multi-thread", "macros", "time"] }
 
 # Sublinear solver for k-mer graph PageRank
-ruvector-solver = { version = "0.1.0", path = "../../crates/ruvector-solver", default-features = false, features = ["forward-push", "neumann", "cg"] }
+ruvector-solver = { path = "../../crates/ruvector-solver", default-features = false, features = ["forward-push", "neumann", "cg"] }
 
 # Error handling
 thiserror = "2.0"
