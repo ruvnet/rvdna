@@ -1,7 +1,7 @@
 {
   "name": "@ruvector/rvdna",
-  "version": "0.1.1",
-  "description": "rvDNA — AI-native genomic analysis and the .rvdna file format. Variant calling, protein prediction, and HNSW vector search powered by Rust via NAPI-RS.",
+  "version": "0.2.0",
+  "description": "rvDNA — AI-native genomic analysis. Native 23andMe genotyping, CYP2D6/CYP2C19 pharmacogenomics, 17 health variants, variant calling, protein prediction, and HNSW vector search powered by Rust via NAPI-RS.",
   "main": "index.js",
   "types": "index.d.ts",
   "author": "rUv <info@ruv.io> (https://ruv.io)",
@@ -45,14 +45,14 @@
     "bioinformatics",
     "dna",
     "rvdna",
+    "23andme",
+    "pharmacogenomics",
     "variant-calling",
     "protein",
     "hnsw",
     "vector-search",
     "napi",
     "rust",
-    "wasm",
-    "ai",
-    "machine-learning"
+    "ai"
   ]
 }

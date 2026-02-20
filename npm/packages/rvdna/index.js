@@ -161,7 +161,190 @@ function isNativeAvailable() {
   return nativeModule !== null;
 }
 
+// -------------------------------------------------------------------
+// 23andMe Genotyping Pipeline (pure JS — mirrors Rust rvdna::genotyping)
+// -------------------------------------------------------------------
+
+/**
+ * Normalize a genotype string: uppercase, trim, sort allele pair.
+ * "ag" → "AG", "TC" → "CT", "DI" → "DI"
+ */
+function normalizeGenotype(gt) {
+  gt = gt.trim().toUpperCase();
+  if (gt.length === 2 && gt[0] > gt[1]) {
+    return gt[1] + gt[0];
+  }
+  return gt;
+}
+
+/**
+ * Parse a 23andMe raw data file (v4/v5 tab-separated format).
+ * @param {string} text - Raw file contents
+ * @returns {{ snps: Map<string,object>, totalMarkers: number, noCalls: number, chrCounts: Map<string,number>, build: string }}
+ */
+function parse23andMe(text) {
+  const snps = new Map();
+  const chrCounts = new Map();
+  let total = 0, noCalls = 0;
+  let build = 'Unknown';
+
+  for (const line of text.split('\n')) {
+    if (line.startsWith('#')) {
+      const lower = line.toLowerCase();
+      if (lower.includes('build 37') || lower.includes('grch37') || lower.includes('hg19')) build = 'GRCh37';
+      else if (lower.includes('build 38') || lower.includes('grch38') || lower.includes('hg38')) build = 'GRCh38';
+      continue;
+    }
+    if (!line.trim()) continue;
+    const parts = line.split('\t');
+    if (parts.length < 4) continue;
+    const [rsid, chrom, posStr, genotype] = parts;
+    total++;
+    if (genotype === '--') { noCalls++; continue; }
+    const pos = parseInt(posStr, 10) || 0;
+    const normGt = normalizeGenotype(genotype);
+    chrCounts.set(chrom, (chrCounts.get(chrom) || 0) + 1);
+    snps.set(rsid, { rsid, chromosome: chrom, position: pos, genotype: normGt });
+  }
+
+  if (total === 0) throw new Error('No markers found in file');
+  return { snps, totalMarkers: total, noCalls, chrCounts, build };
+}
+
+// CYP defining variant tables
+const CYP2D6_DEFS = [
+  { rsid: 'rs3892097',  allele: '*4',  alt: 'T', isDel: false, activity: 0.0, fn: 'No function (splicing defect)' },
+  { rsid: 'rs35742686', allele: '*3',  alt: '-', isDel: true,  activity: 0.0, fn: 'No function (frameshift)' },
+  { rsid: 'rs5030655',  allele: '*6',  alt: '-', isDel: true,  activity: 0.0, fn: 'No function (frameshift)' },
+  { rsid: 'rs1065852',  allele: '*10', alt: 'T', isDel: false, activity: 0.5, fn: 'Decreased function' },
+  { rsid: 'rs28371725', allele: '*41', alt: 'T', isDel: false, activity: 0.5, fn: 'Decreased function' },
+  { rsid: 'rs28371706', allele: '*17', alt: 'T', isDel: false, activity: 0.5, fn: 'Decreased function' },
+];
+
+const CYP2C19_DEFS = [
+  { rsid: 'rs4244285',  allele: '*2',  alt: 'A', isDel: false, activity: 0.0, fn: 'No function (splicing defect)' },
+  { rsid: 'rs4986893',  allele: '*3',  alt: 'A', isDel: false, activity: 0.0, fn: 'No function (premature stop)' },
+  { rsid: 'rs12248560', allele: '*17', alt: 'T', isDel: false, activity: 1.5, fn: 'Increased function' },
+];
+
+/**
+ * Call a CYP diplotype from a genotype map.
+ * @param {string} gene - Gene name (e.g., "CYP2D6")
+ * @param {object[]} defs - Defining variant table
+ * @param {Map<string,string>} gts - rsid → genotype map
+ */
+function callCypDiplotype(gene, defs, gts) {
+  const alleles = [];
+  const details = [];
+  const notes = [];
+  let genotyped = 0, matched = 0;
+
+  for (const def of defs) {
+    const gt = gts.get(def.rsid);
+    if (gt !== undefined) {
+      genotyped++;
+      if (def.isDel) {
+        if (gt === 'DD') { matched++; alleles.push([def.allele, def.activity], [def.allele, def.activity]); details.push(`  ${def.rsid}: ${gt} -> homozygous ${def.allele} (${def.fn})`); }
+        else if (gt === 'DI') { matched++; alleles.push([def.allele, def.activity]); details.push(`  ${def.rsid}: ${gt} -> heterozygous ${def.allele} (${def.fn})`); }
+        else { details.push(`  ${def.rsid}: ${gt} -> reference (no ${def.allele})`); }
+      } else {
+        const hom = def.alt + def.alt;
+        if (gt === hom) { matched++; alleles.push([def.allele, def.activity], [def.allele, def.activity]); details.push(`  ${def.rsid}: ${gt} -> homozygous ${def.allele} (${def.fn})`); }
+        else if (gt.includes(def.alt)) { matched++; alleles.push([def.allele, def.activity]); details.push(`  ${def.rsid}: ${gt} -> heterozygous ${def.allele} (${def.fn})`); }
+        else { details.push(`  ${def.rsid}: ${gt} -> reference (no ${def.allele})`); }
+      }
+    } else {
+      details.push(`  ${def.rsid}: not genotyped`);
+    }
+  }
+
+  let confidence;
+  if (genotyped === 0) confidence = 'Unsupported';
+  else if (matched >= 2 && genotyped * 2 >= defs.length) confidence = 'Strong';
+  else if ((matched >= 1 && genotyped >= 2) || genotyped * 2 >= defs.length) confidence = 'Moderate';
+  else confidence = 'Weak';
+
+  if (confidence === 'Unsupported') notes.push('Panel lacks all defining variants for this gene.');
+  if (confidence === 'Weak') notes.push(`Only ${genotyped}/${defs.length} defining rsids genotyped; call unreliable.`);
+  notes.push('No phase or CNV resolution from genotyping array.');
+
+  while (alleles.length < 2) alleles.push(['*1', 1.0]);
+  const activity = alleles[0][1] + alleles[1][1];
+  let phenotype;
+  if (activity > 2.0) phenotype = 'UltraRapid';
+  else if (activity >= 1.0) phenotype = 'Normal';
+  else if (activity >= 0.5) phenotype = 'Intermediate';
+  else phenotype = 'Poor';
+
+  return {
+    gene, allele1: alleles[0][0], allele2: alleles[1][0],
+    activity, phenotype, confidence,
+    rsidsGenotyped: genotyped, rsidsMatched: matched, rsidsTotal: defs.length,
+    notes, details,
+  };
+}
+
+/** Call CYP2D6 diplotype */
+function callCyp2d6(gts) { return callCypDiplotype('CYP2D6', CYP2D6_DEFS, gts); }
+
+/** Call CYP2C19 diplotype */
+function callCyp2c19(gts) { return callCypDiplotype('CYP2C19', CYP2C19_DEFS, gts); }
+
+/**
+ * Determine APOE genotype from rs429358 + rs7412.
+ * @param {Map<string,string>} gts
+ */
+function determineApoe(gts) {
+  const gt1 = gts.get('rs429358') || '';
+  const gt2 = gts.get('rs7412') || '';
+  if (!gt1 || !gt2) return { genotype: 'Unable to determine (missing data)', rs429358: gt1, rs7412: gt2 };
+  const e4 = (gt1.match(/C/g) || []).length;
+  const e2 = (gt2.match(/T/g) || []).length;
+  const geno = {
+    '0,0': 'e3/e3 (most common, baseline risk)',
+    '0,1': 'e2/e3 (PROTECTIVE - reduced Alzheimer\'s risk)',
+    '0,2': 'e2/e2 (protective; monitor for type III hyperlipoproteinemia)',
+    '1,0': 'e3/e4 (increased Alzheimer\'s risk ~3x)',
+    '1,1': 'e2/e4 (mixed - e2 partially offsets e4 risk)',
+  }[`${e4},${e2}`] || (e4 >= 2 ? 'e4/e4 (significantly increased Alzheimer\'s risk ~12x)' : `Unusual: rs429358=${gt1}, rs7412=${gt2}`);
+  return { genotype: geno, rs429358: gt1, rs7412: gt2 };
+}
+
+/**
+ * Run the full 23andMe analysis pipeline.
+ * @param {string} text - Raw 23andMe file contents
+ * @returns {object} Full analysis result
+ */
+function analyze23andMe(text) {
+  const data = parse23andMe(text);
+  const gts = new Map();
+  for (const [rsid, snp] of data.snps) gts.set(rsid, snp.genotype);
+
+  const cyp2d6 = callCyp2d6(gts);
+  const cyp2c19 = callCyp2c19(gts);
+  const apoe = determineApoe(gts);
+
+  // Variant classification
+  let homozygous = 0, heterozygous = 0, indels = 0;
+  const isNuc = c => 'ACGT'.includes(c);
+  for (const snp of data.snps.values()) {
+    const g = snp.genotype;
+    if (g.length === 2) {
+      if (isNuc(g[0]) && isNuc(g[1])) { g[0] === g[1] ? homozygous++ : heterozygous++; }
+      else indels++;
+    }
+  }
+
+  return {
+    data: { ...data, snps: Object.fromEntries(data.snps), chrCounts: Object.fromEntries(data.chrCounts) },
+    cyp2d6, cyp2c19, apoe,
+    homozygous, heterozygous, indels,
+    hetRatio: data.totalMarkers - data.noCalls > 0 ? heterozygous / (data.totalMarkers - data.noCalls) * 100 : 0,
+  };
+}
+
 module.exports = {
+  // Original API
   encode2bit,
   decode2bit,
   translateDna,
@@ -169,6 +352,14 @@ module.exports = {
   fastaToRvdna,
   readRvdna,
   isNativeAvailable,
+
+  // 23andMe Genotyping API (v0.2.0)
+  normalizeGenotype,
+  parse23andMe,
+  callCyp2d6,
+  callCyp2c19,
+  determineApoe,
+  analyze23andMe,
 
   // Re-export native module for advanced use
   native: nativeModule,

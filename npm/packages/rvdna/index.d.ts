@@ -93,3 +93,86 @@ export function isNativeAvailable(): boolean;
  * Direct access to the native NAPI-RS module (null if not available).
  */
 export const native: Record<string, Function> | null;
+
+// -------------------------------------------------------------------
+// 23andMe Genotyping Pipeline (v0.2.0)
+// -------------------------------------------------------------------
+
+/**
+ * Normalize a genotype string: uppercase, trim, sort allele pair.
+ * "ag" → "AG", "TC" → "CT", "DI" → "DI"
+ */
+export function normalizeGenotype(gt: string): string;
+
+export interface Snp {
+  rsid: string;
+  chromosome: string;
+  position: number;
+  genotype: string;
+}
+
+export interface GenotypeData {
+  snps: Record<string, Snp>;
+  totalMarkers: number;
+  noCalls: number;
+  chrCounts: Record<string, number>;
+  build: 'GRCh37' | 'GRCh38' | 'Unknown';
+}
+
+/**
+ * Parse a 23andMe raw data file (v4/v5 tab-separated format).
+ * Normalizes all genotype strings on load.
+ */
+export function parse23andMe(text: string): {
+  snps: Map<string, Snp>;
+  totalMarkers: number;
+  noCalls: number;
+  chrCounts: Map<string, number>;
+  build: string;
+};
+
+export interface CypDiplotype {
+  gene: string;
+  allele1: string;
+  allele2: string;
+  activity: number;
+  phenotype: 'UltraRapid' | 'Normal' | 'Intermediate' | 'Poor';
+  confidence: 'Unsupported' | 'Weak' | 'Moderate' | 'Strong';
+  rsidsGenotyped: number;
+  rsidsMatched: number;
+  rsidsTotal: number;
+  notes: string[];
+  details: string[];
+}
+
+/** Call CYP2D6 diplotype from a genotype map */
+export function callCyp2d6(gts: Map<string, string>): CypDiplotype;
+
+/** Call CYP2C19 diplotype from a genotype map */
+export function callCyp2c19(gts: Map<string, string>): CypDiplotype;
+
+export interface ApoeResult {
+  genotype: string;
+  rs429358: string;
+  rs7412: string;
+}
+
+/** Determine APOE genotype from rs429358 + rs7412 */
+export function determineApoe(gts: Map<string, string>): ApoeResult;
+
+export interface AnalysisResult {
+  data: GenotypeData;
+  cyp2d6: CypDiplotype;
+  cyp2c19: CypDiplotype;
+  apoe: ApoeResult;
+  homozygous: number;
+  heterozygous: number;
+  indels: number;
+  hetRatio: number;
+}
+
+/**
+ * Run the full 23andMe analysis pipeline.
+ * @param text - Raw 23andMe file contents
+ */
+export function analyze23andMe(text: string): AnalysisResult;
