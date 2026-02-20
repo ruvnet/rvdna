@@ -49,6 +49,9 @@ rand_distr = "0.4"
 # Async runtime
 tokio = { version = "1.41", features = ["rt-multi-thread", "macros", "time"] }
 
+# Sublinear solver for k-mer graph PageRank
+ruvector-solver = { version = "0.1.0", path = "../../crates/ruvector-solver", default-features = false, features = ["forward-push", "neumann", "cg"] }
+
 # Error handling
 thiserror = "2.0"
 anyhow = "1.0"
@@ -69,4 +72,8 @@ tempfile = "3.8"
 
 [[bench]]
 name = "dna_bench"
+harness = false
+
+[[bench]]
+name = "solver_bench"
 harness = false

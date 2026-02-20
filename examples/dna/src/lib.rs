@@ -27,6 +27,7 @@ pub mod pharma;
 pub mod pipeline;
 pub mod rvdna;
 pub mod real_data;
+pub mod kmer_pagerank;
 
 pub use error::{DnaError, Result};
 pub use types::{
@@ -54,6 +55,8 @@ pub use ruvector_core::{
     types::{DbOptions, DistanceMetric, HnswConfig, SearchQuery, SearchResult, VectorEntry},
     VectorDB,
 };
+
+pub use kmer_pagerank::{KmerGraphRanker, SequenceRank};
 
 /// Prelude module for common imports
 pub mod prelude {
