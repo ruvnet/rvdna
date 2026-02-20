@@ -48,6 +48,10 @@ pub enum DnaError {
     /// Invalid k-mer size
     #[error("Invalid k-mer size: {0}")]
     InvalidKmerSize(usize),
+
+    /// 23andMe file parse error
+    #[error("Parse error: {0}")]
+    ParseError(String),
 }
 
 /// Result type for DNA analysis operations

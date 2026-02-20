@@ -28,6 +28,8 @@ pub mod pipeline;
 pub mod rvdna;
 pub mod real_data;
 pub mod kmer_pagerank;
+pub mod health;
+pub mod genotyping;
 
 pub use error::{DnaError, Result};
 pub use types::{
@@ -57,6 +59,8 @@ pub use ruvector_core::{
 };
 
 pub use kmer_pagerank::{KmerGraphRanker, SequenceRank};
+pub use genotyping::{GenotypeData, GenotypeAnalysis, Snp, CypDiplotype, CallConfidence, GenomeBuild};
+pub use health::{HealthVariantResult, ApoeResult, MthfrResult, PainProfile};
 
 /// Prelude module for common imports
 pub mod prelude {

@@ -194,62 +194,122 @@ pub fn get_recommendations(
             DrugRecommendation {
                 drug: "Codeine".to_string(),
                 gene: gene.to_string(),
-                recommendation: "Avoid codeine; use alternative analgesic".to_string(),
+                recommendation: "AVOID codeine; no conversion to morphine. Use alternative analgesic.".to_string(),
+                dose_factor: 0.0,
+            },
+            DrugRecommendation {
+                drug: "Tramadol".to_string(),
+                gene: gene.to_string(),
+                recommendation: "AVOID tramadol; reduced efficacy. Use alternative analgesic.".to_string(),
                 dose_factor: 0.0,
             },
             DrugRecommendation {
                 drug: "Tamoxifen".to_string(),
                 gene: gene.to_string(),
-                recommendation: "Consider alternative endocrine therapy".to_string(),
+                recommendation: "Consider alternative endocrine therapy (aromatase inhibitor).".to_string(),
+                dose_factor: 0.0,
+            },
+            DrugRecommendation {
+                drug: "Ondansetron".to_string(),
+                gene: gene.to_string(),
+                recommendation: "Use standard dose; may have increased exposure.".to_string(),
+                dose_factor: 0.75,
+            },
+        ],
+        ("CYP2D6", MetabolizerPhenotype::UltraRapid) => vec![
+            DrugRecommendation {
+                drug: "Codeine".to_string(),
+                gene: gene.to_string(),
+                recommendation: "AVOID codeine; risk of fatal toxicity from ultra-rapid morphine conversion.".to_string(),
+                dose_factor: 0.0,
+            },
+            DrugRecommendation {
+                drug: "Tramadol".to_string(),
+                gene: gene.to_string(),
+                recommendation: "AVOID tramadol; risk of respiratory depression.".to_string(),
                 dose_factor: 0.0,
             },
         ],
-        ("CYP2D6", MetabolizerPhenotype::UltraRapid) => vec![DrugRecommendation {
-            drug: "Codeine".to_string(),
-            gene: gene.to_string(),
-            recommendation: "Avoid codeine; risk of toxicity from rapid conversion".to_string(),
-            dose_factor: 0.0,
-        }],
-        ("CYP2D6", MetabolizerPhenotype::Intermediate) => vec![DrugRecommendation {
-            drug: "Codeine".to_string(),
-            gene: gene.to_string(),
-            recommendation: "Use lower dose or alternative".to_string(),
-            dose_factor: 0.5,
-        }],
+        ("CYP2D6", MetabolizerPhenotype::Intermediate) => vec![
+            DrugRecommendation {
+                drug: "Codeine".to_string(),
+                gene: gene.to_string(),
+                recommendation: "Use lower dose or alternative analgesic.".to_string(),
+                dose_factor: 0.5,
+            },
+            DrugRecommendation {
+                drug: "Tamoxifen".to_string(),
+                gene: gene.to_string(),
+                recommendation: "Consider higher dose or alternative therapy.".to_string(),
+                dose_factor: 0.75,
+            },
+        ],
         ("CYP2C19", MetabolizerPhenotype::Poor) => vec![
             DrugRecommendation {
-                drug: "Clopidogrel".to_string(),
+                drug: "Clopidogrel (Plavix)".to_string(),
                 gene: gene.to_string(),
-                recommendation: "Use alternative antiplatelet therapy (prasugrel/ticagrelor)".to_string(),
+                recommendation: "AVOID clopidogrel; use prasugrel or ticagrelor instead.".to_string(),
                 dose_factor: 0.0,
             },
             DrugRecommendation {
                 drug: "Voriconazole".to_string(),
                 gene: gene.to_string(),
-                recommendation: "Use standard dose; monitor for toxicity".to_string(),
+                recommendation: "Reduce dose by 50%; monitor for toxicity.".to_string(),
+                dose_factor: 0.5,
+            },
+            DrugRecommendation {
+                drug: "PPIs (omeprazole)".to_string(),
+                gene: gene.to_string(),
+                recommendation: "Reduce dose; slower clearance increases exposure.".to_string(),
+                dose_factor: 0.5,
+            },
+            DrugRecommendation {
+                drug: "Escitalopram".to_string(),
+                gene: gene.to_string(),
+                recommendation: "Consider 50% dose reduction.".to_string(),
                 dose_factor: 0.5,
             },
         ],
         ("CYP2C19", MetabolizerPhenotype::UltraRapid) => vec![
             DrugRecommendation {
-                drug: "Clopidogrel".to_string(),
+                drug: "Clopidogrel (Plavix)".to_string(),
                 gene: gene.to_string(),
-                recommendation: "Use standard dosing (enhanced activation)".to_string(),
+                recommendation: "Standard dosing (enhanced activation is beneficial).".to_string(),
                 dose_factor: 1.0,
             },
             DrugRecommendation {
                 drug: "Omeprazole".to_string(),
                 gene: gene.to_string(),
-                recommendation: "Increase dose; rapid clearance may reduce efficacy".to_string(),
+                recommendation: "Increase dose; rapid clearance reduces efficacy.".to_string(),
                 dose_factor: 2.0,
             },
+            DrugRecommendation {
+                drug: "Voriconazole".to_string(),
+                gene: gene.to_string(),
+                recommendation: "Use alternative antifungal.".to_string(),
+                dose_factor: 0.0,
+            },
         ],
-        ("CYP2C19", MetabolizerPhenotype::Intermediate) => vec![DrugRecommendation {
-            drug: "Clopidogrel".to_string(),
-            gene: gene.to_string(),
-            recommendation: "Consider alternative or increased dose".to_string(),
-            dose_factor: 1.5,
-        }],
+        ("CYP2C19", MetabolizerPhenotype::Intermediate) => vec![
+            DrugRecommendation {
+                drug: "Clopidogrel (Plavix)".to_string(),
+                gene: gene.to_string(),
+                recommendation: "Consider alternative antiplatelet or increased dose.".to_string(),
+                dose_factor: 1.5,
+            },
+            DrugRecommendation {
+                drug: "PPIs (omeprazole)".to_string(),
+                gene: gene.to_string(),
+                recommendation: "Standard dose likely adequate; may have slightly increased exposure.".to_string(),
+                dose_factor: 1.0,
+            },
+            DrugRecommendation {
+                drug: "Escitalopram".to_string(),
+                gene: gene.to_string(),
+                recommendation: "Use standard dose; monitor response.".to_string(),
+                dose_factor: 1.0,
+            },
+        ],
         _ => vec![DrugRecommendation {
             drug: "Standard".to_string(),
             gene: gene.to_string(),
@@ -342,7 +402,7 @@ mod tests {
     fn test_cyp2c19_drug_recommendations() {
         let recs = get_recommendations("CYP2C19", &MetabolizerPhenotype::Poor);
         assert!(recs.len() >= 1);
-        assert_eq!(recs[0].drug, "Clopidogrel");
+        assert_eq!(recs[0].drug, "Clopidogrel (Plavix)");
         assert_eq!(recs[0].dose_factor, 0.0);
 
         let recs_ultra = get_recommendations("CYP2C19", &MetabolizerPhenotype::UltraRapid);

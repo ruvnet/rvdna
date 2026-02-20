@@ -14,6 +14,7 @@ use ::rvdna::prelude::*;
 use ::rvdna::{
     alignment::{AlignmentConfig, SmithWaterman},
     epigenomics::{HorvathClock, MethylationProfile},
+    genotyping,
     pharma,
     protein::translate_dna,
     real_data,
@@ -25,6 +26,12 @@ use tracing::{info, Level};
 use tracing_subscriber::FmtSubscriber;
 
 fn main() -> anyhow::Result<()> {
+    // Check for 23andMe file argument
+    let args: Vec<String> = std::env::args().collect();
+    if args.len() > 1 {
+        return run_23andme(&args[1]);
+    }
+
     let subscriber = FmtSubscriber::builder()
         .with_max_level(Level::INFO)
         .finish();
@@ -343,4 +350,14 @@ fn calculate_gc_content(sequence: &DnaSequence) -> f64 {
         .filter(|&&b| b == Nucleotide::G || b == Nucleotide::C)
         .count();
     gc_count as f64 / sequence.len() as f64
+}
+
+/// Run 23andMe genotyping analysis pipeline
+fn run_23andme(path: &str) -> anyhow::Result<()> {
+    let file = std::fs::File::open(path)
+        .map_err(|e| anyhow::anyhow!("Cannot open {}: {}", path, e))?;
+    let analysis = genotyping::analyze(file)
+        .map_err(|e| anyhow::anyhow!("Analysis failed: {}", e))?;
+    print!("{}", genotyping::format_report(&analysis));
+    Ok(())
 }
