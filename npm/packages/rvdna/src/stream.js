@@ -36,6 +36,16 @@ class RingBuffer {
     if (this._len < this._capacity) this._len++;
   }
 
+  /** Push item and return evicted value (NaN if buffer wasn't full). */
+  pushPop(item) {
+    const wasFull = this._len === this._capacity;
+    const evicted = wasFull ? this._buffer[this._head] : NaN;
+    this._buffer[this._head] = item;
+    this._head = (this._head + 1) % this._capacity;
+    if (!wasFull) this._len++;
+    return evicted;
+  }
+
   /** Iterate in insertion order (oldest to newest). */
   *[Symbol.iterator]() {
     const start = this._len < this._capacity ? 0 : this._head;
@@ -182,8 +192,20 @@ class StreamProcessor {
     this._totalReadings = 0;
     this._anomalyCount = 0;
     this._anomPerBio = new Map();
+    this._welford = new Map();
     this._startTs = null;
     this._lastTs = null;
+  }
+
+  _initBiomarker(id) {
+    this._buffers.set(id, new RingBuffer(this._config.windowSize));
+    this._stats.set(id, {
+      mean: 0, variance: 0, min: Infinity, max: -Infinity,
+      count: 0, anomalyRate: 0, trendSlope: 0, ema: 0,
+      cusumPos: 0, cusumNeg: 0, changepointDetected: false,
+    });
+    // Incremental Welford state for windowed mean/variance (O(1) per reading)
+    this._welford.set(id, { n: 0, mean: 0, m2: 0 });
   }
 
   processReading(reading) {
@@ -191,20 +213,37 @@ class StreamProcessor {
     if (this._startTs === null) this._startTs = reading.timestampMs;
     this._lastTs = reading.timestampMs;
 
-    if (!this._buffers.has(id)) {
-      this._buffers.set(id, new RingBuffer(this._config.windowSize));
-    }
+    if (!this._buffers.has(id)) this._initBiomarker(id);
+
     const buf = this._buffers.get(id);
-    buf.push(reading.value);
+    const evicted = buf.pushPop(reading.value);
     this._totalReadings++;
 
-    const [wmean, wstd] = windowMeanStd(buf);
-    const z = wstd > 1e-12 ? (reading.value - wmean) / wstd : 0;
+    // Incremental windowed Welford: O(1) add + O(1) remove
+    const w = this._welford.get(id);
+    const val = reading.value;
+    if (Number.isNaN(evicted)) {
+      // Buffer wasn't full — just add
+      w.n++;
+      const d1 = val - w.mean;
+      w.mean += d1 / w.n;
+      w.m2 += d1 * (val - w.mean);
+    } else {
+      // Buffer full — remove evicted, add new (n stays the same)
+      const oldMean = w.mean;
+      w.mean += (val - evicted) / w.n;
+      w.m2 += (val - evicted) * ((val - w.mean) + (evicted - oldMean));
+      if (w.m2 < 0) w.m2 = 0; // numerical guard
+    }
+    const wmean = w.mean;
+    const wstd = w.n > 1 ? Math.sqrt(w.m2 / (w.n - 1)) : 0;
+
+    const z = wstd > 1e-12 ? (val - wmean) / wstd : 0;
 
     const rng = reading.referenceHigh - reading.referenceLow;
     const overshoot = REF_OVERSHOOT * rng;
-    const oor = reading.value < (reading.referenceLow - overshoot) ||
-                reading.value > (reading.referenceHigh + overshoot);
+    const oor = val < (reading.referenceLow - overshoot) ||
+                val > (reading.referenceHigh + overshoot);
     const isAnomaly = Math.abs(z) > Z_SCORE_THRESHOLD || oor;
 
     if (isAnomaly) {
@@ -215,28 +254,21 @@ class StreamProcessor {
     const slope = computeTrendSlope(buf);
     const bioAnom = this._anomPerBio.get(id) || 0;
 
-    if (!this._stats.has(id)) {
-      this._stats.set(id, {
-        mean: 0, variance: 0, min: Infinity, max: -Infinity,
-        count: 0, anomalyRate: 0, trendSlope: 0, ema: 0,
-        cusumPos: 0, cusumNeg: 0, changepointDetected: false,
-      });
-    }
     const st = this._stats.get(id);
     st.count++;
     st.mean = wmean;
     st.variance = wstd * wstd;
     st.trendSlope = slope;
     st.anomalyRate = bioAnom / st.count;
-    if (reading.value < st.min) st.min = reading.value;
-    if (reading.value > st.max) st.max = reading.value;
+    if (val < st.min) st.min = val;
+    if (val > st.max) st.max = val;
     st.ema = st.count === 1
-      ? reading.value
-      : EMA_ALPHA * reading.value + (1 - EMA_ALPHA) * st.ema;
+      ? val
+      : EMA_ALPHA * val + (1 - EMA_ALPHA) * st.ema;
 
     // CUSUM changepoint detection
     if (wstd > 1e-12) {
-      const normDev = (reading.value - wmean) / wstd;
+      const normDev = (val - wmean) / wstd;
       st.cusumPos = Math.max(st.cusumPos + normDev - CUSUM_DRIFT, 0);
       st.cusumNeg = Math.max(st.cusumNeg - normDev - CUSUM_DRIFT, 0);
       st.changepointDetected = st.cusumPos > CUSUM_THRESHOLD || st.cusumNeg > CUSUM_THRESHOLD;

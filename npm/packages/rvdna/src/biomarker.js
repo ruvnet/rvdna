@@ -69,13 +69,21 @@ function snpWeight(snp, code) {
   return code === 0 ? snp.wRef : code === 1 ? snp.wHet : snp.wAlt;
 }
 
+// Pre-built rsid -> index lookup (O(1) instead of O(n) findIndex)
+const RSID_INDEX = new Map();
+for (let i = 0; i < SNPS.length; i++) RSID_INDEX.set(SNPS[i].rsid, i);
+
+// Pre-cache LPA SNP references to avoid repeated iteration
+const LPA_SNPS = SNPS.filter(s => s.rsid === 'rs10455872' || s.rsid === 'rs3798220');
+
 function snpIndex(rsid) {
-  return SNPS.findIndex(s => s.rsid === rsid);
+  const idx = RSID_INDEX.get(rsid);
+  return idx !== undefined ? idx : -1;
 }
 
 function isNonRef(genotypes, rsid) {
-  const idx = snpIndex(rsid);
-  if (idx < 0) return false;
+  const idx = RSID_INDEX.get(rsid);
+  if (idx === undefined) return false;
   const gt = genotypes.get(rsid);
   return gt !== undefined && gt !== SNPS[idx].homRef;
 }
@@ -247,15 +255,13 @@ function encodeProfileVectorWithGenotypes(profile, genotypes) {
   const apoeGt = genotypes.get('rs429358');
   v[62] = apoeGt !== undefined ? genotypeCode(SNPS[0], apoeGt) / 2 : 0;
 
-  // LPA composite: average of rs10455872 + rs3798220 genotype codes
+  // LPA composite: average of rs10455872 + rs3798220 genotype codes (cached)
   let lpaSum = 0, lpaCount = 0;
-  for (const snp of SNPS) {
-    if (snp.rsid === 'rs10455872' || snp.rsid === 'rs3798220') {
-      const gt = genotypes.get(snp.rsid);
-      if (gt !== undefined) {
-        lpaSum += genotypeCode(snp, gt) / 2;
-        lpaCount++;
-      }
+  for (const snp of LPA_SNPS) {
+    const gt = genotypes.get(snp.rsid);
+    if (gt !== undefined) {
+      lpaSum += genotypeCode(snp, gt) / 2;
+      lpaCount++;
     }
   }
   v[63] = lpaCount > 0 ? lpaSum / 2 : 0;
@@ -294,18 +300,16 @@ function generateSyntheticPopulation(count, seed) {
 
     const mthfrScore = analyzeMthfr(genotypes).score;
     const apoeCode = genotypes.get('rs429358') ? genotypeCode(SNPS[0], genotypes.get('rs429358')) : 0;
-    const nqo1Idx = SNPS.findIndex(s => s.rsid === 'rs1800566');
+    const nqo1Idx = RSID_INDEX.get('rs1800566');
     const nqo1Code = genotypes.get('rs1800566') ? genotypeCode(SNPS[nqo1Idx], genotypes.get('rs1800566')) : 0;
 
     let lpaRisk = 0;
-    for (const snp of SNPS) {
-      if (snp.rsid === 'rs10455872' || snp.rsid === 'rs3798220') {
-        const gt = genotypes.get(snp.rsid);
-        if (gt) lpaRisk += genotypeCode(snp, gt);
-      }
+    for (const snp of LPA_SNPS) {
+      const gt = genotypes.get(snp.rsid);
+      if (gt) lpaRisk += genotypeCode(snp, gt);
     }
 
-    const pcsk9Idx = SNPS.findIndex(s => s.rsid === 'rs11591147');
+    const pcsk9Idx = RSID_INDEX.get('rs11591147');
     const pcsk9Code = genotypes.get('rs11591147') ? genotypeCode(SNPS[pcsk9Idx], genotypes.get('rs11591147')) : 0;
 
     for (const bref of BIOMARKER_REFERENCES) {
