@@ -77,3 +77,7 @@ harness = false
 [[bench]]
 name = "solver_bench"
 harness = false
+
+[[bench]]
+name = "biomarker_bench"
+harness = false
