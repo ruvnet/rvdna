@@ -135,12 +135,14 @@ static SNPS: &[SnpDef] = &[
     // LPA — Lp(a) cardiovascular risk (2024 meta-analysis: OR 1.6-1.75/allele CHD)
     SnpDef { rsid: "rs10455872", category: "Cardiovascular", w_ref: 0.0, w_het: 0.40,  w_alt: 0.75, hom_ref: "AA", het: "AG", hom_alt: "GG", maf: 0.07 },
     SnpDef { rsid: "rs3798220",  category: "Cardiovascular", w_ref: 0.0, w_het: 0.35,  w_alt: 0.65, hom_ref: "TT", het: "CT", hom_alt: "CC", maf: 0.02 },
+    // PCSK9 R46L — protective loss-of-function (NEJM 2006: OR 0.77 CHD, 0.40 MI)
+    SnpDef { rsid: "rs11591147", category: "Cardiovascular", w_ref: 0.0, w_het: -0.30, w_alt: -0.55, hom_ref: "GG", het: "GT", hom_alt: "TT", maf: 0.024 },
 ];
 
 /// Number of SNPs with one-hot encoding in profile vector (first 17 for 64-dim SIMD alignment).
 /// Additional SNPs (LPA) contribute to risk scores but use summary dims in the vector.
 const NUM_ONEHOT_SNPS: usize = 17;
-const NUM_SNPS: usize = 19;
+const NUM_SNPS: usize = 20;
 
 fn genotype_code(snp: &SnpDef, gt: &str) -> u8 {
     if gt == snp.hom_ref { 0 }
@@ -317,23 +319,24 @@ pub fn generate_synthetic_population(count: usize, seed: u64) -> Vec<BiomarkerPr
         let lpa_risk: u8 = SNPS.iter().filter(|s| s.rsid == "rs10455872" || s.rsid == "rs3798220")
             .filter_map(|s| genotypes.get(s.rsid).map(|g| genotype_code(s, g)))
             .sum();
+        let pcsk9_idx = SNPS.iter().position(|s| s.rsid == "rs11591147").unwrap();
+        let pcsk9_code = genotypes.get("rs11591147").map(|g| genotype_code(&SNPS[pcsk9_idx], g)).unwrap_or(0);
         profile.biomarker_values.reserve(REFERENCES.len());
 
         for bref in REFERENCES {
             let mid = (bref.normal_low + bref.normal_high) / 2.0;
             let sd = (bref.normal_high - bref.normal_low) / 4.0;
             let mut val = mid + rng.gen_range(-1.5..1.5) * sd;
-            // Gene→biomarker correlations from SOTA clinical evidence
-            match bref.name {
-                "Homocysteine" if mthfr_score >= 2 => val += sd * (mthfr_score as f64 - 1.0),
-                "Total Cholesterol" | "LDL" if apoe_code > 0 => val += sd * 0.5 * apoe_code as f64,
-                "HDL" if apoe_code > 0 => val -= sd * 0.3 * apoe_code as f64,  // APOE e4 lowers HDL
-                "Triglycerides" if apoe_code > 0 => val += sd * 0.4 * apoe_code as f64, // APOE e4 raises TG
-                "Vitamin B12" if mthfr_score >= 2 => val -= sd * 0.4, // MTHFR impairs B12 utilization
-                "CRP" if nqo1_code == 2 => val += sd * 0.3, // NQO1 null→oxidative stress→inflammation
-                "Lp(a)" if lpa_risk > 0 => val += sd * 1.5 * lpa_risk as f64, // LPA variants→elevated Lp(a)
-                _ => {}
-            }
+            // Gene→biomarker correlations from SOTA clinical evidence (additive)
+            let nm = bref.name;
+            if nm == "Homocysteine" && mthfr_score >= 2 { val += sd * (mthfr_score as f64 - 1.0); }
+            if (nm == "Total Cholesterol" || nm == "LDL") && apoe_code > 0 { val += sd * 0.5 * apoe_code as f64; }
+            if nm == "HDL" && apoe_code > 0 { val -= sd * 0.3 * apoe_code as f64; }
+            if nm == "Triglycerides" && apoe_code > 0 { val += sd * 0.4 * apoe_code as f64; }
+            if nm == "Vitamin B12" && mthfr_score >= 2 { val -= sd * 0.4; }
+            if nm == "CRP" && nqo1_code == 2 { val += sd * 0.3; }
+            if nm == "Lp(a)" && lpa_risk > 0 { val += sd * 1.5 * lpa_risk as f64; }
+            if (nm == "LDL" || nm == "Total Cholesterol") && pcsk9_code > 0 { val -= sd * 0.6 * pcsk9_code as f64; }
             val = val.max(bref.critical_low.unwrap_or(0.0)).max(0.0);
             if let Some(ch) = bref.critical_high { val = val.min(ch * 1.2); }
             profile.biomarker_values.insert(bref.name.to_string(), (val * 10.0).round() / 10.0);
