@@ -84,7 +84,6 @@ impl<T: Clone + Default> RingBuffer<T> {
     pub fn is_full(&self) -> bool { self.len == self.capacity }
 
     pub fn clear(&mut self) {
-        self.buffer.iter_mut().for_each(|s| *s = T::default());
         self.head = 0;
         self.len = 0;
     }
@@ -113,18 +112,23 @@ pub fn generate_readings(
     let mut rng = StdRng::seed_from_u64(seed);
     let active = &BIOMARKER_DEFS[..config.num_biomarkers.min(BIOMARKER_DEFS.len())];
     let mut readings = Vec::with_capacity(count * active.len());
+    // Pre-compute distributions per biomarker (avoids Normal::new in inner loop)
+    let dists: Vec<_> = active.iter().map(|def| {
+        let range = def.high - def.low;
+        let mid = (def.low + def.high) / 2.0;
+        let sigma = (config.noise_amplitude * range).max(1e-12);
+        let normal = Normal::new(0.0, sigma).unwrap();
+        let spike = Normal::new(0.0, sigma * config.anomaly_magnitude).unwrap();
+        (mid, range, normal, spike)
+    }).collect();
     let mut ts: u64 = 0;
 
     for step in 0..count {
-        for def in active {
-            let range = def.high - def.low;
-            let mid = (def.low + def.high) / 2.0;
-            let sigma = config.noise_amplitude * range;
-            let normal = Normal::new(0.0, sigma.max(1e-12)).unwrap();
+        for (j, def) in active.iter().enumerate() {
+            let (mid, range, ref normal, ref spike) = dists[j];
             let drift = config.drift_rate * range * step as f64;
             let is_anom = rng.gen::<f64>() < config.anomaly_probability;
             let value = if is_anom {
-                let spike = Normal::new(0.0, sigma * config.anomaly_magnitude).unwrap();
                 (mid + rng.sample::<f64, _>(spike) + drift).max(0.0)
             } else {
                 (mid + rng.sample::<f64, _>(normal) + drift).max(0.0)
@@ -153,11 +157,8 @@ pub struct StreamStats {
     pub anomaly_rate: f64,
     pub trend_slope: f64,
     pub ema: f64,
-    /// CUSUM statistic for changepoint detection (positive direction).
-    pub cusum_pos: f64,
-    /// CUSUM statistic for changepoint detection (negative direction).
-    pub cusum_neg: f64,
-    /// Whether a changepoint has been detected in the current window.
+    pub cusum_pos: f64,          // CUSUM positive direction
+    pub cusum_neg: f64,          // CUSUM negative direction
     pub changepoint_detected: bool,
 }
 
