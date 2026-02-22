@@ -150,26 +150,47 @@ static INTERACTIONS: &[Interaction] = &[
     Interaction { rsid_a: "rs80357906",rsid_b: "rs1042522", modifier: 1.5, category: "Cancer Risk" },
 ];
 
-fn snp_idx(rsid: &str) -> usize {
-    SNP_WEIGHTS.iter().position(|(r, _, _, _, _)| *r == rsid).unwrap_or(0)
+fn snp_idx(rsid: &str) -> Option<usize> {
+    SNP_WEIGHTS.iter().position(|(r, _, _, _, _)| *r == rsid)
+}
+
+fn is_non_ref(gts: &HashMap<String, String>, rsid: &str) -> bool {
+    match (gts.get(rsid), snp_idx(rsid)) {
+        (Some(g), Some(idx)) => g != HOM_REF[idx],
+        _ => false,
+    }
 }
 
 fn interaction_mod(gts: &HashMap<String, String>, ix: &Interaction) -> f64 {
-    let a = gts.get(ix.rsid_a).map_or(false, |g| g != HOM_REF[snp_idx(ix.rsid_a)]);
-    let b = gts.get(ix.rsid_b).map_or(false, |g| g != HOM_REF[snp_idx(ix.rsid_b)]);
-    if a && b { ix.modifier } else { 1.0 }
+    if is_non_ref(gts, ix.rsid_a) && is_non_ref(gts, ix.rsid_b) {
+        ix.modifier
+    } else {
+        1.0
+    }
+}
+
+struct CategoryMeta { name: &'static str, max_possible: f64, expected_count: usize }
+
+static CAT_ORDER: &[&str] = &["Cancer Risk", "Cardiovascular", "Neurological", "Metabolism"];
+
+fn category_meta() -> Vec<CategoryMeta> {
+    CAT_ORDER.iter().map(|&cat| {
+        let (mp, ec) = SNP_WEIGHTS.iter().filter(|(_, c, _, _, _)| *c == cat)
+            .fold((0.0, 0usize), |(s, n), (_, _, _, _, w2)| (s + w2.max(0.0), n + 1));
+        CategoryMeta { name: cat, max_possible: mp.max(1.0), expected_count: ec }
+    }).collect()
 }
 
 /// Compute composite risk scores from genotype data.
 pub fn compute_risk_scores(genotypes: &HashMap<String, String>) -> BiomarkerProfile {
-    let categories = variant_categories();
-    let mut cat_scores: HashMap<String, (f64, Vec<String>, usize)> = HashMap::new();
+    let meta = category_meta();
+    let mut cat_scores: HashMap<&str, (f64, Vec<String>, usize)> = HashMap::with_capacity(4);
 
     for (i, (rsid, cat, _, _, _)) in SNP_WEIGHTS.iter().enumerate() {
         if let Some(gt) = genotypes.get(*rsid) {
             let code = genotype_code(i, gt);
             let w = snp_weight(i, code);
-            let entry = cat_scores.entry(cat.to_string()).or_insert((0.0, Vec::new(), 0));
+            let entry = cat_scores.entry(cat).or_insert_with(|| (0.0, Vec::new(), 0));
             entry.0 += w;
             entry.2 += 1;
             if code > 0 {
@@ -187,44 +208,22 @@ pub fn compute_risk_scores(genotypes: &HashMap<String, String>) -> BiomarkerProf
         }
     }
 
-    let mut category_scores = HashMap::new();
-    for (cat_name, _cat_genes) in &categories {
-        let cat = cat_name.to_string();
-        let max_possible: f64 = SNP_WEIGHTS.iter()
-            .filter(|(_, c, _, _, _)| *c == *cat_name)
-            .map(|(_, _, _, _, w2)| w2.max(0.0))
-            .sum::<f64>()
-            .max(1.0);
-        let expected = SNP_WEIGHTS.iter()
-            .filter(|(_, c, _, _, _)| *c == *cat_name)
-            .count();
-
-        let (raw, variants, count) = cat_scores.get(&cat).cloned().unwrap_or((0.0, Vec::new(), 0));
-        let score = (raw / max_possible).clamp(0.0, 1.0);
-        let confidence = if count > 0 { (count as f64 / expected.max(1) as f64).min(1.0) } else { 0.0 };
-
-        category_scores.insert(cat.clone(), CategoryScore {
-            category: cat,
-            score,
-            confidence,
-            contributing_variants: variants,
-        });
+    let mut category_scores = HashMap::with_capacity(meta.len());
+    for cm in &meta {
+        let (raw, variants, count) = cat_scores.remove(cm.name).unwrap_or((0.0, Vec::new(), 0));
+        let score = (raw / cm.max_possible).clamp(0.0, 1.0);
+        let confidence = if count > 0 { (count as f64 / cm.expected_count.max(1) as f64).min(1.0) } else { 0.0 };
+        let cat = cm.name.to_string();
+        category_scores.insert(cat.clone(), CategoryScore { category: cat, score, confidence, contributing_variants: variants });
     }
 
-    let global = if category_scores.is_empty() {
-        0.0
-    } else {
-        category_scores.values().map(|c| c.score * c.confidence).sum::<f64>()
-            / category_scores.values().map(|c| c.confidence).sum::<f64>().max(1.0)
-    };
+    let (ws, cs) = category_scores.values()
+        .fold((0.0, 0.0), |(ws, cs), c| (ws + c.score * c.confidence, cs + c.confidence));
+    let global = if cs > 0.0 { ws / cs } else { 0.0 };
 
     let mut profile = BiomarkerProfile {
-        subject_id: String::new(),
-        timestamp: 0,
-        category_scores,
-        global_risk_score: global,
-        profile_vector: Vec::new(),
-        biomarker_values: HashMap::new(),
+        subject_id: String::new(), timestamp: 0, category_scores,
+        global_risk_score: global, profile_vector: Vec::new(), biomarker_values: HashMap::new(),
     };
     profile.profile_vector = encode_profile_vector_with_genotypes(&profile, genotypes);
     profile
@@ -246,8 +245,7 @@ fn encode_profile_vector_with_genotypes(profile: &BiomarkerProfile, genotypes: &
         }
     }
 
-    let cat_order = ["Cancer Risk", "Cardiovascular", "Neurological", "Metabolism"];
-    for (j, cat) in cat_order.iter().enumerate() {
+    for (j, cat) in CAT_ORDER.iter().enumerate() {
         v[51 + j] = profile.category_scores.get(*cat).map(|c| c.score as f32).unwrap_or(0.0);
     }
 
@@ -305,9 +303,10 @@ fn random_genotype(rng: &mut StdRng, idx: usize) -> String {
 pub fn generate_synthetic_population(count: usize, seed: u64) -> Vec<BiomarkerProfile> {
     let mut rng = StdRng::seed_from_u64(seed);
     let mut pop = Vec::with_capacity(count);
+    let num_snps = SNP_WEIGHTS.len();
 
     for i in 0..count {
-        let mut genotypes = HashMap::new();
+        let mut genotypes = HashMap::with_capacity(num_snps);
         for (idx, (rsid, _, _, _, _)) in SNP_WEIGHTS.iter().enumerate() {
             genotypes.insert(rsid.to_string(), random_genotype(&mut rng, idx));
         }
@@ -317,6 +316,9 @@ pub fn generate_synthetic_population(count: usize, seed: u64) -> Vec<BiomarkerPr
         profile.timestamp = 1700000000 + i as i64;
 
         let mthfr_score = analyze_mthfr(&genotypes).score;
+        let apoe_has_c = genotypes.get("rs429358").map_or(false, |g| g.contains('C'));
+        profile.biomarker_values.reserve(REFERENCES.len());
+
         for bref in REFERENCES {
             let mid = (bref.normal_low + bref.normal_high) / 2.0;
             let sd = (bref.normal_high - bref.normal_low) / 4.0;
@@ -325,10 +327,8 @@ pub fn generate_synthetic_population(count: usize, seed: u64) -> Vec<BiomarkerPr
             if bref.name == "Homocysteine" && mthfr_score >= 2 {
                 val += sd * (mthfr_score as f64 - 1.0);
             }
-            if bref.name == "Total Cholesterol" || bref.name == "LDL" {
-                if genotypes.get("rs429358").map_or(false, |g| g.contains('C')) {
-                    val += sd * 0.5;
-                }
+            if apoe_has_c && (bref.name == "Total Cholesterol" || bref.name == "LDL") {
+                val += sd * 0.5;
             }
             val = val.max(bref.critical_low.unwrap_or(0.0)).max(0.0);
             if let Some(ch) = bref.critical_high {

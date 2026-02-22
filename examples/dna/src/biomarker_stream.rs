@@ -49,22 +49,25 @@ pub struct BiomarkerReading {
     pub z_score: f64,
 }
 
-/// Fixed-capacity circular buffer.
+/// Fixed-capacity circular buffer backed by a flat `Vec<T>`.
+///
+/// Eliminates the `Option<T>` wrapper used in naive implementations,
+/// halving per-slot memory for primitive types like `f64` (8 bytes vs 16).
 pub struct RingBuffer<T> {
-    buffer: Vec<Option<T>>,
+    buffer: Vec<T>,
     head: usize,
     len: usize,
     capacity: usize,
 }
 
-impl<T: Clone> RingBuffer<T> {
+impl<T: Clone + Default> RingBuffer<T> {
     pub fn new(capacity: usize) -> Self {
         assert!(capacity > 0, "RingBuffer capacity must be > 0");
-        Self { buffer: vec![None; capacity], head: 0, len: 0, capacity }
+        Self { buffer: vec![T::default(); capacity], head: 0, len: 0, capacity }
     }
 
     pub fn push(&mut self, item: T) {
-        self.buffer[self.head] = Some(item);
+        self.buffer[self.head] = item;
         self.head = (self.head + 1) % self.capacity;
         if self.len < self.capacity {
             self.len += 1;
@@ -74,14 +77,14 @@ impl<T: Clone> RingBuffer<T> {
     pub fn iter(&self) -> impl Iterator<Item = &T> {
         let start = if self.len < self.capacity { 0 } else { self.head };
         let (cap, len) = (self.capacity, self.len);
-        (0..len).map(move |i| self.buffer[(start + i) % cap].as_ref().unwrap())
+        (0..len).map(move |i| &self.buffer[(start + i) % cap])
     }
 
     pub fn len(&self) -> usize { self.len }
     pub fn is_full(&self) -> bool { self.len == self.capacity }
 
     pub fn clear(&mut self) {
-        self.buffer.iter_mut().for_each(|s| *s = None);
+        self.buffer.iter_mut().for_each(|s| *s = T::default());
         self.head = 0;
         self.len = 0;
     }
@@ -199,9 +202,10 @@ pub struct StreamProcessor {
 
 impl StreamProcessor {
     pub fn new(config: StreamConfig) -> Self {
+        let cap = config.num_biomarkers;
         Self {
-            config, buffers: HashMap::new(), stats: HashMap::new(),
-            total_readings: 0, anomaly_count: 0, anom_per_bio: HashMap::new(),
+            config, buffers: HashMap::with_capacity(cap), stats: HashMap::with_capacity(cap),
+            total_readings: 0, anomaly_count: 0, anom_per_bio: HashMap::with_capacity(cap),
             start_ts: None, last_ts: None,
         }
     }
@@ -273,14 +277,21 @@ impl StreamProcessor {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
+/// Single-pass mean and sample standard deviation using Welford's online algorithm.
+/// Avoids iterating the buffer twice (sum then variance) — 2x fewer cache misses.
 fn window_mean_std(buf: &RingBuffer<f64>) -> (f64, f64) {
     let n = buf.len();
     if n == 0 { return (0.0, 0.0); }
-    let sum: f64 = buf.iter().sum();
-    let mean = sum / n as f64;
+    let mut mean = 0.0;
+    let mut m2 = 0.0;
+    for (k, &x) in buf.iter().enumerate() {
+        let k1 = (k + 1) as f64;
+        let delta = x - mean;
+        mean += delta / k1;
+        m2 += delta * (x - mean);
+    }
     if n < 2 { return (mean, 0.0); }
-    let var: f64 = buf.iter().map(|v| (v - mean).powi(2)).sum();
-    (mean, (var / (n - 1) as f64).sqrt())
+    (mean, (m2 / (n - 1) as f64).sqrt())
 }
 
 fn compute_trend_slope(buf: &RingBuffer<f64>) -> f64 {
