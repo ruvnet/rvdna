@@ -39,7 +39,9 @@ Give it a DNA sequence, and it will:
 4. **Translate DNA to protein** — full codon table with contact graph prediction
 5. **Predict biological age** from methylation data (Horvath clock, 353 CpG sites)
 6. **Recommend drug doses** based on CYP2D6 star alleles and CPIC guidelines
-7. **Save everything to `.rvdna`** — a single file with all results pre-computed
+7. **Score health risks** — composite polygenic risk scoring across 20 SNPs with gene-gene interactions
+8. **Stream biomarker data** — real-time anomaly detection, trend analysis, and CUSUM changepoint detection
+9. **Save everything to `.rvdna`** — a single file with all results pre-computed
 
 All of this runs on 5 real human genes from NCBI RefSeq in under 15 milliseconds.
 
@@ -49,7 +51,7 @@ All of this runs on 5 real human genes from NCBI RefSeq in under 15 milliseconds
 # Run the full 8-stage demo
 cargo run --release -p rvdna
 
-# Run 87 tests (no mocks — real algorithms, real data)
+# Run 172 tests (no mocks — real algorithms, real data)
 cargo test -p rvdna
 
 # Run benchmarks
@@ -154,6 +156,11 @@ Measured with Criterion on real human gene data (HBB, TP53, BRCA1, CYP2D6, INS):
 | 1000-position variant scan | **336 us** | Full pileup across a gene region |
 | Full pipeline (1 kb) | **591 us** | K-mer + alignment + variants + protein |
 | Complete 8-stage demo (5 genes) | **12 ms** | Everything including .rvdna output |
+| Composite risk score (20 SNPs) | **2.0 us** | Polygenic scoring with gene-gene interactions |
+| Profile vector encoding (64-dim) | **209 ns** | One-hot genotype + category scores, L2-normalized |
+| Synthetic population (1,000) | **6.4 ms** | Full population with Hardy-Weinberg equilibrium |
+| Stream processing (per reading) | **< 10 us** | Ring buffer + running stats + CUSUM |
+| Anomaly detection | **< 5 us** | Z-score against moving window |
 
 ### rvDNA vs Traditional Bioinformatics Tools
 
@@ -265,6 +272,72 @@ let ranks = ranker.rank_sequences(&sequences, 0.15, 1e-4, 0.05);
 
 // Pairwise similarity via PPR
 let sim = ranker.pairwise_similarity(&sequences, 0, 1, 0.15, 1e-4, 0.05);
+```
+
+## Health Biomarker Engine
+
+The biomarker engine extends rvDNA's SNP analysis with composite risk scoring, streaming data processing, and population-scale similarity search. See [ADR-014](adr/ADR-014-health-biomarker-analysis.md) for the full architecture.
+
+### Composite Risk Scoring
+
+Aggregates 20 clinically-relevant SNPs across 4 categories (Cancer Risk, Cardiovascular, Neurological, Metabolism) into a single global risk score with gene-gene interaction modifiers. Includes LPA Lp(a) risk variants (rs10455872, rs3798220) and PCSK9 R46L protective variant (rs11591147). Weights are calibrated against published GWAS odds ratios, clinical meta-analyses, and 2024-2025 SOTA evidence.
+
+```rust
+use rvdna::biomarker::*;
+use std::collections::HashMap;
+
+let mut genotypes = HashMap::new();
+genotypes.insert("rs429358".to_string(), "CT".to_string()); // APOE e3/e4
+genotypes.insert("rs4680".to_string(), "AG".to_string());   // COMT Val/Met
+genotypes.insert("rs1801133".to_string(), "AG".to_string()); // MTHFR C677T het
+
+let profile = compute_risk_scores(&genotypes);
+println!("Global risk: {:.2}", profile.global_risk_score);
+println!("Categories: {:?}", profile.category_scores.keys().collect::<Vec<_>>());
+println!("Profile vector (64-dim): {:?}", &profile.profile_vector[..4]);
+```
+
+**Gene-Gene Interactions** — 6 interaction terms amplify category scores when multiple risk variants co-occur:
+
+| Interaction | Modifier | Category |
+|---|---|---|
+| COMT Met/Met x OPRM1 Asp/Asp | 1.4x | Neurological |
+| MTHFR C677T x MTHFR A1298C | 1.3x | Metabolism |
+| APOE e4 x TP53 variant | 1.2x | Cancer Risk |
+| BRCA1 carrier x TP53 variant | 1.5x | Cancer Risk |
+| MTHFR A1298C x COMT variant | 1.25x | Neurological |
+| DRD2 Taq1A x COMT variant | 1.2x | Neurological |
+
+### Streaming Biomarker Simulator
+
+Real-time biomarker data processing with configurable noise, drift, and anomaly injection. Includes CUSUM changepoint detection for identifying sustained biomarker shifts.
+
+```rust
+use rvdna::biomarker_stream::*;
+
+let config = StreamConfig::default();
+let readings = generate_readings(&config, 1000, 42);
+let mut processor = StreamProcessor::new(config);
+
+for reading in &readings {
+    processor.process_reading(reading);
+}
+
+let summary = processor.summary();
+println!("Anomaly rate: {:.1}%", summary.anomaly_rate * 100.0);
+println!("Biomarkers tracked: {}", summary.biomarker_stats.len());
+```
+
+### Synthetic Population Generation
+
+Generates populations with Hardy-Weinberg equilibrium genotype frequencies and gene-correlated biomarker values (APOE e4 raises LDL/TC and lowers HDL, MTHFR elevates homocysteine and reduces B12, NQO1 null raises CRP, LPA variants elevate Lp(a), PCSK9 R46L lowers LDL/TC).
+
+```rust
+use rvdna::biomarker::*;
+
+let population = generate_synthetic_population(1000, 42);
+// Each profile has a 64-dim vector ready for HNSW indexing
+assert_eq!(population[0].profile_vector.len(), 64);
 ```
 
 ## WebAssembly (WASM)
@@ -457,27 +530,33 @@ flowchart TB
 | `pharma.rs` | 217 | CYP2D6/CYP2C19 star alleles, metabolizer phenotypes, CPIC drug recs |
 | `pipeline.rs` | 495 | DAG-based orchestration of all analysis stages |
 | `rvdna.rs` | 1,447 | Complete `.rvdna` format: reader, writer, 2-bit codec, sparse tensors |
+| `health.rs` | 686 | 17 clinically-relevant SNPs, APOE genotyping, MTHFR compound status, COMT/OPRM1 pain profiling |
+| `genotyping.rs` | 1,124 | End-to-end 23andMe genotyping pipeline with 7-stage processing |
+| `biomarker.rs` | 498 | 20-SNP composite polygenic risk scoring (incl. LPA, PCSK9), 64-dim profile vectors, gene-gene interactions, additive gene→biomarker correlations, synthetic populations |
+| `biomarker_stream.rs` | 499 | Streaming biomarker simulator with ring buffer, CUSUM changepoint detection, trend analysis |
 | `kmer_pagerank.rs` | 230 | K-mer graph PageRank via solver Forward Push PPR |
 | `real_data.rs` | 237 | 5 real human gene sequences from NCBI RefSeq |
 | `error.rs` | 54 | Error types (InvalidSequence, AlignmentError, IoError, etc.) |
 | `main.rs` | 346 | 8-stage demo binary |
 
-**Total: 4,679 lines of source + 868 lines of tests + benchmarks**
+**Total: 7,486 lines of source + 1,426 lines of tests + benchmarks**
 
 ## Tests
 
-**102 tests, zero mocks.** Every test runs real algorithms on real data.
+**172 tests, zero mocks.** Every test runs real algorithms on real data.
 
 | File | Tests | Coverage |
 |---|---|---|
-| Unit tests (all `src/` modules) | 61 | Encoding roundtrips, variant calling, protein translation, RVDNA format, PageRank |
+| Unit tests (all `src/` modules) | 112 | Encoding, variant calling, protein, RVDNA format, PageRank, biomarker scoring, streaming |
+| `tests/biomarker_tests.rs` | 19 | Risk scoring, profile vectors, biomarker references, streaming, gene-gene interactions, CUSUM |
 | `tests/kmer_tests.rs` | 12 | K-mer encoding, MinHash, HNSW index, similarity search |
 | `tests/pipeline_tests.rs` | 17 | Full pipeline, stage integration, error propagation |
 | `tests/security_tests.rs` | 12 | Buffer overflow, path traversal, null injection, Unicode attacks |
 
 ```bash
-cargo test -p rvdna                            # All 102 tests
+cargo test -p rvdna                            # All 172 tests
 cargo test -p rvdna -- kmer_pagerank           # K-mer PageRank tests (7)
+cargo test -p rvdna --test biomarker_tests     # Biomarker engine tests (19)
 cargo test -p rvdna --test kmer_tests          # Just k-mer tests
 cargo test -p rvdna --test security_tests      # Just security tests
 ```
@@ -504,6 +583,9 @@ See [ADR-012](adr/ADR-012-genomic-security-and-privacy.md) for the complete thre
 | Horvath Clock | Horvath, Genome Biology, 2013 | `epigenomics.rs` |
 | PharmGKB/CPIC | Caudle et al., CPT, 2014 | `pharma.rs` |
 | Forward Push PPR | Andersen et al., FOCS, 2006 | `kmer_pagerank.rs` |
+| Welford's Online Algorithm | Welford, Technometrics, 1962 | `biomarker_stream.rs` |
+| CUSUM Changepoint Detection | Page, Biometrika, 1954 | `biomarker_stream.rs` |
+| Polygenic Risk Scoring | Khera et al., Nature Genetics, 2018 | `biomarker.rs` |
 | Neumann Series Solver | von Neumann, 1929 | `ruvector-solver` |
 | Conjugate Gradient | Hestenes & Stiefel, 1952 | `ruvector-solver` |
 
@@ -587,7 +669,8 @@ MIT — see `LICENSE` in the repository root.
 
 - [npm package](https://www.npmjs.com/package/@ruvector/rvdna) — JavaScript/TypeScript bindings
 - [crates.io](https://crates.io/crates/rvdna) — Rust crate
-- [Architecture Decision Records](adr/) — 13 ADRs documenting design choices
+- [Architecture Decision Records](adr/) — 14 ADRs documenting design choices
+- [Health Biomarker Engine (ADR-014)](adr/ADR-014-health-biomarker-analysis.md) — composite risk scoring + streaming architecture
 - [RVDNA Format Spec (ADR-013)](adr/ADR-013-rvdna-ai-native-format.md) — full binary format specification
 - [WASM Edge Genomics (ADR-008)](adr/ADR-008-wasm-edge-genomics.md) — WebAssembly deployment plan
 - [RuVector](https://github.com/ruvnet/ruvector) — the parent vector computing platform (76 crates)

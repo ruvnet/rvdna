@@ -17,6 +17,8 @@
 #![allow(clippy::all)]
 
 pub mod alignment;
+pub mod biomarker;
+pub mod biomarker_stream;
 pub mod epigenomics;
 pub mod error;
 pub mod genotyping;
@@ -63,6 +65,10 @@ pub use genotyping::{
     CallConfidence, CypDiplotype, GenomeBuild, GenotypeAnalysis, GenotypeData, Snp,
 };
 pub use health::{ApoeResult, HealthVariantResult, MthfrResult, PainProfile};
+pub use biomarker::{
+    BiomarkerClassification, BiomarkerProfile, BiomarkerReference, CategoryScore,
+};
+pub use biomarker_stream::{BiomarkerReading, RingBuffer, StreamConfig, StreamProcessor, StreamStats};
 pub use kmer_pagerank::{KmerGraphRanker, SequenceRank};
 
 /// Prelude module for common imports
