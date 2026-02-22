@@ -238,7 +238,6 @@ pub fn encode_profile_vector(profile: &BiomarkerProfile) -> Vec<f32> {
 fn encode_profile_vector_with_genotypes(profile: &BiomarkerProfile, genotypes: &HashMap<String, String>) -> Vec<f32> {
     let mut v = vec![0.0f32; 64];
 
-    // Dims 0..51: one-hot genotype encoding for 17 SNPs
     for (i, (rsid, _, _, _, _)) in SNP_WEIGHTS.iter().enumerate() {
         let code = genotypes.get(*rsid).map(|gt| genotype_code(i, gt)).unwrap_or(0);
         let base = i * 3;
@@ -247,32 +246,21 @@ fn encode_profile_vector_with_genotypes(profile: &BiomarkerProfile, genotypes: &
         }
     }
 
-    // Dims 51..55: category scores (Cancer, Cardiovascular, Neurological, Metabolism)
     let cat_order = ["Cancer Risk", "Cardiovascular", "Neurological", "Metabolism"];
     for (j, cat) in cat_order.iter().enumerate() {
         v[51 + j] = profile.category_scores.get(*cat).map(|c| c.score as f32).unwrap_or(0.0);
     }
 
-    // Dim 55: global risk score
     v[55] = profile.global_risk_score as f32;
-
-    // Dims 56..60: interaction terms
     for (j, inter) in INTERACTIONS.iter().enumerate() {
         let m = interaction_mod(genotypes, inter);
         v[56 + j] = if m > 1.0 { (m - 1.0) as f32 } else { 0.0 };
     }
 
-    // Dims 60..64: special composite scores
-    let mthfr = analyze_mthfr(genotypes);
-    v[60] = mthfr.score as f32 / 4.0;
-    let pain = analyze_pain(genotypes);
-    v[61] = pain.map(|p| p.score as f32 / 4.0).unwrap_or(0.0);
-    // APOE risk proxy: rs429358 code
-    v[62] = genotypes.get("rs429358").map(|gt| genotype_code(0, gt) as f32 / 2.0).unwrap_or(0.0);
-    // NQO1 impairment proxy
-    v[63] = genotypes.get("rs1800566").map(|gt| genotype_code(16, gt) as f32 / 2.0).unwrap_or(0.0);
-
-    // L2 normalize
+    v[60] = analyze_mthfr(genotypes).score as f32 / 4.0;
+    v[61] = analyze_pain(genotypes).map(|p| p.score as f32 / 4.0).unwrap_or(0.0);
+    v[62] = genotypes.get("rs429358").map(|g| genotype_code(0, g) as f32 / 2.0).unwrap_or(0.0);
+    v[63] = genotypes.get("rs1800566").map(|g| genotype_code(16, g) as f32 / 2.0).unwrap_or(0.0);
     let norm: f32 = v.iter().map(|x| x * x).sum::<f32>().sqrt();
     if norm > 0.0 {
         for x in &mut v {
@@ -282,22 +270,18 @@ fn encode_profile_vector_with_genotypes(profile: &BiomarkerProfile, genotypes: &
     v
 }
 
-// ── Synthetic Population ──
-
-/// Population allele frequencies (minor allele freq) per SNP, ordered as SNP_WEIGHTS.
+// Population allele frequencies (minor allele freq) per SNP
 static ALLELE_FREQS: &[f64] = &[
     0.14, 0.08, 0.40, 0.003, 0.005, 0.01,
     0.32, 0.30, 0.50, 0.15, 0.37, 0.24,
     0.35, 0.45, 0.20, 0.15, 0.22,
 ];
 
-/// Hom-alt genotypes per SNP (index matches SNP_WEIGHTS).
 static HOM_ALT: &[&str] = &[
     "CC", "TT", "GG", "II", "AA", "TT", "AA", "GG",
     "AA", "GG", "CC", "GG", "AA", "TT", "AA", "CC", "TT",
 ];
 
-/// Het genotypes per SNP (index matches SNP_WEIGHTS).
 static HET: &[&str] = &[
     "CT", "CT", "CG", "DI", "AG", "AT", "AG", "GT",
     "AG", "AG", "AC", "AG", "AG", "CT", "AG", "CT", "CT",
@@ -317,7 +301,7 @@ fn random_genotype(rng: &mut StdRng, idx: usize) -> String {
     }
 }
 
-/// Generate a synthetic population of biomarker profiles.
+/// Generate a deterministic synthetic population of biomarker profiles.
 pub fn generate_synthetic_population(count: usize, seed: u64) -> Vec<BiomarkerProfile> {
     let mut rng = StdRng::seed_from_u64(seed);
     let mut pop = Vec::with_capacity(count);
@@ -332,14 +316,12 @@ pub fn generate_synthetic_population(count: usize, seed: u64) -> Vec<BiomarkerPr
         profile.subject_id = format!("SYN-{:06}", i);
         profile.timestamp = 1700000000 + i as i64;
 
-        // Generate correlated biomarker values
         let mthfr_score = analyze_mthfr(&genotypes).score;
         for bref in REFERENCES {
             let mid = (bref.normal_low + bref.normal_high) / 2.0;
             let sd = (bref.normal_high - bref.normal_low) / 4.0;
             let mut val = mid + rng.gen_range(-1.5..1.5) * sd;
 
-            // Genotype-biomarker correlations
             if bref.name == "Homocysteine" && mthfr_score >= 2 {
                 val += sd * (mthfr_score as f64 - 1.0);
             }
@@ -358,8 +340,6 @@ pub fn generate_synthetic_population(count: usize, seed: u64) -> Vec<BiomarkerPr
     }
     pop
 }
-
-// ── Tests ──
 
 #[cfg(test)]
 mod tests {
