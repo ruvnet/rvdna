@@ -38,7 +38,7 @@ static REFERENCES: &[BiomarkerReference] = &[
     BiomarkerReference { name: "Triglycerides", unit: "mg/dL", normal_low: 0.0, normal_high: 150.0, critical_low: None, critical_high: Some(500.0), category: "Lipid" },
     BiomarkerReference { name: "Fasting Glucose", unit: "mg/dL", normal_low: 70.0, normal_high: 100.0, critical_low: Some(50.0), critical_high: Some(250.0), category: "Metabolic" },
     BiomarkerReference { name: "HbA1c", unit: "%", normal_low: 4.0, normal_high: 5.7, critical_low: None, critical_high: Some(9.0), category: "Metabolic" },
-    BiomarkerReference { name: "Homocysteine", unit: "umol/L", normal_low: 4.0, normal_high: 12.0, critical_low: None, critical_high: Some(50.0), category: "Metabolic" },
+    BiomarkerReference { name: "Homocysteine", unit: "umol/L", normal_low: 5.0, normal_high: 15.0, critical_low: None, critical_high: Some(30.0), category: "Metabolic" },
     BiomarkerReference { name: "Vitamin D", unit: "ng/mL", normal_low: 30.0, normal_high: 80.0, critical_low: Some(10.0), critical_high: Some(150.0), category: "Nutritional" },
     BiomarkerReference { name: "CRP", unit: "mg/L", normal_low: 0.0, normal_high: 3.0, critical_low: None, critical_high: Some(10.0), category: "Inflammatory" },
     BiomarkerReference { name: "TSH", unit: "mIU/L", normal_low: 0.4, normal_high: 4.0, critical_low: Some(0.1), critical_high: Some(10.0), category: "Thyroid" },
@@ -108,8 +108,8 @@ static SNP_WEIGHTS: &[(&str, &str, f64, f64, f64)] = &[
     ("rs80357906","Cancer Risk",     0.0, 0.7, 0.95),
     ("rs28897696","Cancer Risk",     0.0, 0.3, 0.6),
     ("rs11571833","Cancer Risk",     0.0, 0.25, 0.5),
-    ("rs1801133", "Metabolism",      0.0, 0.3, 0.7),
-    ("rs1801131", "Metabolism",      0.0, 0.15, 0.35),
+    ("rs1801133", "Metabolism",      0.0, 0.35, 0.7),   // C677T: het=40% enzyme decrease (geneticlifehacks)
+    ("rs1801131", "Metabolism",      0.0, 0.10, 0.25),  // A1298C: hom_alt=~20% decrease (geneticlifehacks)
     ("rs4680",    "Neurological",    0.0, 0.2, 0.45),
     ("rs1799971", "Neurological",    0.0, 0.2, 0.4),
     ("rs762551",  "Metabolism",      0.0, 0.15, 0.35),
@@ -148,6 +148,8 @@ static INTERACTIONS: &[Interaction] = &[
     Interaction { rsid_a: "rs1801133", rsid_b: "rs1801131", modifier: 1.3, category: "Metabolism" },
     Interaction { rsid_a: "rs429358",  rsid_b: "rs1042522", modifier: 1.2, category: "Cancer Risk" },
     Interaction { rsid_a: "rs80357906",rsid_b: "rs1042522", modifier: 1.5, category: "Cancer Risk" },
+    Interaction { rsid_a: "rs1801131", rsid_b: "rs4680",    modifier: 1.25, category: "Neurological" }, // A1298C×COMT depression (geneticlifehacks)
+    Interaction { rsid_a: "rs1800497", rsid_b: "rs4680",    modifier: 1.2,  category: "Neurological" }, // DRD2×COMT working memory (geneticlifehacks)
 ];
 
 fn snp_idx(rsid: &str) -> Option<usize> {
@@ -250,7 +252,9 @@ fn encode_profile_vector_with_genotypes(profile: &BiomarkerProfile, genotypes: &
     }
 
     v[55] = profile.global_risk_score as f32;
-    for (j, inter) in INTERACTIONS.iter().enumerate() {
+    // Encode first 4 interactions in dims 56-59; additional interactions
+    // affect category scores (dims 51-54) but don't need dedicated dims.
+    for (j, inter) in INTERACTIONS.iter().take(4).enumerate() {
         let m = interaction_mod(genotypes, inter);
         v[56 + j] = if m > 1.0 { (m - 1.0) as f32 } else { 0.0 };
     }
