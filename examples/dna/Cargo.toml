@@ -1,8 +1,8 @@
 [package]
 name = "rvdna"
-version = "0.2.0"
+version = "0.3.0"
 edition = "2021"
-description = "rvDNA — AI-native genomic analysis and the .rvdna file format. Native 23andMe genotyping, pharmacogenomics (CYP2D6/CYP2C19), health variants, variant calling, protein prediction, and HNSW vector search in pure Rust with WASM support."
+description = "rvDNA — AI-native genomic analysis. 20-SNP biomarker risk scoring, streaming anomaly detection, 64-dim profile vectors, 23andMe genotyping, CYP2D6/CYP2C19 pharmacogenomics, variant calling, protein prediction, and HNSW vector search in pure Rust."
 license = "MIT"
 repository = "https://github.com/ruvnet/ruvector"
 homepage = "https://github.com/ruvnet/ruvector/tree/main/examples/dna"
