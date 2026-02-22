@@ -104,10 +104,10 @@ pub struct BiomarkerProfile {
 static SNP_WEIGHTS: &[(&str, &str, f64, f64, f64)] = &[
     ("rs429358",  "Neurological",    0.0, 0.4, 0.9),
     ("rs7412",    "Neurological",    0.0, -0.15, -0.3),
-    ("rs1042522", "Cancer Risk",     0.1, 0.25, 0.5),
+    ("rs1042522", "Cancer Risk",     0.0, 0.25, 0.5),   // Pro72Arg: CC/ProPro not risk-associated (SOTA)
     ("rs80357906","Cancer Risk",     0.0, 0.7, 0.95),
     ("rs28897696","Cancer Risk",     0.0, 0.3, 0.6),
-    ("rs11571833","Cancer Risk",     0.0, 0.25, 0.5),
+    ("rs11571833","Cancer Risk",     0.0, 0.20, 0.5),   // K3326X: OR 1.28 breast (Meeks 2016, iCOGS)
     ("rs1801133", "Metabolism",      0.0, 0.35, 0.7),   // C677T: het=40% enzyme decrease (geneticlifehacks)
     ("rs1801131", "Metabolism",      0.0, 0.10, 0.25),  // A1298C: hom_alt=~20% decrease (geneticlifehacks)
     ("rs4680",    "Neurological",    0.0, 0.2, 0.45),
@@ -118,7 +118,7 @@ static SNP_WEIGHTS: &[(&str, &str, f64, f64, f64)] = &[
     ("rs6311",    "Neurological",    0.0, 0.15, 0.3),
     ("rs1800497", "Neurological",    0.0, 0.25, 0.5),
     ("rs4363657", "Cardiovascular",  0.0, 0.35, 0.7),
-    ("rs1800566", "Cancer Risk",     0.0, 0.2, 0.45),
+    ("rs1800566", "Cancer Risk",     0.0, 0.15, 0.30),  // Pro187Ser: OR 1.18 TT (Lajin 2013 meta-analysis)
 ];
 
 // Genotype encoding: 0 = hom_ref, 1 = het, 2 = hom_alt
