@@ -16,7 +16,7 @@ categories = ["science", "algorithms", "wasm"]
 ruvector-core = { version = "2.0.2", path = "../../crates/ruvector-core" }
 
 # Attention for sequence analysis
-ruvector-attention = { version = "0.1.31", path = "../../crates/ruvector-attention" }
+ruvector-attention = { version = "2.0", path = "../../crates/ruvector-attention" }
 
 # GNN for protein structure and interaction networks
 ruvector-gnn = { version = "2.0.2", path = "../../crates/ruvector-gnn" }
@@ -25,7 +25,7 @@ ruvector-gnn = { version = "2.0.2", path = "../../crates/ruvector-gnn" }
 ruvector-graph = { version = "2.0.2", path = "../../crates/ruvector-graph" }
 
 # DAG pipeline orchestration
-ruvector-dag = { version = "0.1.0", path = "../../crates/ruvector-dag" }
+ruvector-dag = { version = "2.0", path = "../../crates/ruvector-dag" }
 
 # Math primitives
 ruvector-math = { version = "2.0.2", path = "../../crates/ruvector-math" }
