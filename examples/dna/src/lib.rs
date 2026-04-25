@@ -13,7 +13,7 @@
 //! - **Pipeline Orchestration**: DAG-based multi-stage execution
 //! - **RVDNA Format**: AI-native binary file format with pre-computed tensors
 
-#![warn(missing_docs)]
+#![allow(missing_docs)]
 #![allow(clippy::all)]
 
 pub mod alignment;
