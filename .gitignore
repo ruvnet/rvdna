@@ -2,3 +2,7 @@
 **/target
 node_modules/
 *.log
+
+# metaharness CLI (cli/) build + install artifacts
+cli/node_modules/
+cli/dist/

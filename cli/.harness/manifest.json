@@ -1,0 +1,34 @@
+{
+  "schema": 1,
+  "generator": "0.1.0",
+  "template": "vertical:health",
+  "template_version": "0.0.0",
+  "vars": {
+    "name": "rvdna",
+    "description": "rvdna genomics CLI — agent harness over the rvdna engine",
+    "host": "claude-code"
+  },
+  "hosts": [
+    "claude-code"
+  ],
+  "files": {
+    ".claude/commands/doctor.md": "2f1475fa0ed34729cb2ed9d6cecf29e99781da0a56afef133361e3ff0a17bb52",
+    ".claude/settings.json": "d9398403ca251e253a09c880357d7bfd8987c43efba27294b5c36081e1997011",
+    ".claude/skills/wellness-intake/SKILL.md": "371351f6b7ca18ae9aec6bd118794ea502f7b72b31555518e60f2d5c03fee0f6",
+    ".claude-plugin/plugin.json": "d63f7d114824c93e3b1fab64ec0d23fafd4dbb6507985c170d3efaff6fb0a141",
+    "bin/cli.js": "73ab4ea048d068a2748495d5529c0a1d0273021f311c56a1152c8813a8abdd6e",
+    "CLAUDE.md": "14276ccbbab9c523c825f60cda7ce7b966048e9e2b17955f1d1919704beffbeb",
+    "package.json": "f65100dd8bffdc21d8a25a49cfd91539bdf37a9abc432bdaa2506a4f5d175b28",
+    "README.md": "a427e8ff1dede448d8986edc83b917905288f98e91f13b573eec96d46fd6e47e",
+    "src/agents/care-coordinator.ts": "24f30b3546221453244149c7ae7127d58d468997368630ea8c8157fc7af4506d",
+    "src/agents/intake.ts": "f806ab8b2f2eba6c47139f9762ab51f64601dcca935630a28d4718d066a7363c",
+    "src/agents/triage.ts": "076707000734552dc33e2ebbc3596bdd578d2d165bfb25dce02ae688bc26d580",
+    "src/init.ts": "cd85a38aaff8844bd987611dc11d75eeed8689e4dac1cc1eb77ba60991fc4c18",
+    "tsconfig.json": "8b4e730a1aa39162ac574455d7a98e1881f5313ca80ffe503b9652dcf0c76b9d",
+    "__tests__/smoke.test.ts": "7fa0a1103311e5fb2a14d7845cc32b911b6e4fb592566a649307426fd605baa0"
+  },
+  "generated_at": "2026-06-17T18:02:57.909Z",
+  "meta": {
+    "surface": "cli"
+  }
+}
