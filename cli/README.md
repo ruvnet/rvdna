@@ -4,7 +4,7 @@ rvdna genomics CLI — agent harness over the rvdna engine
 
 > **Health & Wellness** — Intake → triage → coordinate, with a knowledge MCP. Hard-codes "see a clinician" for anything clinical.
 >
-> Generated with [`create-agent-harness`](https://github.com/ruvnet/agent-harness-generator). WASM kernel, multi-host support, witness-signed releases.
+> Generated with [`create-agent-harness`](https://github.com/ruvnet/agent-harness-generator). The kernel resolves native → wasm → js; the published `@metaharness/kernel@0.1.0` beta runs the **js** backend. Multi-host support, witness-signed releases.
 
 ## Install
 
