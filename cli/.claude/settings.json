@@ -1,0 +1,33 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx rvdna*)",
+      "mcp__rvdna__*",
+      "mcp__health_kb__*"
+    ],
+    "deny": [
+      "Read(./.env)",
+      "Read(./.env.*)"
+    ]
+  },
+  "mcpServers": {
+    "rvdna": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "rvdna@latest",
+        "mcp",
+        "start"
+      ]
+    },
+    "health_kb": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "rvdna@latest",
+        "mcp",
+        "health"
+      ]
+    }
+  }
+}
