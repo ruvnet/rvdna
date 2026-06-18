@@ -355,19 +355,21 @@ impl DnaStorageCodec {
 
         // 3. Fountain peeling to recover the source blocks.
         let decoder = LtDecoder::new(archive.num_blocks, bs);
-        let (bytes, blocks_recovered) = match decoder.decode(&droplets) {
+        let (bytes, blocks_recovered, decoded) = match decoder.decode(&droplets) {
             Some(blocks) => {
                 let mut out = Vec::with_capacity(blocks.len() * bs);
                 for b in &blocks {
                     out.extend_from_slice(b);
                 }
                 out.truncate(archive.byte_len);
-                (out, archive.num_blocks)
+                (out, archive.num_blocks, true)
             }
-            None => (Vec::new(), 0),
+            None => (Vec::new(), 0, false),
         };
 
-        let crc_ok = !bytes.is_empty() && crc32(&bytes) == archive.crc32;
+        // `decoded` (not `!bytes.is_empty()`) gates success so a zero-byte file
+        // still verifies: an empty payload that peels cleanly must report crc_ok.
+        let crc_ok = decoded && crc32(&bytes) == archive.crc32;
 
         Ok(DecodeReport {
             bytes,
@@ -441,6 +443,48 @@ mod tests {
             report.crc_ok,
             "recovery failed: blocks {}/{}, strands {}",
             report.blocks_recovered, _archive.num_blocks, report.strands_recovered
+        );
+        assert_eq!(report.bytes, data);
+    }
+
+    #[test]
+    fn roundtrip_empty_and_tiny_files() {
+        let codec = DnaStorageCodec::new(EncodeParams::default());
+        for data in [vec![], vec![0x42u8], vec![1u8, 2, 3, 4, 5]] {
+            let archive = codec.encode("tiny", &data).unwrap();
+            let reads: Vec<String> = archive.strands.iter().map(|s| s.sequence.clone()).collect();
+            let report = codec.decode(&archive, &reads).unwrap();
+            assert!(report.crc_ok, "len {} must verify", data.len());
+            assert_eq!(report.bytes, data, "len {} mismatch", data.len());
+        }
+    }
+
+    #[test]
+    fn recovers_under_indels_with_coverage() {
+        // Insertions/deletions frame-shift a strand; high coverage + the
+        // consensus salvage pass + fountain over-provisioning should still
+        // reconstruct the payload.
+        let params = EncodeParams {
+            block_size: 24,
+            rs_parity: 12,
+            overhead: 3.0,
+            max_homopolymer: 1,
+            seed: 11,
+        };
+        let codec = DnaStorageCodec::new(params);
+        let data: Vec<u8> = (0..300).map(|i| (i * 13 + 5) as u8).collect();
+        let model = ErrorModel {
+            p_sub: 0.005,
+            p_ins: 0.002,
+            p_del: 0.002,
+            p_drop: 0.05,
+            coverage: 6,
+        };
+        let (archive, report) = codec.simulate("indel.bin", &data, &model, 3).unwrap();
+        assert!(
+            report.crc_ok,
+            "indel recovery failed: blocks {}/{}, strands {}",
+            report.blocks_recovered, archive.num_blocks, report.strands_recovered
         );
         assert_eq!(report.bytes, data);
     }

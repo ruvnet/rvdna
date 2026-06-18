@@ -8,6 +8,10 @@
 /// Nucleotide alphabet: A=0, C=1, G=2, T=3.
 const BASES: [char; 4] = ['A', 'C', 'G', 'T'];
 
+/// Place values for the 6 big-endian ternary digits of a byte: 3^5 … 3^0.
+/// Precomputed so the hot encode/decode loops avoid repeated `pow` calls.
+const POW3: [usize; 6] = [243, 81, 27, 9, 3, 1];
+
 #[inline]
 fn base_char(idx: usize) -> char {
     BASES[idx & 3]
@@ -31,14 +35,10 @@ pub fn encode_bytes(data: &[u8]) -> String {
 
     for &b in data {
         let b = b as usize;
-        // 6 ternary digits, big-endian.
-        let mut digits = [0usize; 6];
-        for i in 0..6 {
-            let p = 3usize.pow((5 - i) as u32);
-            digits[i] = (b / p) % 3;
-        }
-
-        for &t in digits.iter() {
+        // 6 ternary digits, big-endian; map each trit to a base that always
+        // differs from the previous one (homopolymer-free by construction).
+        for &p in POW3.iter() {
+            let t = (b / p) % 3;
             let cur = (prev + 1 + t) % 4;
             out.push(base_char(cur));
             prev = cur;
@@ -63,7 +63,7 @@ pub fn decode_bytes(seq: &str) -> Result<Vec<u8>, String> {
     let mut i = 0;
     while i < chars.len() {
         let mut value: usize = 0;
-        for k in 0..6 {
+        for (k, &p) in POW3.iter().enumerate() {
             let c = chars[i + k];
             let cur = base_index(c)
                 .ok_or_else(|| format!("invalid base character '{}' at position {}", c, i + k))?;
@@ -75,7 +75,7 @@ pub fn decode_bytes(seq: &str) -> Result<Vec<u8>, String> {
                     i + k
                 ));
             }
-            value += t * 3usize.pow((5 - k) as u32);
+            value += t * p;
             prev = cur;
         }
         out.push(value as u8); // truncates; valid data is always < 256
