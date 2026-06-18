@@ -52,6 +52,10 @@ pub enum DnaError {
     /// 23andMe file parse error
     #[error("Parse error: {0}")]
     ParseError(String),
+
+    /// DNA data-storage codec error (encode/decode/error-correction)
+    #[error("DNA storage codec error: {0}")]
+    Storage(String),
 }
 
 /// Result type for DNA analysis operations
