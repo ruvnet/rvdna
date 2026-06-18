@@ -6,3 +6,6 @@ node_modules/
 # metaharness CLI (cli/) build + install artifacts
 cli/node_modules/
 cli/dist/
+
+# Claude Code agent worktrees / scratch
+.claude/

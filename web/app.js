@@ -4,8 +4,8 @@
 // Glue between the pure codec (codec.js) and the DOM. No frameworks, no network.
 
 import {
-  BASES, encodeBytes, decodeBytes, gcContent, maxHomopolymerRun,
-  crc32, ReedSolomon, applyChannel, consensus,
+  BASES, encodeBytes, decodeBytes,
+  crc32, applyChannel,
   DnaStorageCodec, DEFAULT_PARAMS,
   totalBases, bitsPerBase, meanGc, meanMaxHomopolymer,
   selfTest,
@@ -37,9 +37,8 @@ const SAMPLE_PNG_B64 =
   'HegqivVUrpdqBb1fn2x98PU2rlexvk4r6Nv6Itcvav38I7RN8zcdbSbenHBD0QZ6trX5NpBN0O1UbJdyA73bnv32YNuNb9dxexUb' +
   '6Ov2sm1f5PZZbX/tbKm5UveliaSDJQol6KlsMznkUhB5ovJSSNAb+ezko5c3Jq9cvo4S9EW+rPLLJj9L+ZeS7s5WuqtMXzlIIaxA' +
   'T1SbqiFTIlcnoi5UgV6rZ6Menbr16srUK1egz+plUV9W9XlTf0nlKvXP/wFFp6M66uM2KgAAAABJRU5ErkJggg==';
-// NOTE: the long b64 above is the literal output of web/make-sample (a 32x32 PNG).
-
-const SAMPLE_PNG_DATA_URI = 'data:image/png;base64,' + SAMPLE_PNG_B64;
+// NOTE: the long b64 above is a literal 32x32 RGB PNG (built offline) so the
+// "Use sample PNG" button works with zero network access.
 
 // -----------------------------------------------------------------------------
 // App state
