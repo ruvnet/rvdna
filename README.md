@@ -39,6 +39,47 @@ cognitive-container format.
 | `kmer`, `kmer_pagerank` | k-mer analysis & PageRank over genomic graphs |
 | `epigenomics` | temporal **epigenomic** modeling |
 | `health` | health & biomarker reporting |
+| `storage` | **DNA data-storage codec** — files ⇄ synthetic DNA with Reed–Solomon + fountain-code error correction |
+
+## 🧬 DNA Storage Codec Simulator
+
+> *"I stored my GitHub repo in DNA."*
+
+Turn **any file** into a pool of synthetic DNA strands ("oligos"), push them
+through a noisy sequencing channel (substitutions, insertions, deletions, and
+whole-strand dropout), then **reconstruct the original bytes** — error
+correction working live, no wet lab required.
+
+```text
+file bytes ─► CRC32 + manifest ─► source blocks
+          ─► Fountain (LT) rateless outer code ─► droplets
+          ─► Reed–Solomon (GF(256)) inner code ─► per-strand parity
+          ─► constraint-aware DNA mapping (homopolymer-free, GC-balanced)
+          ─► DNA strands ── noisy channel ──► reads
+          ─► consensus ─► RS decode ─► fountain peel ─► CRC32 ✓ ─► original file
+```
+
+- **Two-layer ECC** mirroring real systems (e.g. DNA Fountain): a **fountain
+  code** recovers from lost strands, **Reed–Solomon** repairs substitutions
+  within a strand.
+- **Biological constraints**: a reversible base-3 transform guarantees
+  **no homopolymer runs** and keeps **GC content ≈ 50%**.
+- **Pure Rust, `wasm32`-ready**, plus a dependency-free **browser visualizer**.
+
+```bash
+# Store a PNG in DNA, mutate it, and recover it — end to end:
+cargo run -p rvdna --bin dna-storage -- simulate photo.png \
+    --sub 0.02 --drop 0.10 --coverage 4 --out recovered.png
+#   strands recovered  40 (RS-corrected)
+#   blocks recovered   22/22 (fountain peel)
+#   CRC32 verify       PASS ✅   byte-exact match   yes
+#   🧬 stored 677 bytes in DNA and got them back.
+```
+
+CLI: `encode` (file → DNA archive + FASTA) · `simulate` (encode → corrupt →
+recover) · `decode` (archive + reads → file) · `stats`. Live demo in
+[`web/`](web) (open `web/index.html`). Design rationale in
+[`docs/adr/`](docs/adr) (ADR-002 … ADR-008).
 
 ## Install
 

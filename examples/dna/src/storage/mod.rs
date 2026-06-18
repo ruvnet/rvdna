@@ -39,8 +39,8 @@ use crate::error::{DnaError, Result};
 use serde::{Deserialize, Serialize};
 
 pub mod channel;
-pub mod constraints;
 pub mod consensus;
+pub mod constraints;
 pub mod fountain;
 pub mod gf256;
 
@@ -71,7 +71,7 @@ impl Default for EncodeParams {
         Self {
             block_size: 32,
             rs_parity: 8,
-            overhead: 1.8,
+            overhead: 2.5,
             max_homopolymer: 1,
             seed: 0xC0FFEE,
         }
@@ -166,8 +166,15 @@ pub fn crc32(data: &[u8]) -> u32 {
 }
 
 // ============================================================================
-// Orchestrator (filled in during integration)
+// Orchestrator
 // ============================================================================
+
+use channel::ErrorModel;
+use fountain::{Droplet, LtDecoder, LtEncoder};
+use gf256::ReedSolomon;
+
+/// Per-strand header: `index` (u32 BE) + fountain `seed` (u32 BE).
+const HEADER_LEN: usize = 8;
 
 /// End-to-end DNA storage codec.
 #[derive(Debug, Clone)]
@@ -181,14 +188,210 @@ impl DnaStorageCodec {
         Self { params }
     }
 
+    /// Codec parameters.
+    pub fn params(&self) -> &EncodeParams {
+        &self.params
+    }
+
+    /// Split `data` into `num_blocks` source blocks of `block_size` bytes,
+    /// zero-padding the final block.
+    fn split_blocks(&self, data: &[u8]) -> (usize, Vec<Vec<u8>>) {
+        let bs = self.params.block_size.max(1);
+        let num_blocks = (data.len() + bs - 1) / bs;
+        let num_blocks = num_blocks.max(1);
+        let mut blocks = Vec::with_capacity(num_blocks);
+        for i in 0..num_blocks {
+            let start = i * bs;
+            let end = (start + bs).min(data.len());
+            let mut block = vec![0u8; bs];
+            if start < data.len() {
+                block[..end - start].copy_from_slice(&data[start..end]);
+            }
+            blocks.push(block);
+        }
+        (num_blocks, blocks)
+    }
+
     /// Encode raw bytes into a DNA archive.
-    pub fn encode(&self, _filename: &str, _data: &[u8]) -> Result<DnaArchive> {
-        Err(DnaError::Storage("orchestrator not yet wired".into()))
+    pub fn encode(&self, filename: &str, data: &[u8]) -> Result<DnaArchive> {
+        let bs = self.params.block_size.max(1);
+        let codeword_len = HEADER_LEN + bs + self.params.rs_parity;
+        if codeword_len > 255 {
+            return Err(DnaError::Storage(format!(
+                "strand codeword {codeword_len} bytes exceeds GF(256) limit of 255; \
+                 reduce block_size or rs_parity"
+            )));
+        }
+
+        let (num_blocks, blocks) = self.split_blocks(data);
+        let encoder = LtEncoder::new(num_blocks, bs);
+        let rs = ReedSolomon::new(self.params.rs_parity);
+        let base_seed = self.params.seed as u32;
+
+        let num_strands = ((self.params.overhead.max(1.0)) * num_blocks as f64).ceil() as usize;
+        // Add a small additive headroom so tiny files (small K), where the
+        // robust-soliton peeling is least reliable, still over-provision enough
+        // droplets to decode.
+        let num_strands = num_strands.max(num_blocks + 8);
+
+        let mut strands = Vec::with_capacity(num_strands);
+        for i in 0..num_strands {
+            let seed = base_seed.wrapping_add(i as u32);
+            let droplet = encoder.encode(&blocks, seed);
+
+            // Strand payload bytes: [index(4) | seed(4) | droplet.data]
+            let mut strand_bytes = Vec::with_capacity(codeword_len - self.params.rs_parity);
+            strand_bytes.extend_from_slice(&(i as u32).to_be_bytes());
+            strand_bytes.extend_from_slice(&seed.to_be_bytes());
+            strand_bytes.extend_from_slice(&droplet.data);
+
+            let codeword = rs.encode(&strand_bytes);
+            let sequence = constraints::encode_bytes(&codeword);
+            strands.push(Strand {
+                index: i as u32,
+                sequence,
+            });
+        }
+
+        Ok(DnaArchive {
+            filename: filename.to_string(),
+            byte_len: data.len(),
+            crc32: crc32(data),
+            num_blocks,
+            params: self.params.clone(),
+            strands,
+        })
     }
 
     /// Decode a pool of (noisy) reads back into the original bytes.
-    pub fn decode(&self, _archive: &DnaArchive, _reads: &[String]) -> Result<DecodeReport> {
-        Err(DnaError::Storage("orchestrator not yet wired".into()))
+    ///
+    /// `archive` supplies the manifest (block count, sizes, CRC); only its
+    /// `strands` are ignored — decoding works purely from `reads`.
+    pub fn decode(&self, archive: &DnaArchive, reads: &[String]) -> Result<DecodeReport> {
+        let bs = archive.params.block_size.max(1);
+        let nsym = archive.params.rs_parity;
+        let codeword_len = HEADER_LEN + bs + nsym;
+        let expected_bases = codeword_len * 6;
+        let rs = ReedSolomon::new(nsym);
+
+        let mut droplets: Vec<Droplet> = Vec::new();
+        let mut seen_seeds: std::collections::HashSet<u32> = std::collections::HashSet::new();
+
+        // Demap a single read/consensus string into a strand codeword and
+        // RS-decode it into a droplet, recording it (deduped by fountain seed).
+        // Returns true if a *new* droplet was recovered.
+        let mut try_recover = |seq: &str,
+                               droplets: &mut Vec<Droplet>,
+                               seen: &mut std::collections::HashSet<u32>|
+         -> bool {
+            let bases: Vec<char> = seq.chars().collect();
+            // Normalise length to the expected codeword (indels shift length).
+            let usable = if bases.len() >= expected_bases {
+                expected_bases
+            } else {
+                (bases.len() / 6) * 6
+            };
+            if usable == 0 {
+                return false;
+            }
+            let trimmed: String = bases[..usable].iter().collect();
+            let bytes = match constraints::decode_bytes(&trimmed) {
+                Ok(b) => b,
+                Err(_) => return false,
+            };
+            if bytes.len() < codeword_len {
+                return false;
+            }
+            let msg = match rs.decode(&bytes[..codeword_len]) {
+                Ok(m) => m,
+                Err(_) => return false,
+            };
+            if msg.len() < HEADER_LEN {
+                return false;
+            }
+            let seed = u32::from_be_bytes([msg[4], msg[5], msg[6], msg[7]]);
+            if !seen.insert(seed) {
+                return false; // already have this strand
+            }
+            let mut payload = msg[HEADER_LEN..].to_vec();
+            payload.resize(bs, 0);
+            let (degree, _idx) = fountain::neighbours(seed, archive.num_blocks);
+            droplets.push(Droplet {
+                seed,
+                degree,
+                data: payload,
+            });
+            true
+        };
+
+        // Pass 1 — decode every read independently. RS recovers each strand's
+        // exact [index|seed] header, so identity comes from the code, not from
+        // fuzzy sequence matching. Reads RS can't fix are deferred to pass 2.
+        let mut residual: Vec<usize> = Vec::new();
+        for (i, read) in reads.iter().enumerate() {
+            if !try_recover(read, &mut droplets, &mut seen_seeds) {
+                residual.push(i);
+            }
+        }
+
+        // Pass 2 (salvage) — when coverage > 1, the same strand was sequenced
+        // several times. Cluster the *leftover* noisy reads and majority-vote a
+        // consensus per cluster, which cancels random substitutions, then retry
+        // RS. This only ever ADDS strands, so it never harms the clean path.
+        if residual.len() > 1 {
+            let residual_reads: Vec<String> = residual.iter().map(|&i| reads[i].clone()).collect();
+            for group in consensus::cluster(&residual_reads, 0.3) {
+                if group.len() < 2 {
+                    continue;
+                }
+                let members: Vec<&str> =
+                    group.iter().map(|&g| residual_reads[g].as_str()).collect();
+                let cons = consensus::consensus(&members);
+                try_recover(&cons, &mut droplets, &mut seen_seeds);
+            }
+        }
+
+        let strands_recovered = droplets.len();
+
+        // 3. Fountain peeling to recover the source blocks.
+        let decoder = LtDecoder::new(archive.num_blocks, bs);
+        let (bytes, blocks_recovered) = match decoder.decode(&droplets) {
+            Some(blocks) => {
+                let mut out = Vec::with_capacity(blocks.len() * bs);
+                for b in &blocks {
+                    out.extend_from_slice(b);
+                }
+                out.truncate(archive.byte_len);
+                (out, archive.num_blocks)
+            }
+            None => (Vec::new(), 0),
+        };
+
+        let crc_ok = !bytes.is_empty() && crc32(&bytes) == archive.crc32;
+
+        Ok(DecodeReport {
+            bytes,
+            crc_ok,
+            blocks_recovered,
+            strands_recovered,
+            reads_in: reads.len(),
+        })
+    }
+
+    /// Convenience: encode `data`, push it through `model`, then decode —
+    /// the full simulator round-trip used by the demo and CLI.
+    pub fn simulate(
+        &self,
+        filename: &str,
+        data: &[u8],
+        model: &ErrorModel,
+        channel_seed: u64,
+    ) -> Result<(DnaArchive, DecodeReport)> {
+        let archive = self.encode(filename, data)?;
+        let sequences: Vec<String> = archive.strands.iter().map(|s| s.sequence.clone()).collect();
+        let reads = channel::apply(&sequences, model, channel_seed);
+        let report = self.decode(&archive, &reads)?;
+        Ok((archive, report))
     }
 }
 
@@ -200,5 +403,45 @@ mod tests {
     fn crc32_known_vector() {
         // CRC32("123456789") == 0xCBF43926
         assert_eq!(crc32(b"123456789"), 0xCBF4_3926);
+    }
+
+    #[test]
+    fn roundtrip_no_errors() {
+        let codec = DnaStorageCodec::new(EncodeParams::default());
+        let data: Vec<u8> = (0..512).map(|i| (i * 31 + 7) as u8).collect();
+        let archive = codec.encode("blob.bin", &data).unwrap();
+        assert!(archive.mean_gc() > 0.3 && archive.mean_gc() < 0.7);
+        // Feed the pristine strands straight back in.
+        let reads: Vec<String> = archive.strands.iter().map(|s| s.sequence.clone()).collect();
+        let report = codec.decode(&archive, &reads).unwrap();
+        assert!(report.crc_ok, "clean round-trip must verify");
+        assert_eq!(report.bytes, data);
+    }
+
+    #[test]
+    fn roundtrip_with_substitutions_and_dropout() {
+        let params = EncodeParams {
+            block_size: 24,
+            rs_parity: 12,
+            overhead: 2.5,
+            max_homopolymer: 1,
+            seed: 42,
+        };
+        let codec = DnaStorageCodec::new(params);
+        let data: Vec<u8> = (0..400).map(|i| (i * 17 + 3) as u8).collect();
+        let model = ErrorModel {
+            p_sub: 0.01,
+            p_ins: 0.0,
+            p_del: 0.0,
+            p_drop: 0.15,
+            coverage: 3,
+        };
+        let (_archive, report) = codec.simulate("photo.png", &data, &model, 7).unwrap();
+        assert!(
+            report.crc_ok,
+            "recovery failed: blocks {}/{}, strands {}",
+            report.blocks_recovered, _archive.num_blocks, report.strands_recovered
+        );
+        assert_eq!(report.bytes, data);
     }
 }
