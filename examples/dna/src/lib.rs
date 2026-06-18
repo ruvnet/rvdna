@@ -30,6 +30,7 @@ pub mod pipeline;
 pub mod protein;
 pub mod real_data;
 pub mod rvdna;
+pub mod storage;
 pub mod types;
 pub mod variant;
 

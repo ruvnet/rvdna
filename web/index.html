@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DNA Storage Codec Simulator</title>
+  <link rel="stylesheet" href="styles.css" />
+  <!-- inline SVG favicon (no network) -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><text y='14' font-size='14'>🧬</text></svg>" />
+</head>
+<body>
+  <header class="hero">
+    <div class="hero-text">
+      <div class="kicker">RVDNA · examples/dna/src/storage</div>
+      <h1>🧬 DNA Storage Codec Simulator</h1>
+      <p class="tagline">“I stored my GitHub repo in DNA.” Turn any file into synthetic
+        DNA strands, push them through a noisy sequencing channel, and watch error
+        correction bring the bytes back from the dead — entirely in your browser, no
+        wet lab, no network.</p>
+    </div>
+    <canvas id="helix" width="360" height="120" aria-hidden="true"></canvas>
+  </header>
+
+  <main>
+    <!-- 1. LOAD ------------------------------------------------------------ -->
+    <section class="card">
+      <h2><span class="step">1</span> Load a file</h2>
+      <div id="dropzone" class="dropzone" tabindex="0">
+        <div class="dz-inner">
+          <div class="dz-icon">⬇</div>
+          <div>Drag &amp; drop a file here, or <span class="link">click to browse</span></div>
+          <div class="muted">images render before/after; any file type works</div>
+        </div>
+        <input type="file" id="fileInput" hidden />
+      </div>
+      <div class="row">
+        <button id="sampleBtn" class="btn ghost">Use sample PNG</button>
+        <span id="fileInfo" class="muted">No file loaded.</span>
+      </div>
+
+      <details class="advanced">
+        <summary>Codec parameters</summary>
+        <div class="sliders">
+          <label>Block size <output id="blockSizeVal"></output>
+            <input type="range" id="blockSize" min="8" max="64" step="4" value="32" /></label>
+          <label>RS parity <output id="rsParityVal"></output>
+            <input type="range" id="rsParity" min="2" max="16" step="2" value="8" /></label>
+          <label>Redundancy <output id="overheadVal"></output>
+            <input type="range" id="overhead" min="1" max="6" step="1" value="4" /></label>
+        </div>
+      </details>
+
+      <button id="encodeBtn" class="btn primary" disabled>Encode to DNA →</button>
+    </section>
+
+    <!-- 2. ENCODE OUTPUT --------------------------------------------------- -->
+    <section class="card">
+      <h2><span class="step">2</span> Encoded archive</h2>
+      <div id="stats" class="stats-grid"></div>
+      <div id="strandPreview" class="seq-view"></div>
+    </section>
+
+    <!-- 3. CHANNEL --------------------------------------------------------- -->
+    <section class="card">
+      <h2><span class="step">3</span> Noisy sequencing channel</h2>
+      <div class="sliders channel">
+        <label>Substitution <output id="pSubVal"></output>
+          <input type="range" id="pSub" min="0" max="20" step="0.5" value="3" /></label>
+        <label>Insertion <output id="pInsVal"></output>
+          <input type="range" id="pIns" min="0" max="10" step="0.5" value="0" /></label>
+        <label>Deletion <output id="pDelVal"></output>
+          <input type="range" id="pDel" min="0" max="10" step="0.5" value="0" /></label>
+        <label>Strand dropout <output id="pDropVal"></output>
+          <input type="range" id="pDrop" min="0" max="60" step="1" value="15" /></label>
+        <label>Coverage <output id="coverageVal"></output>
+          <input type="range" id="coverage" min="1" max="8" step="1" value="4" /></label>
+      </div>
+      <p class="muted">Tip: substitutions and strand dropout are fully recoverable.
+        Insertions/deletions frame-shift a strand and are the genuinely hard case —
+        nudge them up to watch recovery degrade (the honest frontier of DNA storage).</p>
+      <button id="mutateBtn" class="btn warn" disabled>Mutate ⚡</button>
+      <div id="mutateInfo" class="stats-grid"></div>
+      <div id="mutatedPreview" class="seq-view"></div>
+    </section>
+
+    <!-- 4. RECOVER --------------------------------------------------------- -->
+    <section class="card">
+      <h2><span class="step">4</span> Recover</h2>
+      <button id="recoverBtn" class="btn good" disabled>Recover (consensus + RS decode) ✓</button>
+      <div id="recoverBanner" class="banner hidden"></div>
+      <div id="recoverInfo" class="stats-grid"></div>
+    </section>
+
+    <!-- IMAGE PANELS (only for images) ------------------------------------ -->
+    <section id="imagePanels" class="card image-panels hidden">
+      <h2>The whole point: glitched vs. clean recovery</h2>
+      <div class="panels">
+        <figure id="imgBefore" class="panel">
+          <img alt="original" />
+          <figcaption><strong>BEFORE</strong><span class="sub"></span></figcaption>
+        </figure>
+        <figure id="imgMutated" class="panel">
+          <img alt="mutated raw, no error correction" />
+          <figcaption><strong>MUTATED — raw</strong><span class="sub">mutate first</span></figcaption>
+        </figure>
+        <figure id="imgAfter" class="panel">
+          <img alt="error-corrected recovery" />
+          <figcaption><strong>AFTER — corrected</strong><span class="sub">recover first</span></figcaption>
+        </figure>
+      </div>
+      <p class="muted">The middle image decodes the corrupted DNA <em>directly</em>, with no
+        error correction — that is the data you actually get off the sequencer. The right
+        image is the same data after consensus + Reed–Solomon recovery.</p>
+    </section>
+  </main>
+
+  <footer>
+    <p>Pure vanilla JS · GF(256) Reed–Solomon · homopolymer-free base-3 mapping ·
+      majority-vote consensus. Open the console to see the codec self-test.
+      Mirrors the Rust crate at <code>examples/dna/src/storage/</code> — see
+      <code>web/README.md</code>.</p>
+  </footer>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
