@@ -13,12 +13,15 @@
 //   mod.rs          ->  crc32, EncodeParams, Strand, DnaArchive, DecodeReport,
 //                       DnaStorageCodec (encode / decode orchestrator)
 //
-// The outer erasure code in Rust is a Luby-Transform fountain (fountain.rs).
-// To keep the JS compact *and* robust we model whole-strand dropout with a
-// simpler, equally-honest mechanism: strand-level repetition (each logical
-// strand is emitted `overhead` times). Dropped copies are tolerated as long as
-// at least one copy of each logical strand survives — exactly the property the
-// fountain provides, demonstrated transparently. See README.md.
+//   fountain.rs     ->  SplitMix64 / robustSolitonPmf / neighbours / LtEncoder /
+//                       LtDecoder  (Luby-Transform rateless erasure outer code)
+//
+// The outer erasure code is now a REAL Luby-Transform (LT) fountain code, ported
+// bit-for-bit from fountain.rs: the same SplitMix64 PRNG, robust-soliton degree
+// distribution, deterministic seed->neighbour selection, and belief-propagation
+// peeling decoder. Encode emits seed-tagged droplets (XORs of source blocks);
+// decode RS-corrects each read, dedupes droplets by seed, then peels them back
+// into the source blocks — exactly the Rust pipeline. See README.md.
 //
 // Everything here is plain ES-module JavaScript: no build step, no network.
 // =============================================================================
@@ -441,32 +444,255 @@ export function consensus(reads) {
   return out;
 }
 
+/**
+ * Greedy single-linkage clustering of reads by normalized Hamming similarity,
+ * mirroring `consensus::cluster` in the Rust crate. Two reads join the same
+ * cluster when their prefix mismatch fraction is <= `maxDist`. Returns an array
+ * of clusters, each an array of indices into `reads`.
+ */
+export function cluster(reads, maxDist = 0.3) {
+  const clusters = [];
+  for (let i = 0; i < reads.length; i++) {
+    let placed = false;
+    for (const c of clusters) {
+      // compare against the cluster's first (representative) member
+      const rep = reads[c[0]];
+      const a = reads[i];
+      const m = Math.min(rep.length, a.length);
+      if (m === 0) continue;
+      let diff = Math.abs(rep.length - a.length);
+      for (let p = 0; p < m; p++) if (rep[p] !== a[p]) diff++;
+      const denom = Math.max(rep.length, a.length);
+      if (denom > 0 && diff / denom <= maxDist) { c.push(i); placed = true; break; }
+    }
+    if (!placed) clusters.push([i]);
+  }
+  return clusters;
+}
+
+// -----------------------------------------------------------------------------
+// fountain.rs  —  Luby-Transform (LT) rateless erasure outer code
+// -----------------------------------------------------------------------------
+//
+// Ported bit-for-bit from examples/dna/src/storage/fountain.rs. The encoder
+// turns `numBlocks` source blocks into an unbounded stream of seed-tagged
+// droplets (each the XOR of a seed-determined subset of blocks). The decoder
+// peels droplets (belief propagation) back into the source blocks. Encode and
+// decode agree because both derive the neighbour set deterministically from the
+// droplet seed via `neighbours`, using an inline SplitMix64 PRNG.
+
+const U64_MASK = (1n << 64n) - 1n;
+
+/** Deterministic SplitMix64 PRNG (64-bit state via BigInt). Matches Rust. */
+export class SplitMix64 {
+  constructor(seed) {
+    // accept BigInt or number; mask to 64 bits.
+    this.state = BigInt.asUintN(64, typeof seed === 'bigint' ? seed : BigInt(seed >>> 0));
+  }
+
+  /** Rust `next_u64`: returns a BigInt in [0, 2^64). */
+  nextU64() {
+    this.state = (this.state + 0x9E3779B97F4A7C15n) & U64_MASK;
+    let z = this.state;
+    z = ((z ^ (z >> 30n)) * 0xBF58476D1CE4E5B9n) & U64_MASK;
+    z = ((z ^ (z >> 27n)) * 0x94D049BB133111EBn) & U64_MASK;
+    z = z ^ (z >> 31n);
+    return z & U64_MASK;
+  }
+
+  /** Rust `next_f64`: uniform double in [0, 1) from the top 53 bits. */
+  nextF64() {
+    return Number(this.nextU64() >> 11n) / 9007199254740992; // 2^53
+  }
+
+  /** Rust `next_below`: uniform integer in 0..n (n > 0), returns a Number. */
+  nextBelow(n) {
+    return Number(this.nextU64() % BigInt(n));
+  }
+}
+
+/**
+ * Build the normalized Robust Soliton PMF over degrees 1..=k (index i is the
+ * probability of degree i+1). Identical math to `robust_soliton_pmf` in Rust.
+ */
+export function robustSolitonPmf(k) {
+  if (k === 0) return [];
+  if (k === 1) return [1.0];
+
+  const c = 0.03;
+  const delta = 0.05;
+  const kf = k;
+
+  // Ideal soliton.
+  const rho = new Array(k).fill(0);
+  rho[0] = 1.0 / kf;
+  for (let d = 2; d <= k; d++) rho[d - 1] = 1.0 / (d * (d - 1));
+
+  const r = c * Math.log(kf / delta) * Math.sqrt(kf);
+  let m = r > 0 ? Math.round(kf / r) : k;
+  if (m < 1) m = 1;
+  if (m > k) m = k;
+
+  const tau = new Array(k).fill(0);
+  for (let d = 1; d < m; d++) tau[d - 1] = r / (d * kf);
+  {
+    const rln = r > 0 ? Math.log(r / delta) : 0.0;
+    tau[m - 1] = (r * rln) / kf;
+  }
+
+  const pmf = new Array(k).fill(0);
+  let beta = 0.0;
+  for (let d = 0; d < k; d++) { pmf[d] = rho[d] + tau[d]; beta += pmf[d]; }
+  if (beta <= 0.0) return new Array(k).fill(1.0 / kf);
+  for (let d = 0; d < k; d++) pmf[d] /= beta;
+  return pmf;
+}
+
+/** Inverse-CDF degree sampling from `pmf` using u in [0,1). Matches Rust. */
+export function sampleDegree(pmf, u) {
+  let acc = 0.0;
+  for (let i = 0; i < pmf.length; i++) {
+    acc += pmf[i];
+    if (u < acc) return i + 1;
+  }
+  return pmf.length;
+}
+
+/**
+ * Shared neighbour selection: from `seed` and `numBlocks`, return the droplet
+ * degree and the sorted, de-duplicated source-block indices it XORs. MUST be
+ * identical on encode and decode. Matches `neighbours` in Rust.
+ */
+export function neighbours(seed, numBlocks) {
+  const k = numBlocks;
+  if (k === 0) return { degree: 0, idxs: [] };
+  if (k === 1) return { degree: 1, idxs: [0] };
+
+  const rng = new SplitMix64(BigInt(seed >>> 0));
+  const pmf = robustSolitonPmf(k);
+
+  const u = rng.nextF64();
+  let d = sampleDegree(pmf, u);
+  if (d < 1) d = 1;
+  if (d > k) d = k;
+
+  // Partial Fisher–Yates over a working permutation array.
+  const perm = new Array(k);
+  for (let i = 0; i < k; i++) perm[i] = i;
+  for (let i = 0; i < d; i++) {
+    const j = i + rng.nextBelow(k - i);
+    const tmp = perm[i]; perm[i] = perm[j]; perm[j] = tmp;
+  }
+  const idxs = perm.slice(0, d);
+  idxs.sort((a, b) => a - b);
+  return { degree: d, idxs };
+}
+
+/** XOR `src` into `dst` (Uint8Array, in place) up to the shorter length. */
+function xorInto(dst, src) {
+  const n = Math.min(dst.length, src.length);
+  for (let i = 0; i < n; i++) dst[i] ^= src[i];
+}
+
+/** LT encoder over `numBlocks` source blocks of `blockSize` bytes each. */
+export class LtEncoder {
+  constructor(numBlocks, blockSize) {
+    this.numBlocks = numBlocks;
+    this.blockSize = blockSize;
+  }
+  /** Deterministically produce the droplet { seed, degree, data } for `seed`. */
+  encode(blocks, seed) {
+    const { degree, idxs } = neighbours(seed, this.numBlocks);
+    const data = new Uint8Array(this.blockSize);
+    for (const i of idxs) xorInto(data, blocks[i]);
+    return { seed: seed >>> 0, degree, data };
+  }
+}
+
+/** LT belief-propagation ("peeling") decoder. */
+export class LtDecoder {
+  constructor(numBlocks, blockSize) {
+    this.numBlocks = numBlocks;
+    this.blockSize = blockSize;
+  }
+  /** Peel `droplets`; returns an array of source blocks, or null if stuck. */
+  decode(droplets) {
+    const k = this.numBlocks;
+    if (k === 0) return [];
+
+    const workData = [];
+    const unresolved = [];
+    for (const dr of droplets) {
+      const { idxs } = neighbours(dr.seed, k);
+      workData.push(Uint8Array.from(dr.data));
+      unresolved.push(idxs.slice());
+    }
+
+    const recovered = new Array(k).fill(null);
+    let numRecovered = 0;
+
+    for (;;) {
+      if (numRecovered === k) break;
+      let progressed = false;
+      for (let di = 0; di < droplets.length; di++) {
+        if (unresolved[di].length !== 1) continue;
+        const blockIdx = unresolved[di][0];
+        if (recovered[blockIdx] !== null) { unresolved[di].length = 0; continue; }
+
+        const blockValue = Uint8Array.from(workData[di]);
+        recovered[blockIdx] = blockValue;
+        numRecovered++;
+        unresolved[di].length = 0;
+        progressed = true;
+
+        // Peel this block out of every other droplet referencing it.
+        for (let dj = 0; dj < droplets.length; dj++) {
+          if (dj === di) continue;
+          const pos = unresolved[dj].indexOf(blockIdx);
+          if (pos !== -1) {
+            xorInto(workData[dj], blockValue);
+            // swap_remove
+            unresolved[dj][pos] = unresolved[dj][unresolved[dj].length - 1];
+            unresolved[dj].pop();
+          }
+        }
+      }
+      if (!progressed) break;
+    }
+
+    if (numRecovered === k) return recovered;
+    return null;
+  }
+}
+
 // -----------------------------------------------------------------------------
 // 6) mod.rs  —  orchestrator: DnaStorageCodec (encode / decode)
 // -----------------------------------------------------------------------------
 //
-// Per-strand wire format (bytes, before DNA mapping):
+// Per-strand wire format (bytes, before DNA mapping), matching mod.rs exactly:
 //
-//   [ idx_hi, idx_lo | payload(block_size) | RS parity(rs_parity) ]
-//      2-byte big-endian strand index    user data        GF(256) parity
+//   [ index(4) | seed(4) | droplet payload(block_size) | RS parity(rs_parity) ]
+//      u32 BE strand id    u32 BE fountain seed   LT droplet      GF(256) parity
 //
-// The 2-byte index is itself protected by RS (it sits inside the codeword), so
-// the decoder can trust the regrouping key after RS correction. Each logical
-// strand is emitted `ceil(overhead)` times (repetition) to survive dropout;
-// any one surviving copy reconstructs the block.
+// The 8-byte header is itself protected by RS (it sits inside the codeword), so
+// the decoder recovers the exact fountain `seed` after RS correction; droplets
+// are deduped by seed and peeled by the LT decoder to recover the source blocks.
+
+const HEADER_LEN = 8; // index(4) + seed(4)
 
 export const DEFAULT_PARAMS = {
   blockSize: 32,    // payload bytes per strand
   rsParity: 8,      // RS parity bytes per strand (corrects up to 4 subs)
-  // Strand repetition factor (dropout tolerance). The Rust crate uses an LT
-  // fountain code with overhead 1.8; plain repetition needs more headroom to
-  // match that erasure resilience, so the JS demo defaults higher.
-  overhead: 4,
+  // Redundancy factor: emit ceil(overhead * numBlocks) droplets. Now that the
+  // outer code is a REAL LT fountain (not repetition), this matches the Rust
+  // default of 2.5.
+  overhead: 2.5,
   maxHomopolymer: 1,
   seed: 0xc0ffee,
 };
 
-function u16be(n) { return [(n >>> 8) & 0xff, n & 0xff]; }
+function u32be(n) { n >>>= 0; return [(n >>> 24) & 0xff, (n >>> 16) & 0xff, (n >>> 8) & 0xff, n & 0xff]; }
+function readU32be(a, o) { return ((a[o] << 24) | (a[o + 1] << 16) | (a[o + 2] << 8) | a[o + 3]) >>> 0; }
 
 export class DnaStorageCodec {
   constructor(params = {}) {
@@ -481,31 +707,50 @@ export class DnaStorageCodec {
    * strand id; the logical block id is index % numBlocks.
    */
   encode(filename, data) {
-    const { blockSize, rsParity, overhead } = this.params;
+    const { blockSize, rsParity, overhead, seed } = this.params;
     const byteLen = data.length;
     const checksum = crc32(data);
 
-    // split payload into fixed-size source blocks (zero-padded tail)
+    const codewordLen = HEADER_LEN + blockSize + rsParity;
+    if (codewordLen > 255) {
+      throw new Error(
+        `strand codeword ${codewordLen} bytes exceeds GF(256) limit of 255; ` +
+        `reduce blockSize or rsParity`);
+    }
+
+    // Split payload into fixed-size source blocks (zero-padded tail).
     const numBlocks = Math.max(1, Math.ceil(byteLen / blockSize));
-    const repeats = Math.max(1, Math.ceil(overhead)); // dropout redundancy
+    const blocks = [];
+    for (let blk = 0; blk < numBlocks; blk++) {
+      const block = new Uint8Array(blockSize);
+      const start = blk * blockSize;
+      for (let i = 0; i < blockSize; i++) {
+        const p = start + i;
+        block[i] = p < byteLen ? data[p] : 0;
+      }
+      blocks.push(block);
+    }
+
+    const encoder = new LtEncoder(numBlocks, blockSize);
+    const baseSeed = seed >>> 0;
+
+    // Mirror Rust headroom: ceil(overhead*K) droplets, with additive floor.
+    let numStrands = Math.ceil(Math.max(1.0, overhead) * numBlocks);
+    numStrands = Math.max(numStrands, numBlocks + 8);
 
     const strands = [];
-    let physical = 0;
-    for (let rep = 0; rep < repeats; rep++) {
-      for (let blk = 0; blk < numBlocks; blk++) {
-        const payload = new Uint8Array(blockSize);
-        const start = blk * blockSize;
-        for (let i = 0; i < blockSize; i++) {
-          const p = start + i;
-          payload[i] = p < byteLen ? data[p] : 0;
-        }
-        // header = logical block index (so reads regroup by block)
-        const frame = new Uint8Array(2 + blockSize);
-        frame.set(u16be(blk), 0);
-        frame.set(payload, 2);
-        const codeword = this.rs.encode(frame); // appends rsParity bytes
-        strands.push({ index: physical++, sequence: encodeBytes(codeword) });
-      }
+    for (let i = 0; i < numStrands; i++) {
+      const dropletSeed = (baseSeed + i) >>> 0; // (mod 2^32)
+      const droplet = encoder.encode(blocks, dropletSeed);
+
+      // frame = [index(4) | seed(4) | droplet.data]
+      const frame = new Uint8Array(HEADER_LEN + blockSize);
+      frame.set(u32be(i), 0);
+      frame.set(u32be(dropletSeed), 4);
+      frame.set(droplet.data, HEADER_LEN);
+
+      const codeword = this.rs.encode(frame); // appends rsParity bytes
+      strands.push({ index: i, sequence: encodeBytes(codeword) });
     }
 
     return {
@@ -525,83 +770,96 @@ export class DnaStorageCodec {
     const numBlocks = archive.numBlocks;
     const rsParity = archive.params.rsParity;
     const rs = new ReedSolomon(rsParity);
-    const frameLen = 2 + blockSize;
-    const codewordBases = (frameLen + rsParity) * 6;
+    const codewordLen = HEADER_LEN + blockSize + rsParity;
+    const expectedBases = codewordLen * 6;
 
-    // Regroup reads by LOGICAL block. Each logical block is emitted `repeats`
-    // times (physical ids blk, blk+numBlocks, ...) and every copy encodes the
-    // *identical* codeword, so all their reads are interchangeable. Pooling them
-    // (a) maximises majority-vote depth to cancel substitutions, and (b) means a
-    // block survives if ANY read of ANY copy survives dropout — the fountain
-    // property, demonstrated via repetition. We use the physical hint index
-    // (index % numBlocks) as the grouping key; the RS-protected header inside
-    // each frame is the ground-truth block id used after decoding.
-    const byBlock = new Map();
-    for (const r of reads) {
-      const key = r.index % numBlocks;
-      if (!byBlock.has(key)) byBlock.set(key, []);
-      // normalise read length to the expected codeword length so consensus
-      // votes position-wise even after indels shifted some reads.
-      let s = r.sequence;
-      if (s.length > codewordBases) s = s.slice(0, codewordBases);
-      else if (s.length < codewordBases) s = s + 'A'.repeat(codewordBases - s.length);
-      byBlock.get(key).push(s);
-    }
+    // reads may be raw ACGT strings or { index, sequence } objects (the demo's
+    // channel emits the latter). Normalise to plain sequence strings.
+    const seqs = reads.map(r => (typeof r === 'string' ? r : r.sequence));
 
-    const blocks = new Array(numBlocks).fill(null);
-    let strandsRecovered = 0;
+    const droplets = [];
+    const seenSeeds = new Set();
     let errorsCorrected = 0;
 
-    // Try, in order: the majority-vote consensus, then each individual read.
-    // Consensus is best when coverage is high (it cancels substitutions); but
-    // with only 1–2 noisy reads a vote can *combine* errors, so we fall back to
-    // RS-decoding the raw reads — the first candidate that yields a valid
-    // codeword wins. This is the practical version of "cluster + consensus +
-    // RS decode" from the Rust pipeline.
-    const tryDecode = (seq) => {
-      let codeword;
-      try { codeword = decodeBytes(seq, true); } catch { return null; }
+    // Demap one sequence -> RS-decode -> droplet, deduped by fountain seed.
+    // Returns true if a *new* droplet was recovered.
+    const tryRecover = (seq) => {
+      // Normalise length to the expected codeword (indels shift length).
+      let usable;
+      if (seq.length >= expectedBases) usable = expectedBases;
+      else usable = Math.floor(seq.length / 6) * 6;
+      if (usable === 0) return false;
+      const trimmed = seq.slice(0, usable);
+
+      let bytes;
+      try { bytes = decodeBytes(trimmed, true); } catch { return false; }
+      if (bytes.length < codewordLen) return false;
+
+      let frame;
       try {
-        const before = codeword.slice();
-        const frame = rs.decode(codeword);
+        const before = bytes.slice(0, codewordLen);
+        frame = rs.decode(before);
         const fixed = rs.encode(frame);
-        let corr = 0;
-        for (let i = 0; i < fixed.length; i++) if (fixed[i] !== before[i]) corr++;
-        return { frame, corr };
-      } catch { return null; }
+        for (let i = 0; i < fixed.length; i++) if (fixed[i] !== before[i]) errorsCorrected++;
+      } catch { return false; }
+
+      if (frame.length < HEADER_LEN) return false;
+      const seed = readU32be(frame, 4);
+      if (seenSeeds.has(seed)) return false; // already have this strand
+      seenSeeds.add(seed);
+
+      const payload = new Uint8Array(blockSize);
+      payload.set(frame.subarray(HEADER_LEN, Math.min(frame.length, HEADER_LEN + blockSize)));
+      const { degree } = neighbours(seed, numBlocks);
+      droplets.push({ seed, degree, data: payload });
+      return true;
     };
 
-    for (const [, group] of byBlock) {
-      const candidates = group.length > 1 ? [consensus(group), ...group] : group;
-      let result = null;
-      for (const seq of candidates) {
-        result = tryDecode(seq);
-        if (result) break;
-      }
-      if (!result) continue; // every candidate exceeded RS capacity
-      errorsCorrected += result.corr;
-      const frame = result.frame;
-      const blk = (frame[0] << 8) | frame[1];
-      if (blk < 0 || blk >= numBlocks) continue;
-      if (blocks[blk] === null) {
-        blocks[blk] = frame.slice(2, 2 + blockSize);
-        strandsRecovered++;
+    // Pass 1 — decode every read independently. RS recovers each strand's exact
+    // [index|seed] header, so identity comes from the code, not fuzzy matching.
+    // Reads RS can't fix are deferred to the salvage pass.
+    const residual = [];
+    for (let i = 0; i < seqs.length; i++) {
+      if (!tryRecover(seqs[i])) residual.push(i);
+    }
+
+    // Pass 2 (salvage) — when coverage > 1 the same strand was sequenced several
+    // times. Cluster the leftover noisy reads, majority-vote a consensus per
+    // cluster to cancel random substitutions, then retry RS. Only ever ADDS
+    // strands, so it never harms the clean path. Mirrors Rust pass-2.
+    if (residual.length > 1) {
+      const residualReads = residual.map(i => seqs[i]);
+      for (const group of cluster(residualReads, 0.3)) {
+        if (group.length < 2) continue;
+        const members = group.map(g => residualReads[g]);
+        const cons = consensus(members);
+        tryRecover(cons);
       }
     }
 
-    // reassemble
-    const out = new Uint8Array(numBlocks * blockSize);
-    let missing = 0;
-    for (let b = 0; b < numBlocks; b++) {
-      if (blocks[b] === null) { missing++; continue; }
-      out.set(blocks[b], b * blockSize);
+    const strandsRecovered = droplets.length;
+
+    // Fountain peeling to recover the source blocks.
+    const decoder = new LtDecoder(numBlocks, blockSize);
+    const recoveredBlocks = decoder.decode(droplets);
+
+    let bytes, blocksRecovered;
+    if (recoveredBlocks !== null) {
+      const out = new Uint8Array(numBlocks * blockSize);
+      for (let b = 0; b < numBlocks; b++) out.set(recoveredBlocks[b], b * blockSize);
+      bytes = out.slice(0, archive.byteLen);
+      blocksRecovered = numBlocks;
+    } else {
+      bytes = new Uint8Array(0);
+      blocksRecovered = 0;
     }
-    const bytes = out.slice(0, archive.byteLen);
-    const crcOk = missing === 0 && crc32(bytes) === archive.crc32;
+
+    const crcOk = blocksRecovered === numBlocks && bytes.length > 0 &&
+      crc32(bytes) === archive.crc32;
 
     return {
       bytes, crcOk,
-      blocksRecovered: numBlocks - missing,
+      blocksRecovered,
       numBlocks,
       strandsRecovered,
       errorsCorrected,
@@ -666,13 +924,72 @@ export function selfTest() {
   let rsOk = true; for (let i = 0; i < 20; i++) if (dec[i] !== msg[i]) rsOk = false;
   assert(rsOk, 'ReedSolomon corrects 4 substitution errors (nsym=8)');
 
-  // end-to-end with the channel
+  // fountain (LT) determinism + peeling sanity, matching fountain.rs
+  {
+    // neighbours: deterministic, in-range, sorted, distinct.
+    const k = 20;
+    let okN = true;
+    for (let s = 0; s < 200; s++) {
+      const a = neighbours(s, k), b = neighbours(s, k);
+      if (a.degree !== b.degree || a.idxs.length !== a.degree) okN = false;
+      if (!(a.degree >= 1 && a.degree <= k)) okN = false;
+      for (let i = 1; i < a.idxs.length; i++) if (a.idxs[i - 1] >= a.idxs[i]) okN = false;
+      for (const idx of a.idxs) if (idx < 0 || idx >= k) okN = false;
+      for (let i = 0; i < a.idxs.length; i++) if (a.idxs[i] !== b.idxs[i]) okN = false;
+    }
+    assert(okN, 'fountain neighbours are deterministic, sorted, distinct, in range');
+
+    const one = neighbours(12345, 1);
+    assert(one.degree === 1 && one.idxs.length === 1 && one.idxs[0] === 0,
+      'fountain neighbours(k=1) == degree 1, [0]');
+
+    // SplitMix64 known sequence: state seeded 0, first next_u64.
+    const sm = new SplitMix64(0n);
+    assert(sm.nextU64() === 16294208416658607535n, 'SplitMix64(0) first next_u64 matches Rust');
+
+    // LT encode -> peel round-trips deterministic source blocks.
+    const blockSize = 16;
+    const blocks = [];
+    const brng = new SplitMix64(0xABCD0000n);
+    for (let i = 0; i < k; i++) {
+      const blk = new Uint8Array(blockSize);
+      for (let j = 0; j < blockSize; j++) blk[j] = Number(brng.nextU64() & 0xFFn);
+      blocks.push(blk);
+    }
+    const enc = new LtEncoder(k, blockSize);
+    const drs = [];
+    for (let s = 0; s < 2 * k; s++) drs.push(enc.encode(blocks, s));
+    const dec = new LtDecoder(k, blockSize);
+    const outBlocks = dec.decode(drs);
+    let peelOk = outBlocks !== null;
+    if (peelOk) for (let i = 0; i < k; i++)
+      for (let j = 0; j < blockSize; j++) if (outBlocks[i][j] !== blocks[i][j]) peelOk = false;
+    assert(peelOk, 'LT encode+peel recovers all source blocks from 2K droplets');
+  }
+
+  // end-to-end with the channel (small payload)
   const codec = new DnaStorageCodec();
   const data = new TextEncoder().encode('I stored my GitHub repo in DNA. '.repeat(4));
   const arc = codec.encode('hello.txt', data);
   const reads = applyChannel(arc.strands, { pSub: 0.02, pIns: 0, pDel: 0, pDrop: 0.2, coverage: 3 }, 42);
   const rep = codec.decode(arc, reads);
   assert(rep.crcOk, 'end-to-end recovery succeeds with sub+dropout (crcOk)');
+
+  // full multi-block file survives sub + strand dropout via the REAL fountain
+  {
+    const big = new Uint8Array(600);
+    const rng2 = new Rng(0x1234abcd);
+    for (let i = 0; i < big.length; i++) big[i] = rng2.int(256);
+    const codec2 = new DnaStorageCodec();
+    const arc2 = codec2.encode('blob.bin', big);
+    const reads2 = applyChannel(arc2.strands,
+      { pSub: 0.02, pIns: 0, pDel: 0, pDrop: 0.15, coverage: 3 }, 99);
+    const rep2 = codec2.decode(arc2, reads2);
+    assert(rep2.crcOk, 'full 600-byte file recovers byte-exact via LT fountain (sub+dropout)');
+    let exact = rep2.bytes.length === big.length;
+    if (exact) for (let i = 0; i < big.length; i++) if (rep2.bytes[i] !== big[i]) exact = false;
+    assert(exact, 'recovered 600-byte payload is byte-for-byte identical');
+  }
 
   return log;
 }

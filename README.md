@@ -77,9 +77,10 @@ cargo run -p rvdna --bin dna-storage -- simulate photo.png \
 ```
 
 CLI: `encode` (file → DNA archive + FASTA) · `simulate` (encode → corrupt →
-recover) · `decode` (archive + reads → file) · `stats`. Live demo in
-[`web/`](web) (open `web/index.html`). Design rationale in
-[`docs/adr/`](docs/adr) (ADR-002 … ADR-008).
+recover) · `decode` (archive + reads → file) · `stats`. The dependency-free
+[`web/`](web) demo (open `web/index.html`) re-implements the **same** pipeline
+in JavaScript — its fountain `neighbours()` is verified bit-for-bit identical to
+the Rust crate. Design rationale in [`docs/adr/`](docs/adr) (ADR-002 … ADR-008).
 
 ## Install
 
