@@ -157,19 +157,54 @@ figcaption b { color:var(--muted-foreground); }
 .code .c { color:var(--dim-foreground); }
 .footer { padding:44px 0 76px; color:var(--dim-foreground); font-size:13.5px; border-top:1px solid var(--border-soft); }
 .badge { display:inline-flex; align-items:center; gap:9px; font-family:var(--font-mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase; border:1px solid var(--border); border-radius:999px; padding:7px 14px; color:var(--muted-foreground); margin-bottom:18px; }
-/* ═════════════════════════════════════ masthead */
+/* ═════════════════════════════════════ masthead — the cold open
+   A title sequence, not a hero image: letterbox bars retract, a scattered
+   cloud of points assembles into a double helix while the camera dollies in,
+   and the type resolves out of blur. The whole thing is one WebGL 2 canvas,
+   scroll-linked so it flies past rather than cutting. */
 .masthead { position:relative; min-height:100svh; display:grid; place-items:center; padding:calc(var(--nav-h) + 32px) 20px 64px; text-align:center; overflow:hidden; }
-.masthead::before { content:''; position:absolute; left:50%; top:46%; width:min(150vw,1100px); aspect-ratio:1; transform:translate(-50%,-50%); border-radius:50%; background:radial-gradient(circle,rgba(29,212,224,.16),rgba(143,90,224,.09) 42%,transparent 68%); filter:blur(24px); animation:breathe 14s ease-in-out infinite; }
+#mgl { position:absolute; inset:0; width:100%; height:100%; display:block; z-index:0; }
+.masthead::before { content:''; position:absolute; left:50%; top:46%; width:min(150vw,1100px); aspect-ratio:1; transform:translate(-50%,-50%); border-radius:50%; background:radial-gradient(circle,rgba(29,212,224,.13),rgba(143,90,224,.08) 42%,transparent 68%); filter:blur(24px); animation:breathe 14s ease-in-out infinite; z-index:0; }
+.masthead::after { content:''; position:absolute; inset:0; z-index:1; pointer-events:none; background:radial-gradient(ellipse at 50% 45%,transparent 46%,rgba(11,14,19,.42) 80%,var(--background) 100%); }
 @keyframes breathe { 0%,100%{transform:translate(-50%,-50%) scale(.94);opacity:.75} 50%{transform:translate(-50%,-50%) scale(1.06);opacity:1} }
-.mast-inner { position:relative; z-index:1; max-width:60ch; }
-.mast-kicker { display:block; font-family:var(--font-mono); font-size:10.5px; letter-spacing:.22em; text-transform:uppercase; color:var(--primary); margin-bottom:26px; opacity:0; animation:rise .9s var(--enter) .1s forwards; }
-.wordmark { font-size:clamp(88px,26vw,240px); line-height:.82; font-weight:200; letter-spacing:-.05em; color:var(--foreground); margin:0; opacity:0; animation:rise 1.1s var(--enter) .25s forwards; }
+
+/* letterbox — the film cue. They open, they do not stay. */
+.bar { position:absolute; left:0; right:0; height:14vh; background:var(--background); z-index:3; pointer-events:none; }
+.bar.top { top:0; animation:barOut 1.5s var(--enter) .15s forwards; }
+.bar.bot { bottom:0; animation:barOutB 1.5s var(--enter) .15s forwards; }
+@keyframes barOut { to { transform:translateY(-100%); } }
+@keyframes barOutB { to { transform:translateY(100%); } }
+
+/* A scrim under the type. The helix runs behind the title, so the words need
+   their own ground or the thin strokes of the wordmark break up against it. */
+.mast-inner { position:relative; z-index:2; max-width:60ch; }
+.mast-inner::before { content:''; position:absolute; inset:-14% -22%; z-index:-1; border-radius:50%;
+  background:radial-gradient(ellipse,rgba(11,14,19,.86) 26%,rgba(11,14,19,.5) 52%,transparent 74%); }
+.mast-kicker { display:block; font-family:var(--font-mono); font-size:10.5px; letter-spacing:.22em; text-transform:uppercase; color:var(--primary); margin-bottom:26px; opacity:0; animation:rise .9s var(--enter) 1.5s forwards; }
+.wordmark { font-size:clamp(88px,26vw,240px); line-height:.82; font-weight:200; letter-spacing:-.05em; color:var(--foreground); margin:0; opacity:0; animation:resolve 2s var(--enter) 1.1s forwards; }
 .wordmark span { font-weight:700; background:linear-gradient(140deg,var(--primary),var(--data-ghost-b)); -webkit-background-clip:text; background-clip:text; color:transparent; }
-.mast-sub { font-size:clamp(17px,3.4vw,26px); font-weight:300; color:var(--foreground); margin:22px 0 0; opacity:0; animation:rise 1s var(--enter) .5s forwards; }
-.mast-lede { font-size:15.5px; line-height:1.75; color:var(--muted-foreground); margin:20px auto 0; max-width:52ch; opacity:0; animation:rise 1s var(--enter) .7s forwards; }
-.mast-scroll { display:inline-block; margin-top:44px; font-family:var(--font-mono); font-size:10px; letter-spacing:.24em; text-transform:uppercase; color:var(--dim-foreground); opacity:0; animation:rise 1s var(--enter) .95s forwards, drift 2.6s ease-in-out 2s infinite; }
+.mast-sub { font-size:clamp(17px,3.4vw,26px); font-weight:300; color:var(--foreground); margin:22px 0 0; opacity:0; animation:rise 1s var(--enter) 2.1s forwards; }
+.mast-lede { font-size:15.5px; line-height:1.75; color:var(--muted-foreground); margin:20px auto 0; max-width:52ch; opacity:0; animation:rise 1s var(--enter) 2.4s forwards; }
+.mast-scroll { display:inline-block; margin-top:44px; font-family:var(--font-mono); font-size:10px; letter-spacing:.24em; text-transform:uppercase; color:var(--dim-foreground); opacity:0; animation:rise 1s var(--enter) 2.8s forwards, drift 2.6s ease-in-out 3.8s infinite; }
 @keyframes rise { from{opacity:0;transform:translateY(22px)} to{opacity:1;transform:none} }
+/* the type arrives out of focus and settles — the one moment of blur on the page */
+@keyframes resolve {
+  0%   { opacity:0; filter:blur(26px); letter-spacing:.24em; transform:scale(1.1); }
+  55%  { opacity:1; }
+  100% { opacity:1; filter:blur(0);    letter-spacing:-.05em; transform:none; }
+}
 @keyframes drift { 0%,100%{transform:translateY(0)} 50%{transform:translateY(7px)} }
+
+/* ═════════════════════════════════════ parallax
+   Depth cues for the scrolled sections. `--py` is written by one rAF-throttled
+   scroll handler; nothing here reads layout. */
+.plx { will-change:transform; transform:translate3d(0,var(--py,0px),0); }
+.plx-slow { will-change:transform; transform:translate3d(0,var(--py,0px),0); }
+section { position:relative; }
+.sect-glow { position:absolute; z-index:-1; left:0; right:0; margin-inline:auto; width:min(88vw,720px); aspect-ratio:1; border-radius:50%; pointer-events:none;
+  background:radial-gradient(circle,rgba(29,212,224,.07),transparent 66%); filter:blur(30px);
+  transform:translate3d(0,var(--py,0px),0); will-change:transform; }
+figure img, .card { will-change:transform; }
 
 .rv { opacity:0; transform:translateY(24px); }
 .rv.in { opacity:1; transform:none; transition:opacity .6s var(--enter),transform .6s var(--enter); }
@@ -190,6 +225,9 @@ figcaption b { color:var(--muted-foreground); }
 
 <!-- ═══════════════════════════════════ masthead -->
 <header class="masthead" id="masthead">
+  <canvas id="mgl" aria-hidden="true"></canvas>
+  <div class="bar top" aria-hidden="true"></div>
+  <div class="bar bot" aria-hidden="true"></div>
   <div class="mast-inner">
     <span class="mast-kicker">rvDNA · TRACE-rv · RuVector · metaharness</span>
     <h1 class="wordmark" aria-label="rUv">r<span>U</span>v</h1>
@@ -260,8 +298,10 @@ figcaption b { color:var(--muted-foreground); }
 
   <h3>Three sequenced archaics, over the same coordinates</h3>
   <p>A deep segment is an outlier, not an attribution — it says a stretch of DNA is old, not where it came from. Answering the second question needs something to compare against, so the same range of chromosome 22 was pulled from three sequenced archaic genomes: the <strong>Altai Neanderthal</strong> (~52× coverage), <strong>Vindija 33.19</strong> (~30×) and <strong>Denisova 3</strong> (~30×), from the Max Planck Institute's snpAD call set.</p>
-  <p>The obvious comparison — measure how far each modern haplotype is from Neanderthal, and see whether non-Africans are closer — <em>does not work</em>, and it is worth saying why. GRCh37 is a European-weighted reference, the archaic genotypes were called against it, and African haplotypes therefore pick up extra apparent differences from <em>any</em> archaic genome for reasons that have nothing to do with interbreeding. Run it anyway and you get a number, in the right direction, that you cannot trust.</p>
-  <p>The statistic that survives that objection is <strong>Patterson's D</strong>. Take one African haplotype and one non-African haplotype. Find the sites where they differ and where the archaic carries the non-reference allele. The archaic now matches exactly one of them. Under a family tree with no interbreeding it should match each equally often — so count them.</p>
+  <p>The obvious thing to do is measure how different each living person is from the Neanderthal, and check whether non-Africans come out closer. <strong>That does not work</strong>, and it is worth knowing why, because the reason catches people out.</p>
+  <p>Every genome in this comparison — including the Neanderthal's — was written down as a list of differences from one agreed-on template sequence. That template was assembled mostly from people of European descent. So African DNA differs from it more, everywhere, for reasons that have nothing to do with Neanderthals. Run the comparison anyway and you get a number that leans the right way and means nothing.</p>
+  <p>There is a test that gets around it, and it is simple enough to describe in one sentence. <strong>Take one African person's DNA and one non-African person's DNA. Find a spot where they disagree. Look up what the Neanderthal has there. It matches one of them. Do that a few million times and count.</strong></p>
+  <p>If nobody ever interbred, the Neanderthal is equally related to both, so it should side with each of them about half the time. Any lean is interbreeding. The reason this beats the divergence comparison is that both outcomes require the Neanderthal to carry the same kind of allele, so whatever bias the reference introduces is applied to both sides of the count and drops out. Geneticists call the two outcomes <em>ABBA</em> and <em>BABA</em>, and the leftover lean <strong>Patterson's D</strong> — it has been the standard test for archaic interbreeding since the first Neanderthal genome in 2010.</p>
   <div class="tiles" id="dTiles"></div>
   <p id="dHeadline"></p>
   <div class="scroll-x" style="margin-top:18px"><table id="dTable"></table></div>
@@ -445,6 +485,205 @@ const prose = s => String(s||'')
   .replace(/ -> /g, ' → ')
   .replace(/'([^']+)'/g, '‘$1’');
 function tiles(host,items){ host.innerHTML = items.map(t=>`<div class="tile${t.hi?' hi':''}"><div class="k">${t.k}</div><div class="v">${t.v}${t.u?`<u>${t.u}</u>`:''}</div>${t.n?`<div class="n">${t.n}</div>`:''}</div>`).join(''); }
+
+/* ═══════════════════════════════════════════════ THE COLD OPEN (WebGL 2)
+   A title sequence. 26,000 points start scattered in a sphere and assemble
+   into a DNA double helix while the camera dollies in from far away; scrolling
+   flies the helix past the lens rather than cutting to the next scene.
+
+   This is hand-written WebGL rather than three.js for one reason: the page has
+   to parse everything it needs before it can draw anything, and minified
+   three.js is about 600 KB. An earlier 811 KB build of this page failed to
+   load at all. The shader below is the same GPU pipeline a library would drive
+   for you, at roughly 4 KB. */
+(function coldOpen(){
+  const cvs = $('#mgl'); if (!cvs) return;
+  const gl = cvs.getContext('webgl2', { antialias:false, alpha:true, premultipliedAlpha:false });
+  if (!gl) return;                      // the CSS gradient alone still reads fine
+
+  // A long helix, wide enough to fill the frame and tilted so it runs corner to
+  // corner and recedes — a hero shot rather than a spring behind the type.
+  const N = 34000, TURNS = 11.0, SPAN = 24.0;
+  const aT = new Float32Array(N), aKind = new Float32Array(N),
+        aRung = new Float32Array(N), aSeed = new Float32Array(N*3);
+  // deterministic scatter — the opening looks the same on every load
+  let s = 20130502; const rnd = () => (s = (s*1664525 + 1013904223) >>> 0) / 4294967296;
+  for (let i=0;i<N;i++){
+    aT[i] = i/N;
+    const r = rnd();
+    aKind[i] = r < 0.40 ? 0 : r < 0.80 ? 1 : 2;   // strand A · strand B · base pair
+    aRung[i] = rnd();
+    // scatter start: a point on a sphere, pushed out by a random radius
+    const u = rnd()*2-1, th = rnd()*6.28318, k = Math.sqrt(1-u*u), rr = 0.55 + rnd()*0.45;
+    aSeed[i*3] = k*Math.cos(th)*rr; aSeed[i*3+1] = u*rr; aSeed[i*3+2] = k*Math.sin(th)*rr;
+  }
+
+  const VS = `#version 300 es
+  in float aT; in float aKind; in float aRung; in vec3 aSeed;
+  uniform mat4 uVP; uniform float uTime, uAssemble, uScroll, uPx;
+  out vec4 vCol;
+  void main(){
+    float ang = aT * ${TURNS.toFixed(1)} * 6.28318;
+    float R = 2.7;
+    vec3 A = vec3(cos(ang)*R, (aT-0.5)*${SPAN.toFixed(1)}, sin(ang)*R);
+    vec3 B = vec3(cos(ang+3.14159)*R, (aT-0.5)*${SPAN.toFixed(1)}, sin(ang+3.14159)*R);
+    vec3 helix = aKind < 0.5 ? A : (aKind < 1.5 ? B : mix(A, B, aRung));
+
+    // Assembly is staggered along the helix, so it builds from the middle out
+    // instead of appearing all at once.
+    float lead = abs(aT - 0.5) * 1.2;
+    float e = clamp(uAssemble * 2.2 - lead, 0.0, 1.0);
+    e = 1.0 - pow(1.0 - e, 3.0);
+    vec3 p = mix(aSeed * 16.0, helix, e);
+
+    // slow rotation about its own axis, plus a faster spin as the scroll
+    // carries it away
+    float rot = uTime * 0.16 + uScroll * 2.4;
+    float c = cos(rot), sn = sin(rot);
+    p = vec3(p.x*c - p.z*sn, p.y, p.x*sn + p.z*c);
+
+    // tilt the whole strand so it runs corner to corner instead of standing up
+    float tz = -0.62, ct = cos(tz), st = sin(tz);
+    p = vec3(p.x*ct - p.y*st, p.x*st + p.y*ct, p.z);
+    p.y -= uScroll * 9.0;
+
+    gl_Position = uVP * vec4(p, 1.0);
+    float w = max(0.35, gl_Position.w);
+    gl_PointSize = clamp((aKind > 1.5 ? 7.0 : 12.0) * uPx / w, 1.0, 26.0);
+
+    // cyan at one end, violet at the other; base pairs stay dim so the two
+    // backbones read as the structure. Points far from the lens fade, which
+    // does the work a depth-of-field pass would.
+    vec3 col = mix(vec3(0.11,0.83,0.88), vec3(0.56,0.35,0.88), aT);
+    float haze = 1.0 - smoothstep(16.0, 62.0, w);
+    float a = (aKind > 1.5 ? 0.30 : 0.95) * (0.22 + 0.78*e) * (0.35 + 0.65*haze) * (1.0 - uScroll);
+    vCol = vec4(col, a);
+  }`;
+
+  const FS = `#version 300 es
+  precision highp float;
+  in vec4 vCol; out vec4 o;
+  void main(){
+    vec2 d = gl_PointCoord - 0.5;
+    float m = 1.0 - smoothstep(0.16, 0.5, length(d));   // soft round sprite
+    if (m <= 0.001) discard;
+    o = vec4(vCol.rgb * vCol.a * m, vCol.a * m);
+  }`;
+
+  const sh=(t,src)=>{const x=gl.createShader(t);gl.shaderSource(x,src);gl.compileShader(x);
+    if(!gl.getShaderParameter(x,gl.COMPILE_STATUS))throw new Error(gl.getShaderInfoLog(x));return x;};
+  let pr;
+  try {
+    pr = gl.createProgram();
+    gl.attachShader(pr, sh(gl.VERTEX_SHADER, VS));
+    gl.attachShader(pr, sh(gl.FRAGMENT_SHADER, FS));
+    gl.linkProgram(pr);
+    if(!gl.getProgramParameter(pr, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(pr));
+  } catch(e) { return; }
+  gl.useProgram(pr);
+
+  const buf=(name,data,size)=>{const b=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,b);
+    gl.bufferData(gl.ARRAY_BUFFER,data,gl.STATIC_DRAW);
+    const l=gl.getAttribLocation(pr,name); if(l<0)return;
+    gl.enableVertexAttribArray(l); gl.vertexAttribPointer(l,size,gl.FLOAT,false,0,0);};
+  buf('aT',aT,1); buf('aKind',aKind,1); buf('aRung',aRung,1); buf('aSeed',aSeed,3);
+
+  const U=n=>gl.getUniformLocation(pr,n);
+  const uVP=U('uVP'), uTime=U('uTime'), uAsm=U('uAssemble'), uScr=U('uScroll'), uPx=U('uPx');
+
+  gl.enable(gl.BLEND);
+  gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);   // premultiplied additive-ish
+  gl.disable(gl.DEPTH_TEST);
+
+  const mul=(a,b)=>{const o=new Float32Array(16);
+    for(let i=0;i<4;i++)for(let j=0;j<4;j++){let v=0;for(let k=0;k<4;k++)v+=a[k*4+j]*b[i*4+k];o[i*4+j]=v;}return o;};
+  const persp=(f,ar,n,fa)=>{const t=1/Math.tan(f/2);return new Float32Array(
+    [t/ar,0,0,0, 0,t,0,0, 0,0,(fa+n)/(n-fa),-1, 0,0,2*fa*n/(n-fa),0]);};
+  const look=(e,c,up)=>{
+    const z=[e[0]-c[0],e[1]-c[1],e[2]-c[2]]; let l=Math.hypot(...z); z.forEach((_,i)=>z[i]/=l);
+    const x=[up[1]*z[2]-up[2]*z[1],up[2]*z[0]-up[0]*z[2],up[0]*z[1]-up[1]*z[0]];
+    l=Math.hypot(...x)||1; x.forEach((_,i)=>x[i]/=l);
+    const y=[z[1]*x[2]-z[2]*x[1],z[2]*x[0]-z[0]*x[2],z[0]*x[1]-z[1]*x[0]];
+    return new Float32Array([x[0],y[0],z[0],0, x[1],y[1],z[1],0, x[2],y[2],z[2],0,
+      -(x[0]*e[0]+x[1]*e[1]+x[2]*e[2]), -(y[0]*e[0]+y[1]*e[1]+y[2]*e[2]), -(z[0]*e[0]+z[1]*e[1]+z[2]*e[2]), 1]);};
+
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let t0 = performance.now(), dpr = 1, scroll = 0, alive = true;
+
+  // Scroll drives the camera; the observer stops the loop once the masthead is
+  // off screen so the rest of the page is not paying for it.
+  const host = $('#masthead');
+  new IntersectionObserver(en => { alive = en[0].isIntersecting; if (alive) frame(); },
+    { threshold: 0 }).observe(host);
+  addEventListener('scroll', () => {
+    scroll = Math.min(1, Math.max(0, scrollY / Math.max(1, host.offsetHeight)));
+  }, { passive:true });
+
+  function frame(){
+    if (!alive) return;
+    requestAnimationFrame(frame);
+    dpr = Math.min(devicePixelRatio || 1, 2);
+    const w = Math.round(cvs.clientWidth*dpr), h = Math.round(cvs.clientHeight*dpr);
+    if (cvs.width !== w || cvs.height !== h) { cvs.width=w; cvs.height=h; }
+    gl.viewport(0,0,w,h);
+    gl.clearColor(0,0,0,0); gl.clear(gl.COLOR_BUFFER_BIT);
+
+    const t = (performance.now()-t0)/1000;
+    const asm = reduced ? 1 : Math.min(1, t/2.6);
+    // the dolly: far away and wide at the start, settling to a close hold
+    const ease = 1 - Math.pow(1 - Math.min(1, t/3.8), 3);
+    const dist = 46 - 25*ease + scroll*16;
+    const sway = reduced ? 0 : Math.sin(t*0.31)*0.5;
+    const eye = [sway, 1.2 + Math.sin(t*0.23)*0.35 - scroll*2.0, dist];
+    const VP = mul(persp(0.95, Math.max(0.35, w/h), 0.1, 260), look(eye,[0,0,0],[0,1,0]));
+
+    gl.uniformMatrix4fv(uVP,false,VP);
+    gl.uniform1f(uTime, reduced ? 0 : t);
+    gl.uniform1f(uAsm, asm);
+    gl.uniform1f(uScr, scroll);
+    gl.uniform1f(uPx, dpr * h/900);
+    gl.drawArrays(gl.POINTS, 0, N);
+  }
+  frame();
+})();
+
+/* ═══════════════════════════════════════════════ PARALLAX
+   One rAF-throttled scroll handler writes a `--py` custom property on every
+   registered layer. Nothing in here reads layout during a scroll event, so the
+   whole page stays on one style/paint pass. */
+(function parallax(){
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+  // Give each section a soft light behind it that drifts at its own rate; the
+  // depth cue is what makes the scroll read as travel rather than as a list.
+  document.querySelectorAll('section').forEach((sec,i) => {
+    const g = document.createElement('div');
+    g.className = 'sect-glow';   // its own transform already carries the -50% centring
+    g.style.top = (i%2 ? '8%' : '34%');
+    g.dataset.rate = (0.10 + (i%3)*0.045).toFixed(3);
+    sec.appendChild(g);
+  });
+  document.querySelectorAll('figure img').forEach(n => { n.classList.add('plx'); n.dataset.rate='-0.05'; });
+  document.querySelectorAll('.pull').forEach(n => { n.classList.add('plx'); n.dataset.rate='0.055'; });
+  document.querySelectorAll('.eyebrow').forEach(n => { n.classList.add('plx'); n.dataset.rate='0.075'; });
+
+  const layers = [...document.querySelectorAll('.plx, .sect-glow')].map(el => ({ el, rate:+el.dataset.rate || 0.1 }));
+  if (!layers.length) return;
+
+  let ticking = false;
+  const paint = () => {
+    ticking = false;
+    const mid = innerHeight/2;
+    for (const L of layers){
+      const r = L.el.getBoundingClientRect();
+      if (r.bottom < -200 || r.top > innerHeight+200) continue;   // off screen, skip
+      L.el.style.setProperty('--py', ((r.top + r.height/2 - mid) * -L.rate).toFixed(1)+'px');
+    }
+  };
+  addEventListener('scroll', () => { if(!ticking){ ticking=true; requestAnimationFrame(paint); } }, {passive:true});
+  addEventListener('resize', paint, {passive:true});
+  paint();
+})();
 
 /* ═══════════════════════════════════════════════ THE SAGA (WebGL 2) */
 /* The saga is 4D: three dimensions of population space, and time as the axis the
@@ -885,7 +1124,9 @@ $('#findingCards').innerHTML = `
       { k:'Significance', v:'Z = '+(nean.z_score>=0?'+':'')+nean.z_score.toFixed(1), n:`${nean.n_blocks}-block jackknife · not significant at 1 Mb` },
     ]);
 
-    $('#dHeadline').innerHTML = `<strong>D comes out positive for both Neanderthals and flat for the Denisovan.</strong> Altai gives <strong>${(nean.d>=0?'+':'')+nean.d.toFixed(4)}</strong>, Vindija <strong>${(D[1].d>=0?'+':'')+D[1].d.toFixed(4)}</strong>, Denisova <strong>${(den.d>=0?'+':'')+den.d.toFixed(4)}</strong> — ${Math.abs(den.d/nean.d*100).toFixed(0)}% of the Neanderthal value. That is the pattern Neanderthal introgression predicts, and the pattern a reference-bias artefact does not: an artefact would push all three the same way, because all three were called against the same reference by the same pipeline.`;
+    $('#dHeadline').innerHTML = `<strong>Both Neanderthals lean towards the non-Africans. The Denisovan does not.</strong>
+      Altai comes out at <strong>${(nean.d>=0?'+':'')+nean.d.toFixed(4)}</strong> and Vindija at <strong>${(D[1].d>=0?'+':'')+D[1].d.toFixed(4)}</strong> — both siding with non-African DNA more often than chance. Denisova 3 sits at <strong>${(den.d>=0?'+':'')+den.d.toFixed(4)}</strong>, essentially dead level, ${Math.abs(den.d/nean.d*100).toFixed(0)}% of the Neanderthal lean.
+      <br><br>That split is the point. If this were just the reference-template problem leaking back in, all three would lean the same way — they were all written down against the same template by the same people. Instead the two Neanderthals lean and the Denisovan does not, which is what actual history predicts: the ancestors of everyone outside Africa met Neanderthals, and 1000 Genomes contains no Oceanian or Papuan samples, who are the people carrying most of the Denisovan ancestry.`;
 
     $('#dTable').innerHTML = `<thead><tr><th>Archaic genome</th><th class="num">ABBA</th><th class="num">BABA</th><th class="num">D</th><th class="num">SE</th><th class="num">Z</th></tr></thead><tbody>`+
       D.map(d=>`<tr><td class="mono" style="color:var(--foreground)">${d.archaic}</td><td class="num">${fmt(d.abba)}</td><td class="num">${fmt(d.baba)}</td><td class="num" style="color:${d.d>0.05?'var(--primary)':'var(--muted-foreground)'}">${(d.d>=0?'+':'')+d.d.toFixed(4)}</td><td class="num">${d.standard_error.toFixed(4)}</td><td class="num">${(d.z_score>=0?'+':'')+d.z_score.toFixed(1)}</td></tr>`).join('')+'</tbody>';
@@ -922,7 +1163,9 @@ $('#findingCards').innerHTML = `
       svg.appendChild(xl);
     })();
 
-    $('#dPower').innerHTML = `<strong>It is also not significant, and that is the more useful number.</strong> Z = ${nean.z_score.toFixed(1)}. One megabase gives ${nean.n_blocks} jackknife blocks, and block-to-block variance at that scale swamps an effect this size. Extrapolating the standard error as 1/√length, this comparison needs roughly <strong>${fmt(nean.mb_for_z3)} Mb</strong> of chromosome before it reaches Z = 3 — about ${(nean.mb_for_z3/(nean.n_blocks*0.05)).toFixed(0)}× more sequence than was used here. That is a power limit, not a null result, and it is the real-data twin of the resolution floor the simulation reports below: a true signal can be present, correctly signed, and still unclaimable.`;
+    $('#dPower').innerHTML = `<strong>And it is not enough evidence to call it. That is the more useful result.</strong>
+      To know whether a lean like this is real or luck, you chop the region into ${nean.n_blocks} pieces, redo the count with each piece left out in turn, and see how much the answer wobbles. It wobbles about as much as the lean itself — the score for that is <strong>Z = ${nean.z_score.toFixed(1)}</strong>, and convention wants Z of 3 or better before anyone claims anything.
+      <br><br>So how much DNA would be enough? Wobble shrinks with the square root of the amount of sequence, which means this comparison needs roughly <strong>${fmt(nean.mb_for_z3)} million bases</strong> of chromosome — about ${(nean.mb_for_z3/(nean.n_blocks*0.05)).toFixed(0)}× what was used here — before the answer stops moving. That is a statement about how much evidence the question takes, not a statement that there is nothing there. It is the same lesson the simulation gives below in a different currency: a real signal can be present, pointing the right way, and still not be yours to claim yet.`;
   }
 
   $('#realCaveat').innerHTML = `<strong>What this is not.</strong> ${REAL.caveats[0]} The depth estimate assumes a strict clock at μ = 1.25×10⁻⁸ per base per generation with a 29-year generation, so treat the absolute numbers as a scale, not a date.`;
