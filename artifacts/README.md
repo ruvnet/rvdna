@@ -66,10 +66,27 @@ against the `#0B0E13` surface. Cognitum's brand cyan `#1DD4E0` stays reserved
 for active intelligence — navigation, focus, the flywheel — and its green
 `#26D968` for verified/positive, never for a data series.
 
-The narrative section is a scroll-driven build over the real measurement: all
-20,880 per-segment depths ship in `depth-distribution.json` and are painted
-directly, so each of the seven passes is showing data rather than an
-illustration of data.
+The report opens with a six-act scroll-driven sequence in **raw WebGL 2** — one
+GPU point per segment, 20,880 of them, morphing between six analytic layouts
+computed in the vertex shader from the real measurement. Height is coalescent
+depth throughout, so the closing shot separates the two ghost lineages by their
+actual divergence times rather than by decoration.
+
+**Why not three.js.** The Artifact CSP blocks external scripts, so a library has
+to be inlined, and minified three.js is roughly 600 KB. The first version of this
+page was 811 KB and failed to load; adding three.js would have put it near 1 MB.
+Hand-written WebGL costs a few kilobytes and does everything this scene needs.
+The page is now **345 KB** end to end:
+
+| | before | after |
+|---|--:|--:|
+| Per-segment depths | 253 KB of JSON numbers | 111 KB (base64 `Uint16Array` + class bytes) |
+| Archaic calls | 171 KB | 38 KB (six fields, not twenty) |
+| Mono webfont inside each SVG | 126 KB (×3 copies) | 0 |
+| **Total page** | **811 KB** | **345 KB** |
+
+Everything still renders from the same generated JSON; `build.mjs` does the
+packing at build time.
 
 The engine lives in [`examples/dna/src/archaic.rs`](../examples/dna/src/archaic.rs);
 the design decisions are recorded in

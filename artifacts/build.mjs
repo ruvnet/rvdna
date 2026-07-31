@@ -3,11 +3,15 @@
  * Assembles artifacts/index.html from the template, the analysis output, and
  * the animated diagrams.
  *
- * The diagrams are inlined as base64 data URIs inside <img> elements rather
- * than as inline <svg>. That keeps each diagram's stylesheet in its own
- * document — they all use short class names like `.bg` and `.note` that would
- * otherwise collide with each other and with the page — while still animating,
- * because CSS animations run in img-referenced SVG.
+ * Page weight is the binding constraint here — the artifact frame has to parse
+ * everything synchronously — so this script does not simply inline the JSON the
+ * Rust binaries emit:
+ *
+ *   - the 20,880 per-segment coalescent depths ship as a base64 Uint16Array
+ *     rather than a JSON number array (253 KB -> ~56 KB);
+ *   - archaic calls are reduced to the six fields the page actually reads;
+ *   - the diagrams do NOT get a copy of the mono webfont each. Inlining it three
+ *     times cost 126 KB to change the labels on three static illustrations.
  *
  * Usage: node artifacts/build.mjs
  */
@@ -21,53 +25,104 @@ const dataDir = join(here, 'data');
 
 const need = (p) => {
   if (!existsSync(p)) {
-    console.error(`missing: ${p}\nrun the Rust binaries first:\n  ./target/release/depth-hist artifacts/data\n  ./target/release/trace-rv  artifacts/data`);
+    console.error(`missing: ${p}\nrun the Rust binaries first:\n  ./target/release/depth-hist artifacts/data\n  ./target/release/trace-rv  artifacts/data\n  ./target/release/discover  artifacts/data`);
     process.exit(1);
   }
   return p;
 };
+const readJson = (name) => JSON.parse(readFileSync(need(join(dataDir, name)), 'utf8'));
 
-const reportObj = JSON.parse(readFileSync(need(join(dataDir, 'trace-rv-report.json')), 'utf8'));
-const calls = readFileSync(need(join(dataDir, 'archaic-calls.json')), 'utf8');
-const depth = readFileSync(need(join(dataDir, 'depth-distribution.json')), 'utf8');
-const disc = readFileSync(need(join(dataDir, 'discoveries.json')), 'utf8');
+const report = readJson('trace-rv-report.json');
+const calls = readJson('archaic-calls.json');
+const depth = readJson('depth-distribution.json');
+const disc = readJson('discoveries.json');
 
-// The report embeds the full call list under `flywheel.final_calls`, and
-// archaic-calls.json is the same data. Inline it once.
-delete reportObj.flywheel.final_calls;
-const report = JSON.stringify(reportObj);
+// The report embeds the full call list under `flywheel.final_calls`; the calls
+// file is the same data. Carry it once.
+delete report.flywheel.final_calls;
 
-// Outfit and JetBrains Mono, both SIL OFL, embedded as data URIs. The Artifact
-// CSP blocks font CDNs, and a silent fallback would lose the typography the
-// design system is built on.
+// ---------------------------------------------------------------- particles
+//
+// One particle per (window, modern haplotype). Everything the 3D narrative
+// needs about a segment is packed into three parallel typed arrays.
+
+const roster = depth.roster.filter((r) => r.role === 'modern');
+const hapCol = new Map(depth.depth_map_haplotypes.map((h, i) => [h, i]));
+const nW = depth.n_windows;
+const nH = roster.length;
+const N = nW * nH;
+
+const depths = new Uint16Array(N);        // coalescent depth in ka, capped
+const klass = new Uint8Array(N);          // what the detector concluded
+const truthK = new Uint8Array(N);         // what the segment actually is
+
+// 0 nothing · 1 Neanderthal · 2 Denisovan · 3 ghost mode 0 · 4 ghost mode 1
+const CALL_CLASS = { Neanderthal: 1, Denisovan: 2 };
+const TRUTH_CLASS = { '.': 0, N: 1, D: 2, A: 3, B: 4 };
+
+const callAt = new Map();
+for (const c of calls) callAt.set(c.window * 4096 + c.haplotype, c);
+
+for (let w = 0; w < nW; w++) {
+  const truthRow = depth.truth_map[w] || '';
+  for (let r = 0; r < nH; r++) {
+    const i = w * nH + r;
+    const h = roster[r].index;
+    depths[i] = Math.min(65535, depth.depth_map[w][hapCol.get(h)] | 0);
+    truthK[i] = TRUTH_CLASS[truthRow[h]] ?? 0;
+    const c = callAt.get(w * 4096 + h);
+    klass[i] = !c ? 0 : (CALL_CLASS[c.attribution] ?? (c.ghost_cluster === 1 ? 4 : 3));
+  }
+}
+
+const b64 = (buf) => Buffer.from(buf.buffer, buf.byteOffset, buf.byteLength).toString('base64');
+
+const particles = {
+  n: N, windows: nW, haplotypes: nH,
+  depths: b64(depths),
+  calls: b64(klass),
+  truth: b64(truthK),
+  roster: roster.map((r) => ({ id: r.id, pop: r.population, grp: r.group })),
+};
+
+// The charts still need per-call detail, but only these fields.
+const callsSlim = calls.map((c) => ({
+  w: c.window, h: c.haplotype, id: c.haplotype_id, g: c.group,
+  a: c.attribution, d: Math.round(c.depth_to_modern_ka), c: c.ghost_cluster,
+}));
+
+// The depth histogram keeps its series and overlap; the bulky maps are now in
+// `particles`.
+const depthSlim = {
+  bin_edges_ka: depth.bin_edges_ka,
+  series: depth.series,
+  overlap: depth.overlap,
+  n_segments: depth.n_segments,
+};
+
+// ---------------------------------------------------------------- assets
 const font = (name) => {
   const buf = readFileSync(need(join(here, 'fonts', name)));
   return `data:font/woff2;base64,${buf.toString('base64')}`;
 };
 
-// An <img>-referenced SVG is its own document: its stylesheet cannot reach the
-// page's @font-face, and every diagram uses short class names that would collide
-// if inlined. So each diagram carries its own copy of the mono face.
-const monoFace = `@font-face{font-family:'JetBrains Mono';font-style:normal;font-weight:100 800;src:url(${font('JetBrainsMono.woff2')}) format('woff2');}`;
-
 const diagram = (name) => {
-  let svg = readFileSync(need(join(here, 'diagrams', name)), 'utf8');
-  if (!svg.includes('<style>')) throw new Error(`${name} has no <style> block to inject the face into`);
-  svg = svg.replace('<style>', `<style>\n${monoFace}\n`);
+  const svg = readFileSync(need(join(here, 'diagrams', name)), 'utf8');
   return `data:image/svg+xml;base64,${Buffer.from(svg, 'utf8').toString('base64')}`;
 };
 
+// ---------------------------------------------------------------- assemble
 let html = readFileSync(join(here, 'story.template.html'), 'utf8');
 
 const subs = {
-  __TRACE_DATA__: report,
-  __CALLS_DATA__: calls,
-  __DEPTH_DATA__: depth,
-  __DISC_DATA__: disc,
+  __TRACE_DATA__: JSON.stringify(report),
+  __CALLS_DATA__: JSON.stringify(callsSlim),
+  __DEPTH_DATA__: JSON.stringify(depthSlim),
+  __DISC_DATA__: JSON.stringify(disc),
+  __PARTICLE_DATA__: JSON.stringify(particles),
   __FONT_OUTFIT__: font('Outfit.woff2'),
   __FONT_MONO__: font('JetBrainsMono.woff2'),
   __DIAGRAM_01__: diagram('01-deep-time-tree.svg'),
-  __DIAGRAM_03__: diagram('03-hnsw-retrieval.svg'),
   __DIAGRAM_04__: diagram('04-darwin-flywheel.svg'),
 };
 
@@ -76,8 +131,8 @@ for (const [k, v] of Object.entries(subs)) {
     console.error(`template has no placeholder ${k}`);
     process.exit(1);
   }
-  // Function form so `$&`, `$1` etc. in the payload are not treated as
-  // replacement patterns — the JSON contains plenty of `$`-adjacent text.
+  // Function form so `$&` / `$1` inside the payload are not treated as
+  // replacement patterns — the JSON is full of `$`-adjacent text.
   html = html.replaceAll(k, () => v);
 }
 
@@ -90,6 +145,10 @@ if (leftover) {
 const out = join(here, 'index.html');
 writeFileSync(out, html);
 
-const kb = (n) => (n / 1024).toFixed(0);
-console.log(`wrote ${out}  (${kb(Buffer.byteLength(html))} KB)`);
-console.log(`  report ${kb(report.length)} KB · calls ${kb(calls.length)} KB · depth ${kb(depth.length)} KB`);
+const kb = (n) => (n / 1024).toFixed(0) + ' KB';
+const total = Buffer.byteLength(html);
+console.log(`wrote ${out}  ${kb(total)}`);
+console.log(`  particles ${kb(JSON.stringify(particles).length)} (${N} segments)`);
+console.log(`  report ${kb(subs.__TRACE_DATA__.length)} · calls ${kb(subs.__CALLS_DATA__.length)} · depth ${kb(subs.__DEPTH_DATA__.length)} · discoveries ${kb(subs.__DISC_DATA__.length)}`);
+console.log(`  fonts ${kb(subs.__FONT_OUTFIT__.length + subs.__FONT_MONO__.length)} · diagrams ${kb(subs.__DIAGRAM_01__.length + subs.__DIAGRAM_04__.length)}`);
+if (total > 420 * 1024) console.warn(`  WARNING: ${kb(total)} is heavy for a single artifact page`);
