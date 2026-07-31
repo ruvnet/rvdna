@@ -1,0 +1,152 @@
+{
+  "generated_utc": "2026-07-31T02:56:37.694532990+00:00",
+  "params": {
+    "k": 8,
+    "dims": 256,
+    "hnsw_m": 16,
+    "ef_search": 96,
+    "top_k": 20,
+    "tau_archaic_ka": 551.0,
+    "match_margin_ka": 520.0,
+    "ghost_link_ka": 900.0
+  },
+  "resolution": [
+    {
+      "scale": 0.15,
+      "ghost_b_segments": 0,
+      "ghost_b_percent": 0.0,
+      "two_modes_found": true,
+      "captured_by_deep_mode": 0.0,
+      "deep_mode_median_ka": 1945.875413691217,
+      "oce_enrichment": 0.8971193415637859,
+      "resolved": false
+    },
+    {
+      "scale": 0.3,
+      "ghost_b_segments": 2,
+      "ghost_b_percent": 0.009578544061302681,
+      "two_modes_found": true,
+      "captured_by_deep_mode": 1.0,
+      "deep_mode_median_ka": 1535.0377063034116,
+      "oce_enrichment": 1.0941080196399344,
+      "resolved": false
+    },
+    {
+      "scale": 0.55,
+      "ghost_b_segments": 9,
+      "ghost_b_percent": 0.04310344827586207,
+      "two_modes_found": true,
+      "captured_by_deep_mode": 1.0,
+      "deep_mode_median_ka": 1711.3623150493752,
+      "oce_enrichment": 1.5386904761904763,
+      "resolved": true
+    },
+    {
+      "scale": 1.0,
+      "ghost_b_segments": 18,
+      "ghost_b_percent": 0.08620689655172414,
+      "two_modes_found": true,
+      "captured_by_deep_mode": 1.0,
+      "deep_mode_median_ka": 2000.4580387945987,
+      "oce_enrichment": 3.4502103786816267,
+      "resolved": true
+    },
+    {
+      "scale": 1.8,
+      "ghost_b_segments": 29,
+      "ghost_b_percent": 0.1388888888888889,
+      "two_modes_found": true,
+      "captured_by_deep_mode": 1.0,
+      "deep_mode_median_ka": 2062.3121605053157,
+      "oce_enrichment": 3.2622950819672134,
+      "resolved": true
+    },
+    {
+      "scale": 3.0,
+      "ghost_b_segments": 54,
+      "ghost_b_percent": 0.25862068965517243,
+      "two_modes_found": true,
+      "captured_by_deep_mode": 0.9629629629629629,
+      "deep_mode_median_ka": 2138.5672323840713,
+      "oce_enrichment": 4.88441145281018,
+      "resolved": true
+    },
+    {
+      "scale": 5.0,
+      "ghost_b_segments": 90,
+      "ghost_b_percent": 0.43103448275862066,
+      "two_modes_found": true,
+      "captured_by_deep_mode": 0.9333333333333333,
+      "deep_mode_median_ka": 2048.52539238416,
+      "oce_enrichment": 4.6913580246913575,
+      "resolved": true
+    }
+  ],
+  "resolution_threshold_segments": 9,
+  "information": [
+    {
+      "window_bp": 250,
+      "equivalent_real_kb": 27,
+      "expected_sites_at_650ka": 15.241379310344826,
+      "precision": 0.8755458515283843,
+      "recall": 0.7344322344322345,
+      "f1": 0.798804780876494,
+      "ordinary_median_ka": -0.0
+    },
+    {
+      "window_bp": 500,
+      "equivalent_real_kb": 54,
+      "expected_sites_at_650ka": 30.48275862068965,
+      "precision": 0.8732673267326733,
+      "recall": 0.8076923076923077,
+      "f1": 0.8392007611798288,
+      "ordinary_median_ka": 21.35201143028181
+    },
+    {
+      "window_bp": 1000,
+      "equivalent_real_kb": 108,
+      "expected_sites_at_650ka": 60.9655172413793,
+      "precision": 0.8683693516699411,
+      "recall": 0.8095238095238095,
+      "f1": 0.837914691943128,
+      "ordinary_median_ka": 32.04943580752551
+    },
+    {
+      "window_bp": 2000,
+      "equivalent_real_kb": 217,
+      "expected_sites_at_650ka": 121.9310344827586,
+      "precision": 0.8481481481481481,
+      "recall": 0.8388278388278388,
+      "f1": 0.8434622467771637,
+      "ordinary_median_ka": 32.04943580752551
+    },
+    {
+      "window_bp": 4000,
+      "equivalent_real_kb": 435,
+      "expected_sites_at_650ka": 243.8620689655172,
+      "precision": 0.8864970645792564,
+      "recall": 0.8296703296703297,
+      "f1": 0.8571428571428572,
+      "ordinary_median_ka": 34.726029482528624
+    }
+  ],
+  "information_knee_bp": 500,
+  "fidelity": {
+    "exhaustive_calls": 540,
+    "indexed_calls": 544,
+    "agreed": 540,
+    "missed_by_index": 0,
+    "added_by_index": 4,
+    "call_recall": 1.0,
+    "exhaustive_f1": 0.8434622467771637,
+    "indexed_f1": 0.8403669724770643,
+    "exact_comparisons_indexed": 391155,
+    "exact_comparisons_exhaustive": 1273680,
+    "work_ratio": 3.256202784062584
+  },
+  "findings": [
+    "A ghost lineage stops being resolvable as a distinct lineage below roughly 9 recovered segments. Above that it separates into its own mode, keeps most of its segments, and shows the carrier-geography enrichment that identifies its route; below it, the deep tail of the more common ghost swallows it entirely.",
+    "Detection saturates at about 500 bp per window (54 kb of real-sequence information, ~30 expected segregating sites at a 650 ka split). Longer windows buy almost nothing; shorter ones fail fast, because the coalescent-depth estimate turns to noise before the threshold does.",
+    "Approximate nearest-neighbour retrieval reproduces 100.0% of the calls an exhaustive scan makes, for 3.3x less comparison work, and the two detectors land within 0.0031 F1 of each other. The index is choosing what to compare, not what to conclude — and this is the measurement that shows it."
+  ]
+}

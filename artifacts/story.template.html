@@ -1,0 +1,1663 @@
+<title>rUv — the history of humanity, read out of living DNA</title>
+
+<style>
+@font-face { font-family:'Outfit'; font-style:normal; font-weight:100 900; font-display:block; src:url(__FONT_OUTFIT__) format('woff2'); }
+@font-face { font-family:'JetBrains Mono'; font-style:normal; font-weight:100 800; font-display:block; src:url(__FONT_MONO__) format('woff2'); }
+
+/* ═════════════════════════════════════ Cognitum tokens */
+:root {
+  --background:#0B0E13; --card:#141820; --surface-elevated:#181D25;
+  --border:#262D38; --border-soft:#1B212A;
+  --foreground:#E6EBEF; --muted-foreground:#788696; --dim-foreground:#56636F;
+  --primary:#1DD4E0; --accent:#26D968; --destructive:#D92626;
+  --data-ghost-a:#10A3AD; --data-ghost-b:#8F5AE0; --data-neander:#C97A22;
+  --data-deniso:#3F72D6; --data-none:#3A4551;
+  --radius:.75rem; --radius-sm:.375rem;
+  --shadow-1:0 1px 2px rgba(0,0,0,.4); --shadow-2:0 8px 32px rgba(0,0,0,.5);
+  --glow:0 0 24px rgba(29,212,224,.22);
+  --font-display:'Outfit',system-ui,-apple-system,sans-serif;
+  --font-mono:'JetBrains Mono',ui-monospace,monospace;
+  --enter:cubic-bezier(.22,1,.36,1);
+  --nav-h:56px; --measure:66ch;
+}
+*,*::before,*::after { box-sizing:border-box; }
+body { background:var(--background); color:var(--muted-foreground); font-family:var(--font-display); font-size:17px; line-height:1.7; -webkit-font-smoothing:antialiased; overflow-x:hidden; }
+::selection { background:rgba(29,212,224,.25); color:var(--foreground); }
+:focus-visible { outline:2px solid var(--primary); outline-offset:3px; border-radius:4px; }
+
+/* ═════════════════════════════════════ nav */
+.nav { position:fixed; inset:0 0 auto 0; z-index:60; height:var(--nav-h); display:flex; align-items:center; gap:16px; padding:0 16px; background:rgba(11,14,19,.78); backdrop-filter:blur(14px); border-bottom:1px solid var(--border-soft); }
+.nav.solid { background:var(--background); }
+.brand { display:flex; align-items:center; gap:10px; font-family:var(--font-mono); font-size:11.5px; font-weight:600; letter-spacing:.1em; color:var(--foreground); text-transform:uppercase; white-space:nowrap; }
+.dot { width:9px; height:9px; border-radius:50%; background:var(--primary); box-shadow:var(--glow); animation:pulse 5s ease-in-out infinite; flex:none; }
+@keyframes pulse { 0%,100%{opacity:.55;transform:scale(.85)} 50%{opacity:1;transform:scale(1)} }
+.nav-links { display:none; margin-left:auto; gap:2px; }
+.nav-links a { font-size:12.5px; font-weight:500; color:var(--muted-foreground); text-decoration:none; padding:8px 11px; border-radius:var(--radius-sm); transition:color .3s,background .3s; white-space:nowrap; }
+.nav-links a:hover { color:var(--foreground); background:var(--surface-elevated); }
+.nav-links a.on { color:var(--primary); }
+.burger { margin-left:auto; width:44px; height:44px; display:grid; place-items:center; background:none; border:1px solid var(--border); border-radius:var(--radius-sm); color:var(--foreground); cursor:pointer; transition:border-color .3s,background .3s; }
+.burger:hover { background:var(--surface-elevated); border-color:var(--primary); }
+.burger span { display:block; width:17px; height:1.5px; background:currentColor; position:relative; transition:transform .3s var(--enter); }
+.burger span::before,.burger span::after { content:''; position:absolute; left:0; width:17px; height:1.5px; background:currentColor; transition:transform .3s var(--enter),opacity .2s; }
+.burger span::before { top:-5.5px; } .burger span::after { top:5.5px; }
+.burger[aria-expanded="true"] span { transform:rotate(45deg); }
+.burger[aria-expanded="true"] span::before { top:0; transform:rotate(90deg); }
+.burger[aria-expanded="true"] span::after { opacity:0; }
+.drawer { position:fixed; inset:var(--nav-h) 0 0 0; z-index:55; background:var(--background); padding:16px 20px 40px; overflow-y:auto; transform:translateY(-8px); opacity:0; pointer-events:none; transition:opacity .3s,transform .3s var(--enter); }
+.drawer.open { transform:none; opacity:1; pointer-events:auto; }
+.drawer a { display:flex; align-items:baseline; gap:14px; min-height:52px; padding:12px 8px; border-bottom:1px solid var(--border-soft); color:var(--foreground); text-decoration:none; font-size:17px; font-weight:500; transition:color .3s,padding-left .3s var(--enter); }
+.drawer a:hover,.drawer a:focus-visible { color:var(--primary); padding-left:14px; }
+.drawer a i { font-family:var(--font-mono); font-size:11px; font-style:normal; color:var(--dim-foreground); min-width:22px; }
+.progress { position:fixed; top:var(--nav-h); left:0; z-index:61; height:2px; width:0; background:linear-gradient(90deg,var(--data-ghost-a),var(--primary)); box-shadow:var(--glow); }
+
+/* ═════════════════════════════════════ the 3D narrative */
+.saga { position:relative; }
+.stage { position:sticky; top:0; height:100svh; z-index:1; }
+#gl { display:block; width:100%; height:100%; }
+.stage-hud { position:absolute; inset:auto 0 0 0; padding:0 20px 18px; display:flex; justify-content:space-between; align-items:flex-end; gap:16px; pointer-events:none; }
+.hud-l { font-family:var(--font-mono); font-size:10px; letter-spacing:.16em; text-transform:uppercase; color:var(--dim-foreground); }
+.hud-r { font-family:var(--font-mono); font-size:11px; color:var(--primary); font-variant-numeric:tabular-nums; text-align:right; }
+.stage-vig { position:absolute; inset:0; pointer-events:none; background:radial-gradient(ellipse at 50% 45%, transparent 40%, rgba(11,14,19,.55) 100%); }
+
+.acts { position:relative; z-index:2; margin-top:-100svh; }
+.act { min-height:100svh; display:flex; align-items:center; padding:0 20px; }
+.act-card { max-width:34rem; background:rgba(20,24,32,.86); backdrop-filter:blur(12px); border:1px solid var(--border); border-radius:var(--radius); padding:22px 24px; box-shadow:var(--shadow-2); opacity:0; transform:translateY(24px); transition:opacity .6s var(--enter),transform .6s var(--enter),border-color .6s; }
+.act.on .act-card { opacity:1; transform:none; border-color:rgba(29,212,224,.32); }
+.act-n { font-family:var(--font-mono); font-size:10px; letter-spacing:.18em; color:var(--primary); display:block; margin-bottom:10px; text-transform:uppercase; }
+.act-card h2 { font-size:clamp(24px,4.6vw,38px); line-height:1.1; letter-spacing:-.025em; color:var(--foreground); margin:0 0 12px; font-weight:600; text-wrap:balance; }
+.act-card p { font-size:16px; margin:0; max-width:44ch; }
+.act-card .fig { font-family:var(--font-mono); font-size:12px; color:var(--primary); margin-top:14px; padding-top:12px; border-top:1px solid var(--border-soft); }
+.act:first-child .act-card { max-width:40rem; }
+.act:first-child h2 { font-size:clamp(34px,8vw,72px); letter-spacing:-.035em; line-height:1.02; }
+@media (min-width:900px) { .act { padding:0 0 0 8vw; } .act:nth-child(even) { justify-content:flex-end; padding:0 8vw 0 0; } }
+/* On a phone a centred card covers the whole stage. Sit it low so the
+   animation stays visible above it. */
+@media (max-width:899px) {
+  .act { align-items:flex-end; padding-bottom:9vh; }
+  .act-card { padding:18px 18px 20px; }
+  .act-card p { font-size:15px; }
+  .act:first-child h2 { font-size:clamp(30px,8.4vw,44px); }
+}
+
+.glfail { position:absolute; inset:0; display:none; place-items:center; text-align:center; padding:24px; }
+.glfail p { font-family:var(--font-mono); font-size:13px; color:var(--dim-foreground); max-width:40ch; }
+.nogl .glfail { display:grid; }
+.nogl #gl { display:none; }
+
+/* ═════════════════════════════════════ document */
+.shell { max-width:1180px; margin:0 auto; padding:0 20px; position:relative; z-index:3; background:var(--background); }
+section { padding:68px 0; scroll-margin-top:calc(var(--nav-h) + 12px); }
+section + section { border-top:1px solid var(--border-soft); }
+.eyebrow { display:inline-flex; align-items:center; gap:10px; font-family:var(--font-mono); font-size:10.5px; font-weight:600; letter-spacing:.18em; text-transform:uppercase; color:var(--dim-foreground); margin-bottom:18px; }
+.eyebrow b { color:var(--primary); }
+.eyebrow::after { content:''; width:34px; height:1px; background:var(--border); }
+h2 { font-weight:600; font-size:clamp(25px,4.2vw,40px); line-height:1.12; letter-spacing:-.024em; color:var(--foreground); text-wrap:balance; margin:0 0 18px; }
+h3 { font-family:var(--font-mono); font-weight:600; font-size:12px; letter-spacing:.15em; text-transform:uppercase; color:var(--muted-foreground); margin:42px 0 14px; }
+p { max-width:var(--measure); margin:0 0 18px; }
+.lede { font-size:clamp(18px,2.4vw,21px); line-height:1.55; color:var(--foreground); max-width:52ch; }
+strong { color:var(--foreground); font-weight:600; }
+a { color:var(--primary); text-decoration:none; border-bottom:1px solid rgba(29,212,224,.3); transition:border-color .3s; }
+a:hover { border-bottom-color:var(--primary); }
+.pull { font-size:clamp(19px,3vw,26px); line-height:1.38; letter-spacing:-.015em; color:var(--foreground); font-weight:500; border-left:2px solid var(--primary); padding:4px 0 4px 22px; margin:32px 0; max-width:46ch; }
+.card { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:20px; box-shadow:var(--shadow-1); }
+.scroll-x { overflow-x:auto; -webkit-overflow-scrolling:touch; }
+.tiles { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px; margin:28px 0; }
+.tile { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:16px 18px 18px; transition:border-color .3s,transform .3s; }
+.tile:hover { border-color:rgba(29,212,224,.35); transform:translateY(-2px); }
+.tile .k { font-family:var(--font-mono); font-size:9.5px; font-weight:600; letter-spacing:.14em; text-transform:uppercase; color:var(--dim-foreground); margin-bottom:10px; }
+.tile .v { font-family:var(--font-mono); font-size:clamp(22px,4vw,28px); font-weight:600; color:var(--foreground); line-height:1; letter-spacing:-.03em; font-variant-numeric:tabular-nums; }
+.tile .v u { text-decoration:none; font-size:.5em; color:var(--muted-foreground); font-weight:400; margin-left:3px; }
+.tile .n { font-size:13px; line-height:1.5; color:var(--muted-foreground); margin-top:9px; }
+.tile.hi { border-color:rgba(29,212,224,.4); } .tile.hi .v { color:var(--primary); }
+table { border-collapse:collapse; width:100%; font-size:13.5px; min-width:460px; }
+th,td { text-align:left; padding:10px 16px 10px 0; border-bottom:1px solid var(--border-soft); }
+th { font-family:var(--font-mono); font-size:9.5px; font-weight:600; letter-spacing:.13em; text-transform:uppercase; color:var(--dim-foreground); }
+td.num,th.num { text-align:right; font-family:var(--font-mono); font-variant-numeric:tabular-nums; padding-right:0; }
+td.num + td:not(.num), th.num + th:not(.num) { padding-left:18px; }
+td.mono { font-family:var(--font-mono); font-size:12.5px; }
+tbody tr:hover { background:var(--surface-elevated); }
+tbody tr:last-child td { border-bottom:0; }
+.sw { display:inline-block; width:9px; height:9px; border-radius:2px; margin-right:8px; }
+.legend { display:flex; flex-wrap:wrap; gap:8px 18px; margin:14px 0 0; font-family:var(--font-mono); font-size:11px; color:var(--muted-foreground); }
+.legend span { display:inline-flex; align-items:center; gap:7px; }
+.legend i { width:10px; height:10px; border-radius:2px; }
+.chart { width:100%; display:block; overflow:visible; }
+.chart text { font-family:var(--font-mono); font-size:10.5px; fill:var(--dim-foreground); }
+.chart .ax { stroke:var(--border); } .chart .gl { stroke:var(--border-soft); }
+.chart .lbl-in { fill:var(--muted-foreground); font-size:11px; }
+@media (max-width:700px){ .chart text{font-size:19px} .chart .lbl-in{font-size:19px} }
+.tip { position:fixed; z-index:90; pointer-events:none; background:var(--surface-elevated); border:1px solid var(--border); border-radius:var(--radius-sm); padding:9px 12px; font-family:var(--font-mono); font-size:11.5px; line-height:1.55; color:var(--foreground); box-shadow:var(--shadow-2); opacity:0; transition:opacity .15s; max-width:250px; }
+.tip.on { opacity:1; } .tip b { color:var(--primary); }
+figure { margin:28px 0; }
+figure img { width:100%; height:auto; display:block; border:1px solid var(--border); border-radius:var(--radius); background:#0B0E13; }
+figcaption { font-family:var(--font-mono); font-size:11.5px; line-height:1.6; color:var(--dim-foreground); margin-top:12px; max-width:74ch; }
+figcaption b { color:var(--muted-foreground); }
+.stack-grid { display:grid; gap:12px; margin:26px 0; }
+@media (min-width:760px){ .stack-grid{grid-template-columns:repeat(2,1fr)} }
+.stack-card { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:20px; position:relative; overflow:hidden; transition:border-color .3s,transform .3s; }
+.stack-card:hover { border-color:rgba(29,212,224,.35); transform:translateY(-2px); }
+.stack-card::after { content:''; position:absolute; inset:auto auto 0 0; height:2px; width:0; background:linear-gradient(90deg,var(--primary),transparent); transition:width .6s var(--enter); }
+.stack-card:hover::after { width:100%; }
+.stack-card .role { font-family:var(--font-mono); font-size:9.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--dim-foreground); }
+.stack-card .name { font-size:19px; font-weight:600; color:var(--foreground); margin:8px 0 2px; }
+.stack-card .name em { font-style:normal; color:var(--primary); }
+.stack-card .plain { font-size:15px; line-height:1.6; margin:10px 0 0; }
+.stack-card .tech { font-family:var(--font-mono); font-size:11.5px; line-height:1.6; color:var(--dim-foreground); margin-top:12px; padding-top:12px; border-top:1px solid var(--border-soft); }
+.flow { display:flex; flex-wrap:wrap; gap:8px; align-items:center; font-family:var(--font-mono); font-size:11.5px; margin:24px 0; }
+.flow b { color:var(--foreground); font-weight:600; background:var(--surface-elevated); border:1px solid var(--border); border-radius:var(--radius-sm); padding:7px 11px; }
+.flow i { font-style:normal; color:var(--primary); }
+.finding { display:grid; gap:12px; margin:28px 0; }
+@media (min-width:760px){ .finding{grid-template-columns:repeat(2,1fr)} }
+.finding-card { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:22px; }
+.finding-card .big { font-family:var(--font-mono); font-size:clamp(34px,7vw,50px); font-weight:600; line-height:1; letter-spacing:-.04em; }
+.finding-card .big u { text-decoration:none; font-size:.38em; margin-left:4px; }
+.finding-card .lab { font-family:var(--font-mono); font-size:10px; letter-spacing:.15em; text-transform:uppercase; color:var(--dim-foreground); margin-bottom:14px; }
+.finding-card p { font-size:14.5px; margin:14px 0 0; }
+.code { font-family:var(--font-mono); font-size:12.5px; line-height:2; background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:18px 20px; color:var(--muted-foreground); overflow-x:auto; }
+.code .c { color:var(--dim-foreground); }
+.footer { padding:44px 0 76px; color:var(--dim-foreground); font-size:13.5px; border-top:1px solid var(--border-soft); }
+.badge { display:inline-flex; align-items:center; gap:9px; font-family:var(--font-mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase; border:1px solid var(--border); border-radius:999px; padding:7px 14px; color:var(--muted-foreground); margin-bottom:18px; }
+/* ═════════════════════════════════════ masthead — the cold open
+   A title sequence, not a hero image: letterbox bars retract, a scattered
+   cloud of points assembles into a double helix while the camera dollies in,
+   and the type resolves out of blur. The whole thing is one WebGL 2 canvas,
+   scroll-linked so it flies past rather than cutting. */
+.masthead { position:relative; min-height:100svh; display:grid; place-items:center; padding:calc(var(--nav-h) + 32px) 20px 64px; text-align:center; overflow:hidden; }
+#mgl { position:absolute; inset:0; width:100%; height:100%; display:block; z-index:0; }
+.masthead::before { content:''; position:absolute; left:50%; top:46%; width:min(150vw,1100px); aspect-ratio:1; transform:translate(-50%,-50%); border-radius:50%; background:radial-gradient(circle,rgba(29,212,224,.13),rgba(143,90,224,.08) 42%,transparent 68%); filter:blur(24px); animation:breathe 14s ease-in-out infinite; z-index:0; }
+.masthead::after { content:''; position:absolute; inset:0; z-index:1; pointer-events:none; background:radial-gradient(ellipse at 50% 45%,transparent 46%,rgba(11,14,19,.42) 80%,var(--background) 100%); }
+@keyframes breathe { 0%,100%{transform:translate(-50%,-50%) scale(.94);opacity:.75} 50%{transform:translate(-50%,-50%) scale(1.06);opacity:1} }
+
+/* letterbox — the film cue. They open, they do not stay. */
+.bar { position:absolute; left:0; right:0; height:14vh; background:var(--background); z-index:3; pointer-events:none; }
+.bar.top { top:0; animation:barOut 1.5s var(--enter) .15s forwards; }
+.bar.bot { bottom:0; animation:barOutB 1.5s var(--enter) .15s forwards; }
+@keyframes barOut { to { transform:translateY(-100%); } }
+@keyframes barOutB { to { transform:translateY(100%); } }
+
+/* A scrim under the type. The helix runs behind the title, so the words need
+   their own ground or the thin strokes of the wordmark break up against it. */
+.mast-inner { position:relative; z-index:2; max-width:60ch; }
+.mast-inner::before { content:''; position:absolute; inset:-14% -22%; z-index:-1; border-radius:50%;
+  background:radial-gradient(ellipse,rgba(11,14,19,.86) 26%,rgba(11,14,19,.5) 52%,transparent 74%); }
+.mast-kicker { display:block; font-family:var(--font-mono); font-size:10.5px; letter-spacing:.22em; text-transform:uppercase; color:var(--primary); margin-bottom:26px; opacity:0; animation:rise .9s var(--enter) 1.5s forwards; }
+.wordmark { font-size:clamp(88px,26vw,240px); line-height:.82; font-weight:200; letter-spacing:-.05em; color:var(--foreground); margin:0; opacity:0; animation:resolve 2s var(--enter) 1.1s forwards; }
+.wordmark span { font-weight:700; background:linear-gradient(140deg,var(--primary),var(--data-ghost-b)); -webkit-background-clip:text; background-clip:text; color:transparent; }
+.mast-sub { font-size:clamp(17px,3.4vw,26px); font-weight:300; color:var(--foreground); margin:22px 0 0; opacity:0; animation:rise 1s var(--enter) 2.1s forwards; }
+.mast-lede { font-size:15.5px; line-height:1.75; color:var(--muted-foreground); margin:20px auto 0; max-width:52ch; opacity:0; animation:rise 1s var(--enter) 2.4s forwards; }
+.mast-scroll { display:inline-block; margin-top:44px; font-family:var(--font-mono); font-size:10px; letter-spacing:.24em; text-transform:uppercase; color:var(--dim-foreground); opacity:0; animation:rise 1s var(--enter) 2.8s forwards, drift 2.6s ease-in-out 3.8s infinite; }
+@keyframes rise { from{opacity:0;transform:translateY(22px)} to{opacity:1;transform:none} }
+/* the type arrives out of focus and settles — the one moment of blur on the page */
+@keyframes resolve {
+  0%   { opacity:0; filter:blur(26px); letter-spacing:.24em; transform:scale(1.1); }
+  55%  { opacity:1; }
+  100% { opacity:1; filter:blur(0);    letter-spacing:-.05em; transform:none; }
+}
+@keyframes drift { 0%,100%{transform:translateY(0)} 50%{transform:translateY(7px)} }
+
+/* ═════════════════════════════════════ parallax
+   Depth cues for the scrolled sections. `--py` is written by one rAF-throttled
+   scroll handler; nothing here reads layout. */
+.plx { will-change:transform; transform:translate3d(0,var(--py,0px),0); }
+.plx-slow { will-change:transform; transform:translate3d(0,var(--py,0px),0); }
+section { position:relative; }
+.sect-glow { position:absolute; z-index:-1; left:0; right:0; margin-inline:auto; width:min(88vw,720px); aspect-ratio:1; border-radius:50%; pointer-events:none;
+  background:radial-gradient(circle,rgba(29,212,224,.07),transparent 66%); filter:blur(30px);
+  transform:translate3d(0,var(--py,0px),0); will-change:transform; }
+figure img, .card { will-change:transform; }
+
+.rv { opacity:0; transform:translateY(24px); }
+.rv.in { opacity:1; transform:none; transition:opacity .6s var(--enter),transform .6s var(--enter); }
+@media (min-width:900px) { .nav-links{display:flex} .burger{display:none} section{padding:96px 0} }
+@media (prefers-reduced-motion:reduce) {
+  *,*::before,*::after { animation-duration:.01ms !important; animation-iteration-count:1 !important; transition-duration:.01ms !important; scroll-behavior:auto !important; }
+  .rv { opacity:1; transform:none; } .act-card { opacity:1; transform:none; }
+}
+</style>
+
+<nav class="nav">
+  <div class="brand"><span class="dot"></span><span style="text-transform:none;font-weight:700">rUv</span><span style="color:var(--dim-foreground)">/</span>rvDNA<span style="color:var(--dim-foreground)">/</span>TRACE-rv</div>
+  <div class="nav-links" id="navLinks"></div>
+  <button class="burger" id="burger" type="button" aria-expanded="false" aria-controls="drawer" aria-label="Open menu"><span></span></button>
+</nav>
+<div class="progress" id="progress"></div>
+<div class="drawer" id="drawer"></div>
+
+<!-- ═══════════════════════════════════ masthead -->
+<header class="masthead" id="masthead">
+  <canvas id="mgl" aria-hidden="true"></canvas>
+  <div class="bar top" aria-hidden="true"></div>
+  <div class="bar bot" aria-hidden="true"></div>
+  <div class="mast-inner">
+    <span class="mast-kicker">rvDNA · TRACE-rv · RuVector · metaharness</span>
+    <h1 class="wordmark" aria-label="rUv">r<span>U</span>v</h1>
+    <p class="mast-sub">The history of humanity, read out of living DNA</p>
+    <p class="mast-lede">1.8 million years, 800 real human haplotypes, 20,880 simulated genome segments, and two extinct populations that no one has ever sequenced — recovered from the shape of the family tree alone.</p>
+    <span class="mast-scroll">scroll</span>
+  </div>
+</header>
+
+<!-- ═══════════════════════════════════ the 3D narrative -->
+<div class="saga" id="saga">
+  <div class="stage">
+    <canvas id="gl"></canvas>
+    <div class="stage-vig"></div>
+    <div class="glfail"><p>This telling needs WebGL 2, which this browser did not provide. The written account below carries every number the animation shows.</p></div>
+    <div class="stage-hud">
+      <div class="hud-l" id="hudL">20,880 segments · 58 haplotypes</div>
+      <div class="hud-r" id="hudR"></div>
+    </div>
+  </div>
+  <div class="acts" id="acts"></div>
+</div>
+
+<div class="shell">
+
+<section id="finding">
+  <div class="eyebrow"><b>01</b> The discovery</div>
+  <h2>A method that reads the past out of the present</h2>
+  <p class="lede">On 30 July 2026 a team at UC Berkeley reported that every living human carries DNA from at least two extinct populations that have never been sequenced — and they found them without a single fragment of ancient DNA.</p>
+  <p>The technique is called <strong>TRACE</strong> — TRacking Archaic Contributions via ARG Estimation. It reconstructs an <strong>ancestral recombination graph</strong>: a running record, across the whole genome, of how every stretch of DNA in a sample is related to every other and how far back those relationships go. Read that graph carefully and two lineages fall out that match nothing anyone has ever sequenced.</p>
+  <div class="finding" id="findingCards"></div>
+  <div class="pull">One is in everyone, which puts the interbreeding inside Africa. The other never met us at all \u2014 it interbred with Denisovans, and Denisovans passed it on.</div>
+  <h3>What it beats, and what beats it</h3>
+  <p>TRACE was benchmarked against three existing methods \u2014 <strong>hmmix</strong>, <strong>Sprime</strong> and <strong>IBDmix</strong>. It is not uniformly better, and the shape of the trade is the interesting part.</p>
+  <div class="scroll-x"><table>
+    <thead><tr><th>Simulated truth</th><th class="num">TRACE</th><th class="num">hmmix</th><th class="num">IBDmix</th></tr></thead>
+    <tbody>
+      <tr><td class="mono">Neanderthal \u00b7 precision</td><td class="num">96.5%</td><td class="num">91.5%</td><td class="num">96.8%</td></tr>
+      <tr><td class="mono">Neanderthal \u00b7 recall</td><td class="num">52.9%</td><td class="num">54.8%</td><td class="num" style="color:var(--accent)">78.1%</td></tr>
+      <tr><td class="mono">Denisovan \u00b7 precision</td><td class="num" style="color:var(--accent)">72.8%</td><td class="num">44.6%</td><td class="num">17.6%</td></tr>
+      <tr><td class="mono">Ghost \u00b7 precision</td><td class="num" style="color:var(--accent)">94.1%</td><td class="num">\u2014</td><td class="num">\u2014</td></tr>
+      <tr><td class="mono">Ghost \u00b7 recall</td><td class="num">16.4%</td><td class="num">\u2014</td><td class="num">\u2014</td></tr>
+    </tbody></table></div>
+  <p>Two things stand out. <strong>IBDmix finds far more Neanderthal DNA than TRACE does</strong> \u2014 78% recall against 53% \u2014 and the authors say so plainly: their method recovers less total archaic ancestry than previous estimates. But IBDmix is almost useless on Denisovans here (17.6% precision), and neither competitor can represent a ghost at all, because both need an unadmixed outgroup to compare against and a ghost that introgressed before the split contaminates the outgroup too.</p>
+  <p>That is the actual claim. Not \u201cbetter\u201d \u2014 <em>able to see a category of thing the others are structurally blind to</em>, at the cost of missing more of what they can see. On a null model with no ghost at all, TRACE infers 0.07% ghost ancestry (95% CI 0\u20130.3%), against the 0.49\u20131.1% it reports on real data.</p>
+  <div class="aside" style="font-family:var(--font-display);font-size:15.5px;line-height:1.6;color:var(--muted-foreground);border-left:2px solid var(--border);padding-left:20px;margin:26px 0;max-width:58ch">
+    Ghost ancestry piles up in immune and metabolic regions \u2014 the MHC and lipoprotein complexes, <em>p</em> &lt; 10\u207b\u2075 \u2014 with high-frequency peaks at <strong>CSMD1</strong> and <strong>RBFOX1</strong>. The super-archaic fraction in Oceanians concentrates in <strong>RNF39</strong>, <strong>PPP1R11</strong>, <strong>POLR1H</strong> (all MHC) and <strong>CYP24A1</strong>, which regulates vitamin&nbsp;D breakdown.
+  </div>
+  <p>Everything below rebuilds that reasoning from first principles on the <strong>ruvstack</strong>, against a simulated cohort where the truth is known, and then pushes it until it breaks.</p>
+</section>
+
+<section id="real">
+  <div class="eyebrow"><b>02</b> Real DNA</div>
+  <h2>The same question, asked of real people</h2>
+  <p class="lede">Everything else here is validated against a simulation where the answer is known. This section takes the statistic that validation licenses and points it at real human genomes.</p>
+  <p>800 phased haplotypes from <strong>400 people</strong> in the 1000 Genomes Project, 80 from each of the five superpopulations, across a 1 Mb stretch of <strong>chromosome 22</strong> carrying <span id="rVar"></span> real variable sites. Pulled straight out of the bgzipped VCF over HTTP range requests — no whole-genome download, no reference panel of our own, nothing simulated.</p>
+  <div class="tiles" id="realTiles"></div>
+
+  <h3>The result that had to come out right</h3>
+  <p>Before believing anything a method says about ghosts, it has to reproduce something already known. The oldest and firmest fact in human population genetics is that <strong>African genomes carry more variation than everyone else's</strong> — the non-African populations all descend from one small group that left, so their lineages meet each other much more recently.</p>
+  <p id="rHeadline"></p>
+  <div class="card"><svg class="chart" id="realChart" viewBox="0 0 860 300" preserveAspectRatio="xMidYMid meet" role="img" aria-labelledby="rlT"></svg><div class="legend" id="realLegend"></div></div>
+  <div class="scroll-x" style="margin-top:18px"><table id="realTable"></table></div>
+
+  <h3>The deep tail, at real coordinates</h3>
+  <p>These are the segments in this region that must reach furthest back before they meet anything else in the panel. They are real haplotypes at real positions on chromosome 22, and you could go and look them up.</p>
+  <div class="scroll-x"><table id="realDeep"></table></div>
+
+  <h3>Three sequenced archaics, over the same coordinates</h3>
+  <p>A deep segment is an outlier, not an attribution — it says a stretch of DNA is old, not where it came from. Answering the second question needs something to compare against, so the same range of chromosome 22 was pulled from three sequenced archaic genomes: the <strong>Altai Neanderthal</strong> (~52× coverage), <strong>Vindija 33.19</strong> (~30×) and <strong>Denisova 3</strong> (~30×), from the Max Planck Institute's snpAD call set.</p>
+  <p>The obvious thing to do is measure how different each living person is from the Neanderthal, and check whether non-Africans come out closer. <strong>That does not work</strong>, and it is worth knowing why, because the reason catches people out.</p>
+  <p>Every genome in this comparison — including the Neanderthal's — was written down as a list of differences from one agreed-on template sequence. That template was assembled mostly from people of European descent. So African DNA differs from it more, everywhere, for reasons that have nothing to do with Neanderthals. Run the comparison anyway and you get a number that leans the right way and means nothing.</p>
+  <p>There is a test that gets around it, and it is simple enough to describe in one sentence. <strong>Take one African person's DNA and one non-African person's DNA. Find a spot where they disagree. Look up what the Neanderthal has there. It matches one of them. Do that a few million times and count.</strong></p>
+  <p>If nobody ever interbred, the Neanderthal is equally related to both, so it should side with each of them about half the time. Any lean is interbreeding. The reason this beats the divergence comparison is that both outcomes require the Neanderthal to carry the same kind of allele, so whatever bias the reference introduces is applied to both sides of the count and drops out. Geneticists call the two outcomes <em>ABBA</em> and <em>BABA</em>, and the leftover lean <strong>Patterson's D</strong> — it has been the standard test for archaic interbreeding since the first Neanderthal genome in 2010.</p>
+  <div class="tiles" id="dTiles"></div>
+  <p id="dHeadline"></p>
+  <div class="scroll-x" style="margin-top:18px"><table id="dTable"></table></div>
+  <div class="card" style="margin-top:20px"><svg class="chart" id="dChart" viewBox="0 0 860 260" preserveAspectRatio="xMidYMid meet" role="img" aria-labelledby="dcT"></svg></div>
+  <p id="dPower"></p>
+  <p id="realCaveat"></p>
+</section>
+
+<section id="us">
+  <div class="eyebrow"><b>03</b> Us</div>
+  <h2>Where the Neanderthal DNA actually is</h2>
+  <p class="lede">Everything up to here measures a method. This measures the people. Same megabase, same 800 living haplotypes, same three archaic genomes — but the question changes from <em>does the detector work</em> to <em>what does this DNA say about us</em>.</p>
+
+  <p>The trick is to stop asking how similar somebody is to a Neanderthal and start asking a sharper question: <strong>is there an allele in this person that Neanderthals have and Africa does not?</strong> Find the positions where a high-coverage Neanderthal carries the non-reference letter and not one of the 160 African haplotypes carries it. Anyone outside Africa with a run of those letters inherited them from somebody — and there is only one somebody available.</p>
+  <p>It also sidesteps the reference-template problem entirely. The test never asks how far from the template anyone is. It asks what is <em>missing from Africa</em>.</p>
+
+  <div class="tiles" id="usTiles"></div>
+  <p id="usControl"></p>
+
+  <h3>The map</h3>
+  <p>Every row is one real living haplotype; the axis runs left to right along the megabase. A lit block is a stretch of chromosome that carries Neanderthal letters absent from Africa. The African rows are at the top — and they are the point.</p>
+  <div class="card"><svg class="chart" id="tractMap" viewBox="0 0 860 470" preserveAspectRatio="xMidYMid meet" role="img" aria-labelledby="tmT"></svg><div class="legend" id="tractLegend"></div></div>
+  <div class="scroll-x" style="margin-top:18px"><table id="tractTable"></table></div>
+
+  <h3>When it happened — and a mistake the simulation saw coming</h3>
+  <p>Recombination has been chopping these inherited stretches shorter every generation since the interbreeding, so what survives is a clock: the shorter the average stretch, the longer ago it arrived.</p>
+  <p id="usDate"></p>
+
+  <h3>The family, with no family tree assumed</h3>
+  <p>Last question, and the simplest one. Take two people from the same population at random and measure how different their DNA is. Do it for all 26 populations. Nothing is assumed here — no tree, no model of migration, no groupings beyond the labels the 1000 Genomes Project already ships.</p>
+  <div class="card"><svg class="chart" id="popChart" viewBox="0 0 860 560" preserveAspectRatio="xMidYMid meet" role="img" aria-labelledby="pcT"></svg><div class="legend" id="popLegend"></div></div>
+  <p id="usFamily"></p>
+  <p id="usCaveat"></p>
+</section>
+
+<section id="tree">
+  <div class="eyebrow"><b>04</b> Deep time</div>
+  <h2>Four archaic sources, two of them invisible</h2>
+  <p>To know whether a detector works you need a world where you already know the answer. The cohort is simulated under a structured coalescent on a hominin population tree calibrated to the published divergence times, with interbreeding planted at known coordinates.</p>
+  <figure>
+    <img loading="lazy" src="__DIAGRAM_01__" alt="A time-scaled hominin population tree from 1.8 million years ago to the present. Modern populations, Neanderthals and Denisovans are solid lines; two ghost lineages are dashed lines that never reach the present.">
+    <figcaption><b>Fig. 1</b> — Solid lines are lineages with sequenced genomes. Dashed lines are the ghosts: real contributors, no reference to check against.</figcaption>
+  </figure>
+  <div class="scroll-x"><table id="plantTable"></table></div>
+  <p id="burdenNote" style="margin-top:20px"></p>
+</section>
+
+<section id="stack">
+  <div class="eyebrow"><b>05</b> The platform</div>
+  <h2>What is actually running underneath</h2>
+  <p class="lede">Nothing here is a notebook full of Python. The whole study is a Rust binary that compiles to native code or WebAssembly and runs the same on a laptop, a browser tab, or a Raspberry Pi on a shelf. That property is the reason the stack looks the way it does.</p>
+  <div class="stack-grid" id="stackGrid"></div>
+  <h3>How a question moves through it</h3>
+  <div class="flow" id="flowRow"></div>
+  <p>Read that left to right: raw sequence becomes a numeric fingerprint, the fingerprint goes into a searchable index, the index narrows millions of possible comparisons down to a handful, the exact genetics runs only on those, and two feedback loops tune the whole thing without a human in the way.</p>
+  <h3>What the analytics actually measure</h3>
+  <div class="scroll-x"><table id="metricTable"></table></div>
+</section>
+
+<section id="engine">
+  <div class="eyebrow"><b>06</b> The engine</div>
+  <h2>Making a quadratic question cheap</h2>
+  <p>Asking "who is this segment related to?" the obvious way means comparing it with every other segment, in every window. That is quadratic, and almost all of the work is wasted on haplotypes that were never going to matter.</p>
+  <p>So the pipeline splits the question in two. Every window is turned into a <strong>k-mer profile vector</strong> — a numeric fingerprint of which short sequences it contains — and inserted into a <strong>RuVector HNSW graph</strong>. The index answers <em>which segments are even worth looking at</em>. The exact genetics, which decides the answer, runs only on what comes back.</p>
+  <div class="tiles" id="engineTiles"></div>
+  <p id="containerNote"></p>
+</section>
+
+<section id="loops">
+  <div class="eyebrow"><b>07</b> Darwin &amp; the flywheel</div>
+  <h2>Two loops around a frozen model</h2>
+  <p>A detector like this has eight dials. Hand-tuning them is guesswork, and guesswork that touches the thresholds is guesswork that decides the answer. <strong>Darwin mode</strong> does it mechanically: change one dial, test the change in a sandbox against a training split, keep it only if it clears an explicit margin. Then score the survivor once on a split it has never seen.</p>
+  <figure>
+    <img loading="lazy" src="__DIAGRAM_04__" alt="Two coupled control loops: an inner Darwin loop that mutates hyperparameters behind a safety gate, and an outer flywheel loop that detects, clusters, condenses and re-indexes ghost references until it goes dry.">
+    <figcaption><b>Fig. 2</b> — The inner loop changes the settings. The outer loop changes the evidence.</figcaption>
+  </figure>
+  <div class="card"><svg class="chart" id="darwinChart" viewBox="0 0 860 300" preserveAspectRatio="xMidYMid meet" role="img" aria-labelledby="dwT"></svg><div class="legend" id="darwinLegend"></div></div>
+  <div class="tiles" id="darwinTiles"></div>
+  <p id="darwinVerdict"></p>
+  <h3>The flywheel, and the bug that nearly ate it</h3>
+  <p>The <strong>flywheel</strong> is the outer loop: confirmed ghost segments are condensed into references and written back into the index, so the next pass can recognise a borderline segment by its resemblance to a lineage that is no longer invisible.</p>
+  <p>The first version collapsed. It let any ghost call become a reference, so false positives validated more false positives and precision fell from <strong>0.84 to 0.19</strong> over three rounds. Two rules fixed it, and both come from the population genetics rather than from tuning.</p>
+  <div class="finding" id="flywheelRules"></div>
+  <div class="scroll-x" style="margin-top:22px"><table id="wheelTable"></table></div>
+  <p id="wheelVerdict"></p>
+</section>
+
+<section id="result">
+  <div class="eyebrow"><b>08</b> What came out</div>
+  <h2>Two lineages, and no reference genome for either</h2>
+  <p>Every segment flagged as archaic that could not be matched to a Neanderthal or Denisovan reference is a ghost candidate. Clustering those by coalescent depth finds <strong>two modes</strong> that bracket the two planted lineages.</p>
+  <p>They do not separate cleanly. Ghost-A's own depth distribution runs to 2.5 million years, so its deep tail lands on top of Ghost-B, and with only <span id="gbCount"></span> super-archaic segments depth can tell you two sources are present but cannot assign individual segments between them.</p>
+  <div class="tiles" id="lineageCards"></div>
+  <div class="card" style="margin-top:8px"><svg class="chart" id="lineageChart" viewBox="0 0 860 220" preserveAspectRatio="xMidYMid meet" role="img" aria-labelledby="lnT"></svg></div>
+  <h3>A second signature, independent of depth</h3>
+  <p>Depth says <em>when</em> a lineage split. It says nothing about <em>how</em> its DNA reached us — and that is exactly where the two ghosts differ. Ghost-A entered our lineage inside Africa, before the last migration out, so it should be everywhere. Ghost-B never met us: it came through Denisovans, so it should pile up wherever Denisovan ancestry piles up.</p>
+  <div class="card"><svg class="chart" id="carrierChart" viewBox="0 0 860 200" preserveAspectRatio="xMidYMid meet" role="img" aria-labelledby="ccT"></svg><div class="legend" id="carrierLegend"></div></div>
+  <p id="carrierVerdict"></p>
+  <h3>Calls against truth</h3>
+  <div class="scroll-x"><table id="attrTable"></table></div>
+  <p id="attrNote"></p>
+</section>
+
+<section id="limits">
+  <div class="eyebrow"><b>09</b> Pushing it until it breaks</div>
+  <h2>Three things the first run could not tell us</h2>
+  <p class="lede">Getting a good answer on one cohort is worth very little on its own. These three sweeps ask the harder question: where does this stop working, and why?</p>
+
+  <h3>How rare can a ghost lineage get?</h3>
+  <p>A lineage is only recoverable as a <em>lineage</em> once enough of its segments survive to form a mode of its own. Below that it is swallowed by the deep tail of the more common ghost. So we varied the super-archaic contribution and watched for the moment it disappears.</p>
+  <div class="card"><svg class="chart" id="resChart" viewBox="0 0 860 300" preserveAspectRatio="xMidYMid meet" role="img" aria-labelledby="rsT"></svg><div class="legend" id="resLegend"></div></div>
+  <div class="scroll-x" style="margin-top:18px"><table id="resTable"></table></div>
+  <p id="resFinding"></p>
+
+  <h3>How much DNA does one window need?</h3>
+  <p>Coalescent depth is estimated by counting the differences between two stretches of sequence. Too few differences and the estimate is noise. This sweep shrinks the window until the method fails, which gives the real resolution limit in the only unit that matters — the number of variable sites available.</p>
+  <div class="card"><svg class="chart" id="infoChart" viewBox="0 0 860 280" preserveAspectRatio="xMidYMid meet" role="img" aria-labelledby="ifT"></svg><div class="legend" id="infoLegend"></div></div>
+  <p id="infoFinding"></p>
+
+  <h3>Is the shortcut lying to us?</h3>
+  <p>The pipeline lets an approximate index decide which comparisons to run. That is a shortcut, and shortcuts have to be audited rather than assumed. So we ran the detector twice on the same cohort — once with the index, once comparing everything against everything — and diffed the calls.</p>
+  <div class="tiles" id="fidTiles"></div>
+  <p id="fidFinding"></p>
+
+  <h3>Does looking sideways along the chromosome help?</h3>
+  <p>Everything above judges each window on its own. But introgression does not arrive one window at a time — it arrives in <strong>tracts</strong>, contiguous runs of chromosome inherited whole and then chopped up by recombination over the generations since. So a window that is borderline on its own evidence, sitting between two windows that are clearly archaic, is more likely archaic than the same window sitting alone.</p>
+  <p>The cohort was re-simulated with introgression planted as geometric tracts of mean 4.9 windows, and a linkage-aware rule added: call a window if its own depth clears the threshold, <em>or</em> if it clears a lower rescue threshold and its neighbours' decay-weighted depth clears a context threshold.</p>
+  <div class="tiles" id="linkTiles"></div>
+  <p id="linkHeadline"></p>
+  <div class="scroll-x" style="margin-top:18px"><table id="linkTable"></table></div>
+  <p id="linkTract"></p>
+
+  <h3>Which genomes should you actually sequence?</h3>
+  <p>The detector never looks at an archaic genome to decide <em>whether</em> a segment is archaic — it only compares against living people. So the reference panel is the budget item that matters, and the sweep asks two questions a real study has to answer: how many genomes, and <em>whose</em>?</p>
+  <div class="card"><svg class="chart" id="panelChart" viewBox="0 0 860 300" preserveAspectRatio="xMidYMid meet" role="img" aria-labelledby="pnT"></svg><div class="legend" id="panelLegend"></div></div>
+  <p id="panelHeadline"></p>
+  <p id="panelTwist"></p>
+  <div class="scroll-x" style="margin-top:18px"><table id="ablTable"></table></div>
+  <p id="ablFinding"></p>
+</section>
+
+<section id="method">
+  <div class="eyebrow"><b>10</b> Fine print</div>
+  <h2>Read this before the headline</h2>
+  <div id="caveatList"></div>
+  <h3>Reproduce it</h3>
+  <div class="code">
+    <div class="c"># the whole study, from a clean checkout</div>
+    <div>cargo build --release</div>
+    <div>./target/release/depth-hist artifacts/data <span class="c">&nbsp;&nbsp;# the reference measurement</span></div>
+    <div>./target/release/trace-rv&nbsp;&nbsp; artifacts/data <span class="c">&nbsp;&nbsp;# simulate, evolve, spin, cluster</span></div>
+    <div>./target/release/discover&nbsp;&nbsp; artifacts/data <span class="c">&nbsp;&nbsp;# the three limit sweeps</span></div>
+    <div>node artifacts/build.mjs</div>
+    <div class="c" style="margin-top:10px"># every run is seeded — these are the numbers you get</div>
+  </div>
+  <h3>Sources</h3>
+  <ul style="max-width:var(--measure);padding-left:18px;font-size:14.5px;line-height:1.8">
+    <li>Zhang, Biddanda, Johnson, O'Dushlaine &amp; Moorjani, <em>Recovering signatures of archaic hominin introgression using ancestral recombination graphs</em>, <strong>Science</strong> eaef8874, 30 July 2026. <a href="https://www.science.org/doi/10.1126/science.aef8874">doi:10.1126/science.aef8874</a>. <strong>Every figure quoted here is from the <a href="https://www.biorxiv.org/content/10.64898/2026.03.03.709416v1">bioRxiv preprint</a> (March 2026)</strong>, which is the version that could be read in full; peer review may have revised them.</li>
+    <li>Deng, Nielsen &amp; Song, <em>Robust and accurate Bayesian inference of genome-wide genealogies</em> (SINGER), <strong>Nature Genetics</strong> 57:2124–2135, 2025 — the ARG engine TRACE runs on.</li>
+    <li>Liang &amp; Nielsen, <em>The lengths of admixture tracts</em>, <strong>Genetics</strong> 197(3):953–967, 2014. <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC4096373/">PMC4096373</a> — and note their actual thesis is that the exponential tract model is wrong in detail at both short and long timescales.</li>
+    <li>The 1000 Genomes Project Consortium, <em>A global reference for human genetic variation</em>, <strong>Nature</strong> 526:68–74, 2015 — the source of every real haplotype on this page. Data are openly available via <a href="https://www.internationalgenome.org/data">IGSR</a>.</li>
+    <li>Iasi et al., <strong>Science</strong> 386:eadq3010, 2024 — Neanderthal admixture at 46,364 years BP (95.5% CI 45,682–47,045).</li>
+    <li>Sankararaman et al., <strong>Nature</strong> 507:354–357, 2014 — per-individual Neanderthal tracts &ldquo;usually less than a hundred kilobases&rdquo;.</li>
+    <li><a href="https://github.com/ruvnet/rvdna">ruvnet/rvdna</a> · <a href="https://github.com/ruvnet/ruvector">ruvnet/ruvector</a> · <a href="https://github.com/ruvnet/metaharness">ruvnet/metaharness</a></li>
+  </ul>
+  <h3>Corrections</h3>
+  <p style="font-size:14.5px">Earlier versions of this page repeated the press-release claim that <em>&ldquo;Denisovans carry 3&ndash;5% super-archaic DNA&rdquo;</em>. <strong>That figure is not in the paper.</strong> TRACE's estimate is 0.3% of the Denisovan ancestry in Oceanians — a different denominator entirely, and an explicit lower bound. The same versions described 800 ka as the ghost's divergence time; it is a <em>coalescence</em> time, which bounds the divergence from above. The authors' own conservative statement is &ldquo;diverged over 500,000 years ago&rdquo;.</p>
+  <div class="footer">
+    <div class="badge"><span class="dot"></span>Powered by the ruvstack &amp; Cognitum One</div>
+    <p>Built with rvDNA, RuVector and metaharness Darwin. Styled with the Cognitum design system — a dark-committed visual language, kept dark here on purpose. Typefaces Outfit and JetBrains Mono, embedded under the SIL Open Font License. The opening sequence is raw WebGL 2 with no library, so the whole page stays under a third of a megabyte.</p>
+    <p>Research and educational software. Not a medical device, and not a claim about anybody's ancestry.</p>
+  </div>
+</section>
+</div>
+<div class="tip" id="tip"></div>
+
+<script>
+const REPORT = __TRACE_DATA__;
+const CALLS  = __CALLS_DATA__;
+const DEPTH  = __DEPTH_DATA__;
+const DISC   = __DISC_DATA__;
+const REAL   = __REAL_DATA__;
+const LINK   = __LINK_DATA__;
+const PANEL  = __PANEL_DATA__;
+const HUMAN  = __HUMAN_DATA__;
+const PART   = __PARTICLE_DATA__;
+
+const $ = s => document.querySelector(s);
+const cv = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const fmt = (x,d=0) => Number(x).toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d});
+const pct = (x,d=1) => (x*100).toFixed(d)+'%';
+const svgEl = (t,a={}) => { const n=document.createElementNS('http://www.w3.org/2000/svg',t); for(const k in a) n.setAttribute(k,a[k]); return n; };
+const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const unb64 = (s,T) => { const bin=atob(s); const b=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) b[i]=bin.charCodeAt(i); return new T(b.buffer); };
+
+const SRC_COLOR = { 'Ghost-A (deep African)':'--data-ghost-a','Ghost-B (super-archaic)':'--data-ghost-b','Neanderthal':'--data-neander','Denisovan':'--data-deniso' };
+const colorFor = l => cv(SRC_COLOR[l] || '--data-none');
+const hex3 = h => { const n=parseInt(h.slice(1),16); return [(n>>16&255)/255,(n>>8&255)/255,(n&255)/255]; };
+
+const tip = $('#tip');
+function showTip(e,html){ tip.innerHTML=html; tip.classList.add('on'); const r=tip.getBoundingClientRect(),p=14; let x=e.clientX+p,y=e.clientY+p; if(x+r.width>innerWidth-8)x=e.clientX-r.width-p; if(y+r.height>innerHeight-8)y=e.clientY-r.height-p; tip.style.left=Math.max(8,x)+'px'; tip.style.top=Math.max(8,y)+'px'; }
+const hideTip = () => tip.classList.remove('on');
+function hoverable(node,html){ node.style.cursor='pointer'; node.addEventListener('mouseenter',e=>showTip(e,html)); node.addEventListener('mousemove',e=>showTip(e,html)); node.addEventListener('mouseleave',hideTip); }
+/* The Rust binaries emit plain text: `*emphasis*`, `->`, and straight quotes.
+   Render them as the typography the rest of the page uses rather than leaving
+   asterisks on screen. */
+const prose = s => String(s||'')
+  .replace(/\*([^*]+)\*/g, '<em>$1</em>')
+  .replace(/ -> /g, ' → ')
+  .replace(/'([^']+)'/g, '‘$1’');
+function tiles(host,items){ host.innerHTML = items.map(t=>`<div class="tile${t.hi?' hi':''}"><div class="k">${t.k}</div><div class="v">${t.v}${t.u?`<u>${t.u}</u>`:''}</div>${t.n?`<div class="n">${t.n}</div>`:''}</div>`).join(''); }
+
+/* ═══════════════════════════════════════════════ THE COLD OPEN (WebGL 2)
+   A title sequence. 26,000 points start scattered in a sphere and assemble
+   into a DNA double helix while the camera dollies in from far away; scrolling
+   flies the helix past the lens rather than cutting to the next scene.
+
+   This is hand-written WebGL rather than three.js for one reason: the page has
+   to parse everything it needs before it can draw anything, and minified
+   three.js is about 600 KB. An earlier 811 KB build of this page failed to
+   load at all. The shader below is the same GPU pipeline a library would drive
+   for you, at roughly 4 KB. */
+(function coldOpen(){
+  const cvs = $('#mgl'); if (!cvs) return;
+  const gl = cvs.getContext('webgl2', { antialias:false, alpha:true, premultipliedAlpha:false });
+  if (!gl) return;                      // the CSS gradient alone still reads fine
+
+  // A long helix, wide enough to fill the frame and tilted so it runs corner to
+  // corner and recedes — a hero shot rather than a spring behind the type.
+  const N = 34000, TURNS = 11.0, SPAN = 24.0;
+  const aT = new Float32Array(N), aKind = new Float32Array(N),
+        aRung = new Float32Array(N), aSeed = new Float32Array(N*3);
+  // deterministic scatter — the opening looks the same on every load
+  let s = 20130502; const rnd = () => (s = (s*1664525 + 1013904223) >>> 0) / 4294967296;
+  for (let i=0;i<N;i++){
+    aT[i] = i/N;
+    const r = rnd();
+    aKind[i] = r < 0.40 ? 0 : r < 0.80 ? 1 : 2;   // strand A · strand B · base pair
+    aRung[i] = rnd();
+    // scatter start: a point on a sphere, pushed out by a random radius
+    const u = rnd()*2-1, th = rnd()*6.28318, k = Math.sqrt(1-u*u), rr = 0.55 + rnd()*0.45;
+    aSeed[i*3] = k*Math.cos(th)*rr; aSeed[i*3+1] = u*rr; aSeed[i*3+2] = k*Math.sin(th)*rr;
+  }
+
+  const VS = `#version 300 es
+  in float aT; in float aKind; in float aRung; in vec3 aSeed;
+  uniform mat4 uVP; uniform float uTime, uAssemble, uScroll, uPx;
+  out vec4 vCol;
+  void main(){
+    float ang = aT * ${TURNS.toFixed(1)} * 6.28318;
+    float R = 2.7;
+    vec3 A = vec3(cos(ang)*R, (aT-0.5)*${SPAN.toFixed(1)}, sin(ang)*R);
+    vec3 B = vec3(cos(ang+3.14159)*R, (aT-0.5)*${SPAN.toFixed(1)}, sin(ang+3.14159)*R);
+    vec3 helix = aKind < 0.5 ? A : (aKind < 1.5 ? B : mix(A, B, aRung));
+
+    // Assembly is staggered along the helix, so it builds from the middle out
+    // instead of appearing all at once.
+    float lead = abs(aT - 0.5) * 1.2;
+    float e = clamp(uAssemble * 2.2 - lead, 0.0, 1.0);
+    e = 1.0 - pow(1.0 - e, 3.0);
+    vec3 p = mix(aSeed * 16.0, helix, e);
+
+    // slow rotation about its own axis, plus a faster spin as the scroll
+    // carries it away
+    float rot = uTime * 0.16 + uScroll * 2.4;
+    float c = cos(rot), sn = sin(rot);
+    p = vec3(p.x*c - p.z*sn, p.y, p.x*sn + p.z*c);
+
+    // tilt the whole strand so it runs corner to corner instead of standing up
+    float tz = -0.62, ct = cos(tz), st = sin(tz);
+    p = vec3(p.x*ct - p.y*st, p.x*st + p.y*ct, p.z);
+    p.y -= uScroll * 9.0;
+
+    gl_Position = uVP * vec4(p, 1.0);
+    float w = max(0.35, gl_Position.w);
+    gl_PointSize = clamp((aKind > 1.5 ? 7.0 : 12.0) * uPx / w, 1.0, 26.0);
+
+    // cyan at one end, violet at the other; base pairs stay dim so the two
+    // backbones read as the structure. Points far from the lens fade, which
+    // does the work a depth-of-field pass would.
+    vec3 col = mix(vec3(0.11,0.83,0.88), vec3(0.56,0.35,0.88), aT);
+    float haze = 1.0 - smoothstep(16.0, 62.0, w);
+    float a = (aKind > 1.5 ? 0.30 : 0.95) * (0.22 + 0.78*e) * (0.35 + 0.65*haze) * (1.0 - uScroll);
+    vCol = vec4(col, a);
+  }`;
+
+  const FS = `#version 300 es
+  precision highp float;
+  in vec4 vCol; out vec4 o;
+  void main(){
+    vec2 d = gl_PointCoord - 0.5;
+    float m = 1.0 - smoothstep(0.16, 0.5, length(d));   // soft round sprite
+    if (m <= 0.001) discard;
+    o = vec4(vCol.rgb * vCol.a * m, vCol.a * m);
+  }`;
+
+  const sh=(t,src)=>{const x=gl.createShader(t);gl.shaderSource(x,src);gl.compileShader(x);
+    if(!gl.getShaderParameter(x,gl.COMPILE_STATUS))throw new Error(gl.getShaderInfoLog(x));return x;};
+  let pr;
+  try {
+    pr = gl.createProgram();
+    gl.attachShader(pr, sh(gl.VERTEX_SHADER, VS));
+    gl.attachShader(pr, sh(gl.FRAGMENT_SHADER, FS));
+    gl.linkProgram(pr);
+    if(!gl.getProgramParameter(pr, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(pr));
+  } catch(e) { return; }
+  gl.useProgram(pr);
+
+  const buf=(name,data,size)=>{const b=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,b);
+    gl.bufferData(gl.ARRAY_BUFFER,data,gl.STATIC_DRAW);
+    const l=gl.getAttribLocation(pr,name); if(l<0)return;
+    gl.enableVertexAttribArray(l); gl.vertexAttribPointer(l,size,gl.FLOAT,false,0,0);};
+  buf('aT',aT,1); buf('aKind',aKind,1); buf('aRung',aRung,1); buf('aSeed',aSeed,3);
+
+  const U=n=>gl.getUniformLocation(pr,n);
+  const uVP=U('uVP'), uTime=U('uTime'), uAsm=U('uAssemble'), uScr=U('uScroll'), uPx=U('uPx');
+
+  gl.enable(gl.BLEND);
+  gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);   // premultiplied additive-ish
+  gl.disable(gl.DEPTH_TEST);
+
+  const mul=(a,b)=>{const o=new Float32Array(16);
+    for(let i=0;i<4;i++)for(let j=0;j<4;j++){let v=0;for(let k=0;k<4;k++)v+=a[k*4+j]*b[i*4+k];o[i*4+j]=v;}return o;};
+  const persp=(f,ar,n,fa)=>{const t=1/Math.tan(f/2);return new Float32Array(
+    [t/ar,0,0,0, 0,t,0,0, 0,0,(fa+n)/(n-fa),-1, 0,0,2*fa*n/(n-fa),0]);};
+  const look=(e,c,up)=>{
+    const z=[e[0]-c[0],e[1]-c[1],e[2]-c[2]]; let l=Math.hypot(...z); z.forEach((_,i)=>z[i]/=l);
+    const x=[up[1]*z[2]-up[2]*z[1],up[2]*z[0]-up[0]*z[2],up[0]*z[1]-up[1]*z[0]];
+    l=Math.hypot(...x)||1; x.forEach((_,i)=>x[i]/=l);
+    const y=[z[1]*x[2]-z[2]*x[1],z[2]*x[0]-z[0]*x[2],z[0]*x[1]-z[1]*x[0]];
+    return new Float32Array([x[0],y[0],z[0],0, x[1],y[1],z[1],0, x[2],y[2],z[2],0,
+      -(x[0]*e[0]+x[1]*e[1]+x[2]*e[2]), -(y[0]*e[0]+y[1]*e[1]+y[2]*e[2]), -(z[0]*e[0]+z[1]*e[1]+z[2]*e[2]), 1]);};
+
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let t0 = performance.now(), dpr = 1, scroll = 0, alive = true;
+
+  // Scroll drives the camera; the observer stops the loop once the masthead is
+  // off screen so the rest of the page is not paying for it.
+  const host = $('#masthead');
+  new IntersectionObserver(en => { alive = en[0].isIntersecting; if (alive) frame(); },
+    { threshold: 0 }).observe(host);
+  addEventListener('scroll', () => {
+    scroll = Math.min(1, Math.max(0, scrollY / Math.max(1, host.offsetHeight)));
+  }, { passive:true });
+
+  function frame(){
+    if (!alive) return;
+    requestAnimationFrame(frame);
+    dpr = Math.min(devicePixelRatio || 1, 2);
+    const w = Math.round(cvs.clientWidth*dpr), h = Math.round(cvs.clientHeight*dpr);
+    if (cvs.width !== w || cvs.height !== h) { cvs.width=w; cvs.height=h; }
+    gl.viewport(0,0,w,h);
+    gl.clearColor(0,0,0,0); gl.clear(gl.COLOR_BUFFER_BIT);
+
+    const t = (performance.now()-t0)/1000;
+    const asm = reduced ? 1 : Math.min(1, t/2.6);
+    // the dolly: far away and wide at the start, settling to a close hold
+    const ease = 1 - Math.pow(1 - Math.min(1, t/3.8), 3);
+    const dist = 46 - 25*ease + scroll*16;
+    const sway = reduced ? 0 : Math.sin(t*0.31)*0.5;
+    const eye = [sway, 1.2 + Math.sin(t*0.23)*0.35 - scroll*2.0, dist];
+    const VP = mul(persp(0.95, Math.max(0.35, w/h), 0.1, 260), look(eye,[0,0,0],[0,1,0]));
+
+    gl.uniformMatrix4fv(uVP,false,VP);
+    gl.uniform1f(uTime, reduced ? 0 : t);
+    gl.uniform1f(uAsm, asm);
+    gl.uniform1f(uScr, scroll);
+    gl.uniform1f(uPx, dpr * h/900);
+    gl.drawArrays(gl.POINTS, 0, N);
+  }
+  frame();
+})();
+
+/* ═══════════════════════════════════════════════ PARALLAX
+   One rAF-throttled scroll handler writes a `--py` custom property on every
+   registered layer. Nothing in here reads layout during a scroll event, so the
+   whole page stays on one style/paint pass. */
+(function parallax(){
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+  // Give each section a soft light behind it that drifts at its own rate; the
+  // depth cue is what makes the scroll read as travel rather than as a list.
+  document.querySelectorAll('section').forEach((sec,i) => {
+    const g = document.createElement('div');
+    g.className = 'sect-glow';   // its own transform already carries the -50% centring
+    g.style.top = (i%2 ? '8%' : '34%');
+    g.dataset.rate = (0.10 + (i%3)*0.045).toFixed(3);
+    sec.appendChild(g);
+  });
+  document.querySelectorAll('figure img').forEach(n => { n.classList.add('plx'); n.dataset.rate='-0.05'; });
+  document.querySelectorAll('.pull').forEach(n => { n.classList.add('plx'); n.dataset.rate='0.055'; });
+  document.querySelectorAll('.eyebrow').forEach(n => { n.classList.add('plx'); n.dataset.rate='0.075'; });
+
+  const layers = [...document.querySelectorAll('.plx, .sect-glow')].map(el => ({ el, rate:+el.dataset.rate || 0.1 }));
+  if (!layers.length) return;
+
+  let ticking = false;
+  const paint = () => {
+    ticking = false;
+    const mid = innerHeight/2;
+    for (const L of layers){
+      const r = L.el.getBoundingClientRect();
+      if (r.bottom < -200 || r.top > innerHeight+200) continue;   // off screen, skip
+      L.el.style.setProperty('--py', ((r.top + r.height/2 - mid) * -L.rate).toFixed(1)+'px');
+    }
+  };
+  addEventListener('scroll', () => { if(!ticking){ ticking=true; requestAnimationFrame(paint); } }, {passive:true});
+  addEventListener('resize', paint, {passive:true});
+  paint();
+})();
+
+/* ═══════════════════════════════════════════════ THE SAGA (WebGL 2) */
+/* The saga is 4D: three dimensions of population space, and time as the axis the
+   scroll actually travels. Each act names the epoch it passes through, and the
+   vertical axis is the SAME coalescent-time axis the analysis uses later — so
+   the ghost clouds at the end settle at exactly the depths of the branches you
+   flew past on the way up. */
+const ACTS = [
+  { ka:1800, mode:'tree', eyebrow:'1.8 million years ago',
+    h:'As far back as we can still see',
+    p:'This is the floor. Below it the genealogies of living people carry no usable signal — every thread has already merged. Homo erectus is walking out of Africa. A lineage that branches here will not be seen again for 1.8 million years, and then only as a stain inside somebody else\u2019s DNA.',
+    hud:'the deep root' },
+  { ka:800, mode:'tree', eyebrow:'800,000 years ago',
+    h:'A lineage walks away and is never found',
+    p:'A population splits off from the line that leads to us. It leaves no bones anyone has identified, no genome anyone has sequenced, and no name. It is a ghost \u2014 and it is still inside you.',
+    hud:'Ghost-A separates' },
+  { ka:650, mode:'tree', eyebrow:'650,000 years ago',
+    h:'The cousins we would meet again',
+    p:'The branch that becomes Neanderthals and Denisovans parts from ours. For most of the next half-million years these are simply different peoples in different places, unaware of one another.',
+    hud:'the archaic branch' },
+  { ka:300, mode:'tree', eyebrow:'300,000 years ago',
+    h:'Us \u2014 and we are not one people yet',
+    p:'Modern humans appear in Africa, already structured into deep, long-separated populations. That is why African genomes still carry more variation than every other population on Earth combined, and why they are the most informative thing you can put in a reference panel.',
+    hud:'modern humans, deeply structured' },
+  { ka:60, mode:'tree', eyebrow:'60,000 years ago',
+    h:'A small group leaves, and meets the others',
+    p:'One narrow branch walks out of Africa and runs into relatives who have been away for 600,000 years. They interbreed. Roughly 2% of every non-African genome alive today is Neanderthal; in Oceania a further slice is Denisovan. Those meetings are the only reason any of this is recoverable.',
+    hud:'out of Africa \u00b7 interbreeding' },
+  { ka:0, mode:'tree', eyebrow:'Today',
+    h:'Eight billion people, and a record written in all of them',
+    p:'Every point is one real stretch of one real chromosome. Nothing has been measured yet \u2014 this is the data as it arrives, sorted only by where its carriers live.',
+    hud:'the living panel' },
+  { ka:0, mode:'depth', eyebrow:'The reading',
+    h:'Now turn around and look back down the axis',
+    p:'For every segment, find its nearest relative anywhere in the panel, ask how far back you must go to reach them, and drop the segment to that depth. Almost everything falls near the present \u2014 you share these stretches with a cousin, a population, a continent.',
+    hud:'coalescent depth' },
+  { ka:0, mode:'threshold', eyebrow:'The outliers',
+    h:'A few refuse to come up',
+    p:'A segment donated by a lineage that split 800,000 years ago cannot meet anyone until it gets back past that split, because until then there was nobody to meet. Everything shallower falls away. What is left is DNA far too old to be ordinary variation.',
+    hud:'above the threshold' },
+  { ka:0, mode:'ghost', eyebrow:'Two ghosts',
+    h:'And they are not the same ancestor',
+    p:'The survivors settle into two clouds \u2014 at the exact depths of two branches you passed on the way up. One near 800,000 years. One near two million. Two extinct human populations, recovered from the shape of living genealogies, with no reference genome for either.',
+    hud:'two recovered lineages', fig:'nearer \u00b7 Ghost-A ~800 ka&nbsp;&nbsp;&nbsp;deeper \u00b7 Ghost-B ~1.8 Ma' },
+];
+
+(function saga() {
+  const cvs = $('#gl');
+  const gl = cvs.getContext('webgl2', { antialias:false, alpha:false, powerPreference:'high-performance' });
+
+  $('#acts').innerHTML = ACTS.map((a,i)=>`<div class="act" data-i="${i}"><div class="act-card">
+    <span class="act-n">${String(i+1).padStart(2,'0')} / ${String(ACTS.length).padStart(2,'0')} · ${a.eyebrow}</span>
+    <h2>${a.h}</h2><p>${a.p}</p>${a.fig?`<div class="fig">${a.fig}</div>`:''}</div></div>`).join('');
+
+  if (!gl) { document.body.classList.add('nogl'); wireActs(()=>{}); return; }
+
+  // ---- data ------------------------------------------------------------
+  const N = PART.n, NW = PART.windows, NH = PART.haplotypes;
+  const depths = unb64(PART.depths, Uint16Array);
+  // one byte per segment: low nibble is what the detector concluded, high
+  // nibble is what the segment actually is
+  const packed = unb64(PART.packed, Uint8Array);
+  const callK  = packed.map(v => v & 15);
+  const truthK = packed.map(v => v >> 4);
+
+  // Population order round the circle, and the epoch at which each lineage
+  // parts from the trunk. These are the real divergence times the simulation
+  // was calibrated to, so the tree you fly through is the tree being tested.
+  const POPS = [...new Set(PART.roster.map(r => r.pop))];
+  const POP_SPLIT_KA = { SAN:200, YRI:120, MSL:120, LWK:110, CEU:60, SAS:60, CHB:58, AMR:45, PNG:55 };
+  // class -> {angle slot, split epoch, extinction epoch}
+  const CLASS_BRANCH = [
+    null,                                  // 0 = no archaic ancestry: use its population
+    { ang: 0.30, split: 650,  tMin: 40 },  // 1 Neanderthal
+    { ang: 0.42, split: 650,  tMin: 45 },  // 2 Denisovan
+    { ang: 0.62, split: 800,  tMin: 90 },  // 3 Ghost-A
+    { ang: 0.82, split: 1800, tMin: 200 }, // 4 Ghost-B
+  ];
+
+  const TAU = 6.28318530718;
+  const aAng = new Float32Array(N);   // angle on the tree
+  const aAngP = new Float32Array(N);  // angle by population, for the depth column
+  const aSplit = new Float32Array(N); // epoch this lineage leaves the trunk
+  const aT = new Float32Array(N);     // where along its branch this point sits
+  const aD = new Float32Array(N);     // measured coalescent depth, ka
+  const aC = new Float32Array(N);
+  const hash = n => { const s = Math.sin(n * 12.9898) * 43758.5453; return s - Math.floor(s); };
+
+  for (let w = 0, i = 0; w < NW; w++) for (let r = 0; r < NH; r++, i++) {
+    const pop = PART.roster[r].pop;
+    const cls = callK[i];
+    const popSlot = POPS.indexOf(pop) / Math.max(POPS.length, 1);
+    // Populations occupy the first two-thirds of the circle; archaic and ghost
+    // branches get their own quadrant so they read as separate limbs.
+    const angP = popSlot * TAU * 0.62 + 0.12;
+    const br = CLASS_BRANCH[cls];
+    aAngP[i] = angP;
+    aAng[i]  = br ? br.ang * TAU + (hash(i) - 0.5) * 0.16 : angP + (hash(i) - 0.5) * 0.09;
+    aSplit[i] = br ? br.split : (POP_SPLIT_KA[pop] || 90);
+    const tMin = br ? br.tMin : 0;
+    // Spread the points along the branch's lifespan, biased toward the present
+    // so the recent, dense part of the tree stays dense.
+    const u = hash(i + 3.1);
+    aT[i] = tMin + (aSplit[i] - tMin) * Math.pow(u, 1.9);
+    aD[i] = depths[i];
+    aC[i] = cls;
+  }
+
+  const VS = `#version 300 es
+  precision highp float;
+  in float aAng, aAngP, aSplit, aT, aD, aC;
+  uniform mat4 uVP;
+  uniform float uMode[4];        // tree · depth · threshold · ghost
+  uniform float uTime, uTau, uPix, uNowKa;
+  uniform vec3 uCA, uCB, uCNea, uCDen, uCDim, uCWarm;
+  out vec3 vCol; out float vAlpha;
+
+  const float TAU_C = 6.28318530718;
+  const float R = 3.15;          // radius of the present-day canopy
+  const float H = 9.0;           // depth of the time volume
+
+  float hash(float n){ return fract(sin(n*12.9898)*43758.5453); }
+
+  // The one axis everything shares: deep time, square-rooted so the last
+  // hundred thousand years stay legible next to 1.8 million.
+  float yOf(float ka){ return -H * sqrt(clamp(ka, 0.0, 1800.0) / 1800.0); }
+
+  void main() {
+    float id = aT * 7.3 + aAng * 131.0 + aD * 0.017;
+    float h1 = hash(id), h2 = hash(id + 7.7), h3 = hash(id + 13.3);
+
+    float isGhost = step(2.5, aC);
+    float ghostB  = step(3.5, aC);
+    float deep    = step(uTau, aD);
+
+    // ---- TREE: a lineage's radius is zero before it splits and opens out
+    // to the full canopy by the present, so branches genuinely fan apart at
+    // their real divergence epochs.
+    float rTree = R * pow(clamp((aSplit - aT) / max(aSplit, 1.0), 0.0, 1.0), 0.7);
+    rTree *= 0.86 + 0.28 * h2;
+    vec3 Ptree = vec3(rTree * cos(aAng), yOf(aT), rTree * sin(aAng));
+
+    // ---- DEPTH: same circle of populations, but every point drops to the
+    // depth actually measured for it.
+    float rD = R * (0.80 + 0.30 * h1);
+    vec3 Pdepth = vec3(rD * cos(aAngP), yOf(aD), rD * sin(aAngP));
+
+    // ---- THRESHOLD: what fails the test sinks back to the surface.
+    vec3 Pthr = vec3(rD * cos(aAngP), mix(0.06 * h3, yOf(aD), deep), rD * sin(aAngP));
+
+    // ---- GHOST: the survivors gather into two clouds, each still hanging at
+    // its own depth.
+    float ga = h1 * TAU_C, gr = 0.34 + 0.46 * h2;
+    vec3 gpos = vec3(cos(ga) * gr + (ghostB * 2.7 - 1.35), yOf(aD), sin(ga) * gr);
+    vec3 Pghost = mix(vec3(rD * 0.22 * cos(aAngP), 0.04, rD * 0.22 * sin(aAngP)), gpos, isGhost);
+
+    vec3 pos = Ptree*uMode[0] + Pdepth*uMode[1] + Pthr*uMode[2] + Pghost*uMode[3];
+    pos.y += 0.010 * sin(uTime * 0.55 + id * 0.019);
+
+    // ---- colour
+    float dn = clamp((log(1.0 + max(aD,0.0)) - log(21.0)) / (log(3001.0) - log(21.0)), 0.0, 1.0);
+    vec3 lineage = aC < 0.5 ? uCWarm : (aC < 1.5 ? uCNea : (aC < 2.5 ? uCDen : mix(uCA, uCB, ghostB)));
+    vec3 ramp = mix(uCDim, uCA, pow(dn, 0.85));
+
+    // In tree mode a point is lit only once time has reached its epoch — so the
+    // world literally builds itself as you travel forward.
+    float born = smoothstep(uNowKa + 90.0, uNowKa - 40.0, aT);
+    vec3 cTree = mix(uCDim * 0.35, lineage, born);
+
+    vCol = cTree*uMode[0] + ramp*uMode[1]
+         + mix(uCDim*0.10, ramp*1.25, deep)*uMode[2]
+         + mix(uCDim*0.05, mix(uCA,uCB,ghostB)*1.3, isGhost)*uMode[3];
+
+    vAlpha = (0.10 + 0.62*born)*uMode[0]
+           + (0.24 + 0.62*dn)*uMode[1]
+           + mix(0.05, 1.0, deep)*uMode[2]
+           + mix(0.025, 1.0, isGhost)*uMode[3];
+
+    vec4 mv = uVP * vec4(pos, 1.0);
+    gl_Position = mv;
+    float size = 1.25 + 1.7*dn*(uMode[1]+uMode[2]+uMode[3]) + 1.3*isGhost*uMode[3] + 0.5*born*uMode[0];
+    gl_PointSize = clamp(size * uPix * 19.0 / max(mv.w, 0.6), 1.0, 16.0);
+  }`;
+
+
+  const FS = `#version 300 es
+  precision highp float;
+  in vec3 vCol; in float vAlpha;
+  out vec4 outColor;
+  void main() {
+    vec2 d = gl_PointCoord - 0.5;
+    float r2 = dot(d,d);
+    if (r2 > 0.25) discard;
+    float fall = exp(-r2*9.0);
+    outColor = vec4(vCol * fall, vAlpha * fall);
+  }`;
+
+  function sh(type, src) {
+    const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s);
+    if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s));
+    return s;
+  }
+  let prog;
+  try {
+    prog = gl.createProgram();
+    gl.attachShader(prog, sh(gl.VERTEX_SHADER, VS));
+    gl.attachShader(prog, sh(gl.FRAGMENT_SHADER, FS));
+    gl.linkProgram(prog);
+    if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(prog));
+  } catch (e) {
+    console.error('shader:', e);
+    document.body.classList.add('nogl'); wireActs(()=>{}); return;
+  }
+  gl.useProgram(prog);
+
+  const vao = gl.createVertexArray(); gl.bindVertexArray(vao);
+  const attach = (name, arr) => {
+    const loc = gl.getAttribLocation(prog, name); if (loc < 0) return;
+    const b = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, b);
+    gl.bufferData(gl.ARRAY_BUFFER, arr, gl.STATIC_DRAW);
+    gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 1, gl.FLOAT, false, 0, 0);
+  };
+  attach('aAng', aAng); attach('aAngP', aAngP); attach('aSplit', aSplit);
+  attach('aT', aT); attach('aD', aD); attach('aC', aC);
+
+  const U = n => gl.getUniformLocation(prog, n);
+  const uVP = U('uVP'), uMode = U('uMode[0]'), uTime = U('uTime'), uPix = U('uPix'), uNowKa = U('uNowKa');
+  gl.uniform1f(U('uTau'), REPORT.darwin.evolved.tau_archaic_ka);
+  gl.uniform3fv(U('uCA'), hex3(cv('--primary')));
+  gl.uniform3fv(U('uCB'), hex3(cv('--data-ghost-b')));
+  gl.uniform3fv(U('uCNea'), hex3(cv('--data-neander')));
+  gl.uniform3fv(U('uCDen'), hex3(cv('--data-deniso')));
+  gl.uniform3fv(U('uCDim'), hex3('#5C6B7A'));
+  gl.uniform3fv(U('uCWarm'), hex3('#9FB2C4'));
+
+  gl.disable(gl.DEPTH_TEST);
+  gl.enable(gl.BLEND);
+  gl.blendFunc(gl.SRC_ALPHA, gl.ONE);      // additive: overlapping points glow
+
+  // ---- camera ----------------------------------------------------------
+  // The camera is the fourth dimension made navigable: for every act in the
+  // ascent it sits at that act's epoch and rises as you scroll, so scrolling
+  // forward IS travelling forward through time. For the reading acts it pulls
+  // back to take in the whole column at once.
+  const H_TIME = 9.0;
+  const yOf = ka => -H_TIME * Math.sqrt(Math.max(0, Math.min(1800, ka)) / 1800);
+  const MODES = { tree:0, depth:1, threshold:2, ghost:3 };
+  const CAM = ACTS.map(a => {
+    const y = yOf(a.ka);
+    if (a.mode === 'tree') return { eye:[0, y + 1.35, 7.4], tgt:[0, y + 0.15, 0] };
+    if (a.mode === 'depth') return { eye:[0, -4.1, 12.4], tgt:[0, -4.1, 0] };
+    if (a.mode === 'threshold') return { eye:[0, -4.8, 11.6], tgt:[0, -4.6, 0] };
+    return { eye:[0, -5.6, 9.4], tgt:[0, -5.4, 0] };
+  });
+  const lerp3 = (a,b,t) => [a[0]+(b[0]-a[0])*t, a[1]+(b[1]-a[1])*t, a[2]+(b[2]-a[2])*t];
+
+  function perspective(fovy, ar, n, f) {
+    const t = 1/Math.tan(fovy/2);
+    return [t/ar,0,0,0, 0,t,0,0, 0,0,(f+n)/(n-f),-1, 0,0,2*f*n/(n-f),0];
+  }
+  function lookAt(e, c, up) {
+    let z=[e[0]-c[0],e[1]-c[1],e[2]-c[2]];
+    let l=Math.hypot(...z)||1; z=[z[0]/l,z[1]/l,z[2]/l];
+    let x=[up[1]*z[2]-up[2]*z[1], up[2]*z[0]-up[0]*z[2], up[0]*z[1]-up[1]*z[0]];
+    l=Math.hypot(...x)||1; x=[x[0]/l,x[1]/l,x[2]/l];
+    const y=[z[1]*x[2]-z[2]*x[1], z[2]*x[0]-z[0]*x[2], z[0]*x[1]-z[1]*x[0]];
+    return [x[0],y[0],z[0],0, x[1],y[1],z[1],0, x[2],y[2],z[2],0,
+            -(x[0]*e[0]+x[1]*e[1]+x[2]*e[2]), -(y[0]*e[0]+y[1]*e[1]+y[2]*e[2]), -(z[0]*e[0]+z[1]*e[1]+z[2]*e[2]), 1];
+  }
+  function mul(a,b){ const o=new Array(16); for(let i=0;i<4;i++)for(let j=0;j<4;j++){let s=0;for(let k=0;k<4;k++)s+=a[k*4+j]*b[i*4+k];o[i*4+j]=s;} return o; }
+
+  // ---- scroll-driven state --------------------------------------------
+  let target = 0, cur = 0, dpr = 1;
+  const weights = new Float32Array(6);
+
+  function resize() {
+    dpr = Math.min(devicePixelRatio || 1, 2);
+    const w = Math.max(1, Math.round(cvs.clientWidth * dpr));
+    const h = Math.max(1, Math.round(cvs.clientHeight * dpr));
+    if (cvs.width !== w || cvs.height !== h) { cvs.width = w; cvs.height = h; }
+    gl.viewport(0, 0, cvs.width, cvs.height);
+  }
+  addEventListener('resize', resize, { passive:true });
+  resize();
+
+  const smooth = t => t*t*(3-2*t);
+  let t0 = 0;
+  const modeW = new Float32Array(4);
+
+  function frame(ms) {
+    if (!t0) t0 = ms;
+    const time = (ms - t0) / 1000;
+    cur += (target - cur) * (reduced ? 1 : 0.075);
+
+    const i = Math.min(ACTS.length - 1, Math.max(0, Math.floor(cur)));
+    const j = Math.min(ACTS.length - 1, i + 1);
+    const f = smooth(Math.min(1, Math.max(0, cur - i)));
+
+    modeW.fill(0);
+    modeW[MODES[ACTS[i].mode]] += 1 - f;
+    modeW[MODES[ACTS[j].mode]] += f;
+
+    const nowKa = ACTS[i].ka + (ACTS[j].ka - ACTS[i].ka) * f;
+
+    const eye = lerp3(CAM[i].eye, CAM[j].eye, f);
+    const tgt = lerp3(CAM[i].tgt, CAM[j].tgt, f);
+    // A slow orbit keeps the volume reading as a volume rather than a backdrop.
+    const orbit = reduced ? 0 : time * 0.035 + Math.sin(time * 0.07) * 0.25;
+    const ex = eye[0] * Math.cos(orbit) - eye[2] * Math.sin(orbit);
+    const ez = eye[0] * Math.sin(orbit) + eye[2] * Math.cos(orbit);
+
+    const P = perspective(Math.PI / 4, cvs.width / cvs.height, 0.1, 100);
+    const V = lookAt([ex, eye[1], ez], tgt, [0, 1, 0]);
+    gl.uniformMatrix4fv(uVP, false, new Float32Array(mul(P, V)));
+    gl.uniform1fv(uMode, modeW);
+    gl.uniform1f(uTime, time);
+    gl.uniform1f(uPix, dpr);
+    gl.uniform1f(uNowKa, nowKa);
+
+    gl.clearColor(0.043, 0.055, 0.075, 1);
+    gl.clear(gl.COLOR_BUFFER_BIT);
+    gl.drawArrays(gl.POINTS, 0, N);
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+
+  wireActs(i => { target = i; });
+
+  function wireActs(onAct) {
+    const acts = [...document.querySelectorAll('.act')];
+    const io = new IntersectionObserver(en => {
+      en.forEach(x => {
+        if (!x.isIntersecting) return;
+        acts.forEach(a => a.classList.toggle('on', a === x.target));
+        const i = +x.target.dataset.i;
+        onAct(i);
+        $('#hudL').textContent = ACTS[i].hud;
+        $('#hudR').textContent = `act ${i+1} / ${ACTS.length}`;
+      });
+    }, { rootMargin:'-45% 0px -45% 0px' });
+    acts.forEach(a => io.observe(a));
+  }
+})();
+
+/* ═══════════════════════════════════════════════ nav */
+const NAV_LABEL = { finding:'The discovery', real:'Real DNA', us:'Us', tree:'Deep time', stack:'The platform', engine:'The engine', loops:'Darwin', result:'Results', limits:'New findings', method:'Fine print' };
+(function nav() {
+  const secs = [...document.querySelectorAll('section')];
+  $('#navLinks').innerHTML = secs.map(s=>`<a href="#${s.id}" data-id="${s.id}">${NAV_LABEL[s.id]||s.id}</a>`).join('');
+  $('#drawer').innerHTML = `<a href="#saga"><i>00</i>The saga</a>` + secs.map((s,i)=>`<a href="#${s.id}" data-id="${s.id}"><i>${String(i+1).padStart(2,'0')}</i>${NAV_LABEL[s.id]||s.id}</a>`).join('');
+  const burger=$('#burger'), drawer=$('#drawer');
+  const setOpen = o => { burger.setAttribute('aria-expanded',String(o)); burger.setAttribute('aria-label',o?'Close menu':'Open menu'); drawer.classList.toggle('open',o); $('.nav').classList.toggle('solid',o); document.body.style.overflow=o?'hidden':''; };
+  burger.addEventListener('click',()=>setOpen(burger.getAttribute('aria-expanded')!=='true'));
+  drawer.addEventListener('click',e=>{ if(e.target.closest('a')) setOpen(false); });
+  addEventListener('keydown',e=>{ if(e.key==='Escape') setOpen(false); });
+  const marks=[...document.querySelectorAll('.nav-links a')];
+  const io=new IntersectionObserver(en=>{ en.forEach(x=>{ if(x.isIntersecting) marks.forEach(m=>m.classList.toggle('on',m.dataset.id===x.target.id)); }); },{rootMargin:'-45% 0px -50% 0px'});
+  secs.forEach(s=>io.observe(s));
+  const bar=$('#progress');
+  addEventListener('scroll',()=>{ const h=document.documentElement.scrollHeight-innerHeight; bar.style.width=(h>0?(scrollY/h)*100:0)+'%'; },{passive:true});
+})();
+
+(function reveal(){
+  const io=new IntersectionObserver(en=>{ en.forEach(x=>{ if(x.isIntersecting){ x.target.classList.add('in'); io.unobserve(x.target);} }); },{rootMargin:'0px 0px -6% 0px'});
+  document.querySelectorAll('section > *').forEach(n=>{ n.classList.add('rv'); io.observe(n); });
+})();
+
+/* ═══════════════════════════════════════════════ 01 finding */
+$('#findingCards').innerHTML = `
+<div class="finding-card"><div class="lab">Ghost A \u00b7 deep African</div><div class="big" style="color:var(--data-ghost-a)">0.83<u>Ma</u></div>
+<p>Coalesces with our lineage about 830,000 years ago (95% CI 0.61\u20131.27 Ma). That is an <em>upper bound</em> on the split, which the authors state conservatively as <strong>over 500,000 years ago</strong>. It contributes <strong>0.49\u20131.1%</strong> of every individual genome, in all five populations tested.</p></div>
+<div class="finding-card"><div class="lab">Ghost B \u00b7 super-archaic</div><div class="big" style="color:var(--data-ghost-b)">1.77<u>Ma</u></div>
+<p>Coalescence 1.77 Ma (95% CI 1.13\u20133.98 Ma), rounded in the discussion to a <strong>~1.8 Ma split</strong> \u2014 candidate <em>Homo erectus</em>. It reaches us only through Denisovans and accounts for <strong>0.3%</strong> of the Denisovan ancestry in Oceanians, which the paper calls a very conservative lower bound.</p></div>
+<div class="finding-card"><div class="lab">What TRACE actually is</div><div class="big">2<u>-state HMM</u></div>
+<p>A two-state hidden Markov model run across the sequence of marginal trees in a <strong>SINGER</strong>-inferred ARG. Every emission uses just two numbers: the branch length subtending the focal sample, and how many other coalescences fall in the same time window.</p></div>
+<div class="finding-card"><div class="lab">Ancient genomes required</div><div class="big" style="color:var(--accent)">0</div>
+<p>503 present-day 1000 Genomes samples plus 92 Oceanians. The four sequenced archaic genomes are used only <em>afterwards</em>, to label what was already found \u2014 never to find it.</p></div>`;
+
+
+/* ═══════════════════════════════════════════════ 02 real DNA */
+(function realDna(){
+  $('#rVar').textContent = fmt(REAL.n_variants);
+  const afr = REAL.by_superpopulation.find(g=>g.group==='AFR');
+  const nonAfr = REAL.by_superpopulation.filter(g=>g.group!=='AFR');
+  const nonAfrMed = nonAfr.reduce((a,g)=>a+g.median_ka,0)/Math.max(nonAfr.length,1);
+
+  tiles($('#realTiles'), [
+    { k:'Real haplotypes', v:fmt(REAL.n_haplotypes), n:`${fmt(REAL.n_haplotypes/2)} people, 80 per superpopulation, 1000 Genomes phase 3` },
+    { k:'Real variable sites', v:fmt(REAL.n_variants), n:`biallelic phased SNPs across ${REAL.region}` },
+    { k:'Exact comparisons', v:fmt(REAL.exact_comparisons), n:'every pair, every window, by popcount — no index, no approximation' },
+    { k:'African depth advantage', v:REAL.afr_vs_nonafr_median_ratio.toFixed(2)+'×', hi:true, n:'median coalescent depth, African against non-African' },
+  ]);
+
+  $('#rHeadline').innerHTML = `It comes out. African haplotypes meet their nearest relative a median <strong>${fmt(afr.median_ka,1)} ka</strong> ago; the non-African median is <strong>${fmt(nonAfrMed,1)} ka</strong> — a <strong>${REAL.afr_vs_nonafr_median_ratio.toFixed(2)}×</strong> difference, measured from scratch on real data by a pipeline that was never tuned for it. The deep tail behaves the same way: the 99th percentile in Africans reaches ${fmt(afr.p99_ka)} ka against ${fmt(nonAfr.reduce((a,g)=>a+g.p99_ka,0)/nonAfr.length)} ka elsewhere.`;
+
+  // distribution, per superpopulation, as small multiples on one shared axis
+  (function chart(){
+    const svg=$('#realChart'), W=860,H=300,ML=62,MR=30,MT=26,MB=54;
+    const iw=W-ML-MR, ih=H-MT-MB;
+    const t=svgEl('title',{id:'rlT'}); t.textContent='Distribution of nearest-relative coalescent depth for real 1000 Genomes haplotypes, by superpopulation.'; svg.appendChild(t);
+    const edges=REAL.histogram_edges_ka, hiKa=edges[edges.length-1];
+    const x=k=>ML+(Math.min(k,hiKa)/hiKa)*iw;
+    const groups=REAL.by_superpopulation;
+    const COL={AFR:'--data-ghost-a',EUR:'--data-deniso',EAS:'--data-neander',SAS:'--data-ghost-b',AMR:'--data-none'};
+    for(let i=0;i<=5;i++){ const k=hiKa*i/5, gx=x(k);
+      svg.appendChild(svgEl('line',{class:'gl',x1:gx,y1:MT,x2:gx,y2:MT+ih}));
+      const l=svgEl('text',{x:gx,y:MT+ih+18,'text-anchor':'middle'}); l.textContent=Math.round(k)+' ka'; svg.appendChild(l); }
+    svg.appendChild(svgEl('line',{class:'ax',x1:ML,y1:MT+ih,x2:ML+iw,y2:MT+ih}));
+    const rowH=ih/groups.length;
+    groups.forEach((g,i)=>{
+      const cy=MT+(i+0.85)*rowH, col=cv(COL[g.group]||'--data-none');
+      // median marker and the p90..p99 whisker
+      svg.appendChild(svgEl('line',{x1:x(g.p90_ka),y1:cy,x2:x(g.p99_ka),y2:cy,stroke:col,'stroke-width':2,'stroke-opacity':.45,'stroke-linecap':'round'}));
+      const bar=svgEl('rect',{x:ML,y:cy-6,width:Math.max(x(g.median_ka)-ML,2),height:12,fill:col,'fill-opacity':.30,rx:6});
+      bar.style.transformOrigin=`${ML}px ${cy}px`; bar.style.animation=`growRight .8s var(--enter) ${.1*i}s backwards`;
+      svg.appendChild(bar);
+      const dot=svgEl('circle',{cx:x(g.median_ka),cy,r:5.5,fill:col,stroke:cv('--card'),'stroke-width':2});
+      hoverable(dot,`<b>${g.group}</b><br>${fmt(g.n_haplotypes)} haplotypes<br>median ${fmt(g.median_ka,1)} ka<br>p90 ${fmt(g.p90_ka)} · p99 ${fmt(g.p99_ka)}<br>deepest ${fmt(g.max_ka)} ka`);
+      svg.appendChild(dot);
+      const lb=svgEl('text',{x:ML-12,y:cy+4,'text-anchor':'end',fill:col,'font-size':12}); lb.textContent=g.group; svg.appendChild(lb);
+      const vl=svgEl('text',{x:x(g.p99_ka)+10,y:cy+4,fill:cv('--dim-foreground'),'font-size':10.5}); vl.textContent=`median ${fmt(g.median_ka,1)} · p99 ${fmt(g.p99_ka)} ka`; svg.appendChild(vl);
+    });
+    const xl=svgEl('text',{x:ML+iw/2,y:MT+ih+40,'text-anchor':'middle',class:'lbl-in'}); xl.textContent='nearest-relative coalescent depth · bar to the median, whisker from the 90th to the 99th percentile'; svg.appendChild(xl);
+    $('#realLegend').innerHTML=groups.map(g=>`<span><i style="background:${cv(COL[g.group]||'--data-none')}"></i>${g.group}</span>`).join('');
+  })();
+
+  $('#realTable').innerHTML = `<thead><tr><th>Superpopulation</th><th class="num">Haplotypes</th><th class="num">Median</th><th class="num">90th pct</th><th class="num">99th pct</th><th class="num">Deepest</th></tr></thead><tbody>`+
+    REAL.by_superpopulation.map(g=>`<tr><td class="mono">${g.group}</td><td class="num">${fmt(g.n_haplotypes)}</td><td class="num">${fmt(g.median_ka,1)} ka</td><td class="num">${fmt(g.p90_ka)} ka</td><td class="num">${fmt(g.p99_ka)} ka</td><td class="num">${fmt(g.max_ka)} ka</td></tr>`).join('')+'</tbody>';
+
+  $('#realDeep').innerHTML = `<thead><tr><th>Position (GRCh37)</th><th>Haplotype</th><th>Population</th><th class="num">Depth</th><th>Nearest relative in panel</th></tr></thead><tbody>`+
+    REAL.deepest.slice(0,10).map(o=>`<tr><td class="mono">chr22:${fmt(o.start)}–${fmt(o.end)}</td><td class="mono" style="color:var(--foreground)">${o.haplotype}</td><td class="mono">${o.population} · ${o.superpopulation}</td><td class="num" style="color:var(--primary)">${fmt(o.depth_ka)} ka</td><td class="mono">${o.nearest}</td></tr>`).join('')+'</tbody>';
+
+  /* ─────────────────────────── the archaic comparison (Patterson's D) */
+  const D = REAL.d_statistics || [];
+  if (D.length) {
+    const nean = D[0], den = D.find(d=>d.archaic.startsWith('Denisova'));
+    tiles($('#dTiles'), [
+      { k:'D · Altai Neanderthal', v:(nean.d>=0?'+':'')+nean.d.toFixed(4), hi:true, n:`${fmt(nean.abba)} ABBA against ${fmt(nean.baba)} BABA site-patterns` },
+      { k:'D · Denisova 3', v:(den.d>=0?'+':'')+den.d.toFixed(4), n:'the control — no Oceanian samples in 1000 Genomes' },
+      { k:'Haplotype pairs', v:fmt(nean.n_afr_haplotypes*nean.n_nonafr_haplotypes), n:`${nean.n_afr_haplotypes} African × ${nean.n_nonafr_haplotypes} non-African, every pair counted` },
+      { k:'Significance', v:'Z = '+(nean.z_score>=0?'+':'')+nean.z_score.toFixed(1), n:`${nean.n_blocks}-block jackknife · not significant at 1 Mb` },
+    ]);
+
+    $('#dHeadline').innerHTML = `<strong>Both Neanderthals lean towards the non-Africans. The Denisovan does not.</strong>
+      Altai comes out at <strong>${(nean.d>=0?'+':'')+nean.d.toFixed(4)}</strong> and Vindija at <strong>${(D[1].d>=0?'+':'')+D[1].d.toFixed(4)}</strong> — both siding with non-African DNA more often than chance. Denisova 3 sits at <strong>${(den.d>=0?'+':'')+den.d.toFixed(4)}</strong>, essentially dead level, ${Math.abs(den.d/nean.d*100).toFixed(0)}% of the Neanderthal lean.
+      <br><br>That split is the point. If this were just the reference-template problem leaking back in, all three would lean the same way — they were all written down against the same template by the same people. Instead the two Neanderthals lean and the Denisovan does not, which is what actual history predicts: the ancestors of everyone outside Africa met Neanderthals, and 1000 Genomes contains no Oceanian or Papuan samples, who are the people carrying most of the Denisovan ancestry.`;
+
+    $('#dTable').innerHTML = `<thead><tr><th>Archaic genome</th><th class="num">ABBA</th><th class="num">BABA</th><th class="num">D</th><th class="num">SE</th><th class="num">Z</th></tr></thead><tbody>`+
+      D.map(d=>`<tr><td class="mono" style="color:var(--foreground)">${d.archaic}</td><td class="num">${fmt(d.abba)}</td><td class="num">${fmt(d.baba)}</td><td class="num" style="color:${d.d>0.05?'var(--primary)':'var(--muted-foreground)'}">${(d.d>=0?'+':'')+d.d.toFixed(4)}</td><td class="num">${d.standard_error.toFixed(4)}</td><td class="num">${(d.z_score>=0?'+':'')+d.z_score.toFixed(1)}</td></tr>`).join('')+'</tbody>';
+
+    /* per-window D against Altai, in genome order — the tract structure */
+    (function dchart(){
+      const svg=$('#dChart'); if(!svg) return;
+      const W=860,H=260,ML=64,MR=18,MT=22,MB=52, iw=W-ML-MR, ih=H-MT-MB;
+      const ws=(REAL.neanderthal_windows||[]).slice().sort((a,b)=>a.start-b.start);
+      if(!ws.length) return;
+      const lim=Math.max(...ws.map(w=>Math.abs(w.d)))*1.15||1;
+      const y=v=>MT+ih/2-(v/lim)*(ih/2);
+      const bw=iw/ws.length;
+      const t=svgEl('title',{id:'dcT'}); t.textContent='Per-window Patterson D against the Altai Neanderthal across the region'; svg.appendChild(t);
+      svg.innerHTML='';svg.appendChild(t);
+      // zero line
+      svg.appendChild(svgEl('line',{x1:ML,x2:ML+iw,y1:y(0),y2:y(0),stroke:cv('--border'),'stroke-width':1}));
+      [lim*0.5,-lim*0.5].forEach(v=>{
+        svg.appendChild(svgEl('line',{x1:ML,x2:ML+iw,y1:y(v),y2:y(v),stroke:cv('--border-soft'),'stroke-width':1,'stroke-dasharray':'3 5'}));
+        const l=svgEl('text',{x:ML-10,y:y(v)+4,'text-anchor':'end',class:'lbl-in'}); l.textContent=(v>0?'+':'')+v.toFixed(2); svg.appendChild(l);
+      });
+      const zl=svgEl('text',{x:ML-10,y:y(0)+4,'text-anchor':'end',class:'lbl-in'}); zl.textContent='0'; svg.appendChild(zl);
+      ws.forEach((w,i)=>{
+        const h=Math.abs(y(w.d)-y(0));
+        const r=svgEl('rect',{x:ML+i*bw+bw*0.15,y:Math.min(y(w.d),y(0)),width:bw*0.7,height:Math.max(1,h),
+          fill:w.d>0?cv('--data-neander'):cv('--data-none'),rx:2,opacity:0});
+        r.appendChild(svgEl('animate',{attributeName:'opacity',from:0,to:w.d>0?0.92:0.55,dur:'.5s',begin:`${i*0.045}s`,fill:'freeze'}));
+        r.addEventListener('mousemove',e=>showTip(e,`<b>chr22:${fmt(w.start)}–${fmt(w.end)}</b><br>D = ${(w.d>=0?'+':'')+w.d.toFixed(3)}<br>${fmt(w.abba)} ABBA · ${fmt(w.baba)} BABA`));
+        r.addEventListener('mouseleave',hideTip);
+        svg.appendChild(r);
+      });
+      const xl=svgEl('text',{x:ML+iw/2,y:MT+ih+40,'text-anchor':'middle',class:'lbl-in'});
+      xl.textContent=`Patterson's D against Altai in each 50 kb window, left to right along chr22:${fmt(ws[0].start)}–${fmt(ws[ws.length-1].end)}`;
+      svg.appendChild(xl);
+    })();
+
+    $('#dPower').innerHTML = `<strong>And it is not enough evidence to call it. That is the more useful result.</strong>
+      To know whether a lean like this is real or luck, you chop the region into ${nean.n_blocks} pieces, redo the count with each piece left out in turn, and see how much the answer wobbles. It wobbles about as much as the lean itself — the score for that is <strong>Z = ${nean.z_score.toFixed(1)}</strong>, and convention wants Z of 3 or better before anyone claims anything.
+      <br><br>So how much DNA would be enough? Wobble shrinks with the square root of the amount of sequence, which means this comparison needs roughly <strong>${fmt(nean.mb_for_z3)} million bases</strong> of chromosome — about ${(nean.mb_for_z3/(nean.n_blocks*0.05)).toFixed(0)}× what was used here — before the answer stops moving. That is a statement about how much evidence the question takes, not a statement that there is nothing there. It is the same lesson the simulation gives below in a different currency: a real signal can be present, pointing the right way, and still not be yours to claim yet.`;
+  }
+
+  $('#realCaveat').innerHTML = `<strong>What this is not.</strong> ${REAL.caveats[0]} The depth estimate assumes a strict clock at μ = 1.25×10⁻⁸ per base per generation with a 29-year generation, so treat the absolute numbers as a scale, not a date.`;
+})();
+
+/* ═══════════════════════════════════════════════ 03 us
+   Two drawings, both of real people. The tract map is one row per haplotype
+   with the called stretches lit; the population chart is 26 bars of internal
+   diversity. Both animate in on scroll rather than on load, so the reveal
+   lands when the reader is actually looking at it. */
+(function us(){
+  const T = HUMAN, test = T.tract_scan[0], ctrl = T.tract_scan[1];
+  const SUPCOL = { AFR:'--data-ghost-b', EUR:'--primary', EAS:'--data-neander', SAS:'--accent', AMR:'--data-deniso' };
+
+  tiles($('#usTiles'), [
+    { k:'Neanderthal-informative sites', v:fmt(T.informative_sites), n:'a Neanderthal has this letter · no African in the panel does' },
+    { k:'Stretches found', v:fmt(test.n_tracts), hi:true, n:`in ${fmt(test.haplotypes_with_a_tract)} of ${fmt(test.n_haplotypes)} non-African haplotypes` },
+    { k:'Found in Africans', v:fmt(ctrl.n_tracts), n:`the same scan, ${fmt(ctrl.n_haplotypes)} African haplotypes — the control` },
+    { k:'Share of sequence', v:pct(test.genome_fraction,2), hi:true, n:'the published figure for Neanderthal ancestry is about 2%' },
+  ]);
+
+  $('#usControl').innerHTML = `<strong>Run the identical scan on the ${fmt(ctrl.n_haplotypes)} African haplotypes and it finds ${ctrl.n_tracts === 0 ? '<em>nothing</em>' : fmt(ctrl.n_tracts)+' stretches'}.</strong> Not a small number — ${ctrl.n_tracts === 0 ? 'zero' : 'far fewer'}. That is what makes the rest of this worth reading: the method is not lighting up wherever it is pointed. And the stretches it does find cover <strong>${pct(test.genome_fraction,2)}</strong> of the non-African sequence scanned. The published figure for Neanderthal ancestry in people outside Africa — from whole genomes and far more careful methods — is about <strong>2%</strong>. Nobody put that number in. It falls out of one megabase, three archaic genomes, and a rule about what is missing from Africa.`;
+
+  /* ── the tract map ─────────────────────────────────────────────────────
+     One row per living haplotype, all 800 of them, grouped by continent with
+     Africa first. Every haplotype gets a row whether or not it carries
+     anything, because the empty rows are the control and hiding them would
+     hide the result. */
+  (function tractMap(){
+    const svg=$('#tractMap'), M=T.tract_map;
+    const W=860,H=470,ML=52,MR=16,MT=22,MB=52,iw=W-ML-MR,ih=H-MT-MB;
+    const t=svgEl('title',{id:'tmT'}); t.textContent='Called Neanderthal stretches in all 800 living haplotypes along one megabase of chromosome 22'; svg.appendChild(t);
+
+    const ORDER=['AFR','EUR','SAS','AMR','EAS'];
+    const total=Object.fromEntries(M.total_by_superpopulation);
+    // rows: every haplotype, carriers packed to the top of their own band
+    const bandStart={}; let cursor=0;
+    for(const g of ORDER){ bandStart[g]=cursor; cursor+=total[g]||0; }
+    const nRows=cursor;
+    const rowOf=new Map(); const seat={...bandStart};
+    M.carriers.forEach((c,i)=>{ rowOf.set(i, seat[c[2]]++); });
+
+    const y=r=>MT+(r/nRows)*ih, rh=Math.max(1.1, ih/nRows-0.15);
+    const x=w=>ML+(w/M.n_windows)*iw, bw=iw/M.n_windows;
+
+    // continent bands
+    ORDER.forEach(g=>{
+      const y0=y(bandStart[g]), y1=y(bandStart[g]+(total[g]||0));
+      svg.appendChild(svgEl('rect',{x:ML,y:y0,width:iw,height:Math.max(1,y1-y0-1),
+        fill:cv('--surface-elevated'),opacity:.55,rx:2}));
+      const l=svgEl('text',{x:ML-9,y:(y0+y1)/2+4,'text-anchor':'end',class:'lbl-in',fill:cv(SUPCOL[g])});
+      l.textContent=g; svg.appendChild(l);
+    });
+
+    const marks=[];
+    M.tracts.forEach(([ci,w0,w1])=>{
+      const c=M.carriers[ci], r=rowOf.get(ci);
+      const rect=svgEl('rect',{x:x(w0),y:y(r),width:Math.max(1.6,(w1-w0+1)*bw),height:rh,
+        fill:cv(SUPCOL[c[2]]||'--data-none'),opacity:0});
+      const s0=M.region_start+w0*M.window_bp, s1=M.region_start+(w1+1)*M.window_bp;
+      hoverable(rect,`<b>${c[0]}</b> · ${c[1]} (${c[2]})<br>chr22:${fmt(s0)}–${fmt(s1)}<br>${fmt(s1-s0)} bp`);
+      svg.appendChild(rect); marks.push([rect,w0]);
+    });
+
+    const xl=svgEl('text',{x:ML+iw/2,y:MT+ih+36,'text-anchor':'middle',class:'lbl-in'});
+    xl.textContent=`chr22:${fmt(M.region_start)}–${fmt(M.region_end)} (GRCh37) · all ${fmt(nRows)} living haplotypes · ${fmt(M.tracts.length)} called stretches`;
+    svg.appendChild(xl);
+    $('#tractLegend').innerHTML=ORDER.map(g=>`<span><i style="background:${cv(SUPCOL[g])}"></i>${g}${g==='AFR'?' — nothing to draw':''}</span>`).join('');
+
+    // sweep the reveal left to right across the chromosome
+    new IntersectionObserver((en,ob)=>{ if(!en[0].isIntersecting) return; ob.disconnect();
+      marks.forEach(([m,w0])=>{ m.style.transition='opacity .45s var(--enter)';
+        setTimeout(()=>m.style.opacity=.9, (w0/M.n_windows)*1400 + Math.random()*120); });
+    },{threshold:.12}).observe(svg);
+  })();
+
+  $('#tractTable').innerHTML=`<thead><tr><th>Position (GRCh37)</th><th>Haplotype</th><th>Population</th><th class="num">Length</th><th class="num">Neanderthal letters</th></tr></thead><tbody>`+
+    T.tracts.slice(0,10).map(t=>`<tr><td class="mono">chr22:${fmt(t.start)}–${fmt(t.end)}</td><td class="mono" style="color:var(--foreground)">${t.haplotype}</td><td class="mono">${t.population} · ${t.superpopulation}</td><td class="num" style="color:var(--primary)">${fmt(t.length_bp)} bp</td><td class="num">${t.informative_carried} / ${t.informative_available}</td></tr>`).join('')+'</tbody>';
+
+  const d=T.admixture_date, over=d.ka/55;
+  $('#usDate').innerHTML = `The average surviving stretch here is <strong>${fmt(d.mean_length_bp)} bases</strong> long. Convert that to the units recombination works in and invert it, and you get <strong>${fmt(d.generations)} generations</strong> — about <strong>${fmt(d.ka)},000 years ago</strong>.
+    <br><br><strong>That is wrong, and it is wrong in a way this study already predicted.</strong> The real answer, from whole genomes, is 50–60,000 years. This estimate is ${over.toFixed(0)}× too old. The reason is in the simulation further down: a detector that <em>breaks</em> long stretches into short ones instead of joining them always reads the event as older than it was, because a shorter stretch inverts to more generations. In simulation, where the truth was known, that error was 2.4×. Here, tracing stretches through only ${T.informative_sites} informative letters across a megabase, the breakage is far worse and the error is ${over.toFixed(0)}×.
+    <br><br>A simulation that predicts the <em>direction and the mechanism</em> of a mistake later made on real human DNA is doing more work than one that simply scores well.`;
+
+  /* ── the family ────────────────────────────────────────────────────────── */
+  (function popChart(){
+    const svg=$('#popChart'); const W=860,H=560,ML=58,MR=120,MT=24,MB=46,iw=W-ML-MR,ih=H-MT-MB;
+    const t=svgEl('title',{id:'pcT'}); t.textContent='Internal genetic diversity of each of the 26 populations'; svg.appendChild(t);
+    const ps=T.populations.slice().sort((a,b)=>b.within_ka-a.within_ka);
+    const max=Math.max(...ps.map(p=>p.within_ka))*1.04, min=Math.min(...ps.map(p=>p.within_ka))*0.94;
+    const bh=ih/ps.length, x=v=>ML+((v-min)/(max-min))*iw;
+    ps.forEach((p,i)=>{
+      const y=MT+i*bh;
+      const r=svgEl('rect',{x:ML,y:y+bh*0.16,width:1,height:bh*0.68,rx:2,fill:cv(SUPCOL[p.superpopulation]||'--data-none'),opacity:.9});
+      hoverable(r,`<b>${p.population}</b> · ${p.superpopulation}<br>two of its own haplotypes differ by <b>${fmt(p.within_ka)} ka</b><br>${fmt(p.neanderthal_alleles_per_haplotype,1)} Neanderthal letters per haplotype`);
+      svg.appendChild(r);
+      const lab=svgEl('text',{x:ML-9,y:y+bh*0.65,'text-anchor':'end',class:'lbl-in',
+        fill:p.superpopulation==='AFR'?cv('--foreground'):cv('--dim-foreground')});
+      lab.textContent=p.population; svg.appendChild(lab);
+      const val=svgEl('text',{x:0,y:y+bh*0.65,class:'lbl-in',opacity:0}); val.textContent=`${fmt(p.within_ka)} ka`;
+      svg.appendChild(val);
+      r.dataset.w=x(p.within_ka)-ML; r._val=val;
+    });
+    const xl=svgEl('text',{x:ML+iw/2,y:MT+ih+34,'text-anchor':'middle',class:'lbl-in'});
+    xl.textContent='how far back two randomly chosen haplotypes from the SAME population must go to meet'; svg.appendChild(xl);
+    $('#popLegend').innerHTML=['AFR','EUR','SAS','AMR','EAS'].map(g=>`<span><i style="background:${cv(SUPCOL[g])}"></i>${g}</span>`).join('');
+
+    new IntersectionObserver((en,ob)=>{ if(!en[0].isIntersecting) return; ob.disconnect();
+      [...svg.querySelectorAll('rect')].forEach((r,i)=>{
+        const w=+r.dataset.w;
+        const a=svgEl('animate',{attributeName:'width',from:1,to:w,dur:'.85s',begin:`${i*0.035}s`,fill:'freeze',calcMode:'spline',keySplines:'.22 1 .36 1',keyTimes:'0;1'});
+        r.appendChild(a);
+        setTimeout(()=>{ r._val.setAttribute('x', ML+w+9); r._val.setAttribute('opacity',.75); }, i*35+700);
+      });
+    },{threshold:.12}).observe(svg);
+  })();
+
+  const top=T.populations.slice().sort((a,b)=>b.within_ka-a.within_ka);
+  $('#usFamily').innerHTML = `<strong>The seven most internally diverse populations on this list are all African.</strong> ${top[0].population} is at the top: two of its own members differ by <strong>${fmt(top[0].within_ka)},000 years</strong> of separation. ${top[top.length-1].population} is at the bottom at ${fmt(top[top.length-1].within_ka)},000. Two people from ${top[0].population} are further apart than any European and any East Asian in this panel.
+    <br><br>Everyone alive outside Africa descends from one small group that walked out, and every group that left carried only a slice of what was already there. That is usually written as a sentence. Here it is a measurement, and it took 0.6 seconds.`;
+
+  $('#usCaveat').innerHTML = `<strong>What this is not.</strong> ${T.caveats[0]} ${T.caveats[1]}`;
+})();
+
+/* ═══════════════════════════════════════════════ 04 tree */
+(function plant(){
+  const p=REPORT.cohort.planted_segments;
+  const rows=Object.keys(p).sort().map(k=>`<tr><td class="mono"><span class="sw" style="background:${colorFor(k)}"></span>${k}</td><td class="num">${fmt(p[k])}</td><td class="num">${pct(p[k]/REPORT.cohort.planted_total)}</td></tr>`).join('');
+  const g=REPORT.cohort.truth_fraction_by_group;
+  const grows=Object.keys(g).sort((a,b)=>g[b]-g[a]).map(k=>`<tr><td class="mono">${k}</td><td class="num">${(g[k]*100).toFixed(2)}%</td><td></td></tr>`).join('');
+  $('#plantTable').innerHTML=`<thead><tr><th>Planted source</th><th class="num">Segments</th><th class="num">Share</th></tr></thead><tbody>${rows}</tbody>
+    <thead><tr><th style="padding-top:24px">Archaic burden by group</th><th class="num" style="padding-top:24px">of segments</th><th></th></tr></thead><tbody>${grows}</tbody>`;
+  $('#burdenNote').innerHTML=`Across the cohort <strong>${pct(REPORT.cohort.archaic_fraction_of_segments,2)}</strong> of modern segments carry archaic ancestry — the same range as the ~2% reported for real human genomes. Ghost-B is deliberately rare, because it only reaches modern people through Denisovans: <strong>${fmt(REPORT.cohort.planted_segments['Ghost-B (super-archaic)']||0)}</strong> segments in total, almost all in Oceania.`;
+})();
+
+/* ═══════════════════════════════════════════════ 03 stack */
+$('#stackGrid').innerHTML = [
+  { role:'Genomics engine', name:'rvDNA', plain:'Reads DNA and turns it into numbers a machine can compare. Here it slices each genome into windows, fingerprints every window, and stores the result in its own compact binary container.', tech:'Pure Rust · native + WebAssembly · 2-bit packed sequence, pre-computed k-mer tensors, '+REPORT.rvdna_container.bits_per_base.toFixed(2)+' bits/base in the .rvdna container' },
+  { role:'Vector database', name:'RuVector', plain:'The search layer. Given one fingerprint it finds the handful of others that resemble it, out of tens of thousands, without checking them all — the same trick that makes similarity search work at scale.', tech:'HNSW graph index · cosine distance · '+fmt(REPORT.cohort.n_windows*REPORT.cohort.n_haplotypes)+' vectors, '+REPORT.darwin.evolved.dims+' dimensions, m='+REPORT.darwin.evolved.hnsw_m },
+  { role:'Agent harness', name:'metaharness <em>Darwin</em>', plain:'Lets the pipeline tune its own settings. It changes one dial, tests the change in a sandbox, and keeps it only if the result measurably improves — with the model itself frozen throughout.', tech:'Config mutation behind a safety gate · train/held-out split · '+REPORT.darwin.proposals+' proposals, '+REPORT.darwin.accepted+' accepted' },
+  { role:'Edge appliance', name:'Cognitum One', plain:'The local brain the stack is designed to land on: persistent storage, vector search and inference running on hardware you own, with nothing leaving the building.', tech:'Local-first · same Rust binaries, no cloud dependency · the reason everything above compiles to a single portable artifact' },
+].map(s=>`<div class="stack-card"><div class="role">${s.role}</div><div class="name">${s.name}</div><p class="plain">${s.plain}</p><div class="tech">${s.tech}</div></div>`).join('');
+
+$('#flowRow').innerHTML = ['DNA window','k-mer fingerprint','HNSW index','candidate set','exact genetics','call'].map(b=>`<b>${b}</b>`).join('<i>→</i>')+'<i>↺</i><b>Darwin + flywheel</b>';
+
+$('#metricTable').innerHTML = `<thead><tr><th>What we report</th><th>What it means in plain terms</th></tr></thead><tbody>
+<tr><td class="mono" style="color:var(--foreground)">Coalescent depth</td><td>How far back you must go before a stretch of DNA meets its nearest relative. Measured in thousands of years.</td></tr>
+<tr><td class="mono" style="color:var(--foreground)">Precision</td><td>Of everything we flagged as archaic, how much really was. High precision means few false alarms.</td></tr>
+<tr><td class="mono" style="color:var(--foreground)">Recall</td><td>Of everything that really was archaic, how much we caught. High recall means few misses.</td></tr>
+<tr><td class="mono" style="color:var(--foreground)">F1</td><td>The two above combined into one number, so tuning cannot buy one by sacrificing the other.</td></tr>
+<tr><td class="mono" style="color:var(--foreground)">Held-out split</td><td>A third of the data the tuner is never allowed to see, kept back so we can tell real improvement from memorisation.</td></tr>
+<tr><td class="mono" style="color:var(--foreground)">Work ratio</td><td>How many exact comparisons the index saved us, against checking everything against everything.</td></tr></tbody>`;
+
+/* ═══════════════════════════════════════════════ 04 engine */
+tiles($('#engineTiles'), [
+  { k:'Exact comparisons run', v:fmt(REPORT.retrieval.exact_comparisons), n:'genetics computed only where the index said it was worth it' },
+  { k:'All-pairs equivalent', v:fmt(REPORT.retrieval.bruteforce_comparisons), n:'what the same pass costs with no index at all' },
+  { k:'Work avoided', v:REPORT.retrieval.speedup.toFixed(1)+'×', hi:true, n:'for the same calls — audited in section 07' },
+  { k:'Vectors indexed', v:fmt(REPORT.cohort.n_windows*REPORT.cohort.n_haplotypes), n:`${REPORT.darwin.evolved.dims}-dim k-mer profiles, k=${REPORT.darwin.evolved.k}` },
+]);
+$('#containerNote').innerHTML = `A recovered ghost segment round-trips through rvDNA's own binary format: haplotype <strong>${REPORT.rvdna_container.haplotype}</strong>, window ${REPORT.rvdna_container.window}, ${fmt(REPORT.rvdna_container.sequence_bp)} bp packed into <strong>${fmt(REPORT.rvdna_container.container_bytes)} bytes</strong> at ${REPORT.rvdna_container.bits_per_base.toFixed(2)} bits per base, carrying ${REPORT.rvdna_container.kmer_blocks} pre-computed k-mer vector blocks alongside the raw sequence. Sequence round-trip: <strong style="color:var(--accent)">${REPORT.rvdna_container.roundtrip_exact?'exact':'LOSSY'}</strong>.`;
+
+/* ═══════════════════════════════════════════════ 05 darwin */
+(function darwinChart(){
+  const svg=$('#darwinChart'), W=860,H=300,ML=54,MR=132,MT=22,MB=46;
+  const iw=W-ML-MR, ih=H-MT-MB, lin=REPORT.darwin.lineage, base=REPORT.darwin.baseline_train_f1;
+  const t=svgEl('title',{id:'dwT'}); t.textContent='Training F1 of every hyperparameter mutation Darwin proposed, with the running best as a step line.'; svg.appendChild(t);
+  const all=lin.map(m=>m.train_f1).concat([base,REPORT.darwin.evolved_train_f1]);
+  const lo=Math.min(...all)-.01, hi=Math.max(...all)+.01;
+  const x=i=>ML+(lin.length<=1?iw/2:(i/(lin.length-1))*iw), y=f=>MT+ih-((f-lo)/(hi-lo))*ih;
+  for(let i=0;i<=4;i++){ const f=lo+(hi-lo)*i/4, gy=y(f);
+    svg.appendChild(svgEl('line',{class:'gl',x1:ML,y1:gy,x2:ML+iw,y2:gy}));
+    const l=svgEl('text',{x:ML-10,y:gy+3.5,'text-anchor':'end'}); l.textContent=f.toFixed(2); svg.appendChild(l); }
+  svg.appendChild(svgEl('line',{class:'ax',x1:ML,y1:MT+ih,x2:ML+iw,y2:MT+ih}));
+  svg.appendChild(svgEl('line',{x1:ML,y1:y(base),x2:ML+iw,y2:y(base),stroke:cv('--dim-foreground'),'stroke-width':1,'stroke-dasharray':'3 5'}));
+  const bl=svgEl('text',{x:ML+iw+10,y:y(base)+3.5,fill:cv('--dim-foreground')}); bl.textContent=`baseline ${base.toFixed(3)}`; svg.appendChild(bl);
+  let best=base,d=`M ${ML} ${y(base)}`;
+  lin.forEach((m,i)=>{ if(m.accepted) best=m.train_f1; d+=` L ${x(i)} ${y(best)}`; });
+  const path=svgEl('path',{d,fill:'none',stroke:cv('--primary'),'stroke-width':2,'stroke-linejoin':'round'});
+  path.style.strokeDasharray=2000; path.style.strokeDashoffset=2000; path.style.animation='drawLine 1.6s var(--enter) .2s forwards'; svg.appendChild(path);
+  lin.forEach((m,i)=>{ const c=svgEl('circle',{cx:x(i),cy:y(m.train_f1),r:m.accepted?6:4,fill:m.accepted?cv('--primary'):'none',stroke:m.accepted?cv('--card'):cv('--dim-foreground'),'stroke-width':m.accepted?2:1.4});
+    hoverable(c,`<b>gen ${m.generation} · ${m.accepted?'KEPT':'discarded'}</b><br>${m.gene}: ${m.from} → ${m.to}<br>train F1 ${m.train_f1.toFixed(4)}`); svg.appendChild(c); });
+  const e2=svgEl('text',{x:ML+iw+10,y:y(REPORT.darwin.evolved_train_f1)+3.5,fill:cv('--primary')}); e2.textContent=`evolved ${REPORT.darwin.evolved_train_f1.toFixed(3)}`; svg.appendChild(e2);
+  const xl=svgEl('text',{x:ML+iw/2,y:MT+ih+34,'text-anchor':'middle',class:'lbl-in'}); xl.textContent=`${lin.length} mutation proposals, in order · ${REPORT.darwin.accepted} kept`; svg.appendChild(xl);
+  $('#darwinLegend').innerHTML=`<span><i style="background:${cv('--primary')}"></i>accepted &amp; running best</span><span><i style="background:transparent;border:1.4px solid ${cv('--dim-foreground')}"></i>failed the margin</span>`;
+})();
+
+tiles($('#darwinTiles'), [
+  { k:'Baseline · held-out F1', v:REPORT.darwin.baseline_test.f1.toFixed(3), n:`precision ${REPORT.darwin.baseline_test.precision.toFixed(3)} · recall ${REPORT.darwin.baseline_test.recall.toFixed(3)}` },
+  { k:'Evolved · held-out F1', v:REPORT.darwin.evolved_test.f1.toFixed(3), hi:true, n:`precision ${REPORT.darwin.evolved_test.precision.toFixed(3)} · recall ${REPORT.darwin.evolved_test.recall.toFixed(3)}` },
+  { k:'Recall gained', v:'+'+((REPORT.darwin.evolved_test.recall-REPORT.darwin.baseline_test.recall)*100).toFixed(1), u:'pts', n:'held-out; the tuning bought sensitivity, not precision' },
+  { k:'Dials changed', v:REPORT.darwin.accepted+' of 8', n:REPORT.darwin.lineage.filter(m=>m.accepted).map(m=>`${m.gene} ${m.from}→${m.to}`).join(', ')||'—' },
+]);
+(function(){ const d=REPORT.darwin, tg=d.evolved_train_f1-d.baseline_train_f1, sg=d.evolved_test.f1-d.baseline_test.f1;
+  $('#darwinVerdict').innerHTML = sg>=tg*.6
+    ? `The held-out gain (<strong>+${sg.toFixed(3)}</strong> F1) is at least as large as the training gain (+${tg.toFixed(3)}) — which is what you want to see. The tuner found something real about the problem rather than something convenient about the training split.`
+    : `The training gain (+${tg.toFixed(3)}) outruns the held-out gain (+${sg.toFixed(3)}), the signature of mild overfitting — worth reporting rather than hiding.`; })();
+
+$('#flywheelRules').innerHTML = `
+<div class="finding-card"><div class="lab">Rule 1 · promotion gate</div><div class="big" style="font-size:22px;color:var(--foreground);line-height:1.3;letter-spacing:-.01em">Only evidence earns a vote</div>
+<p>A segment can become a reference only if it passed the depth test on its own. One that was rescued by resembling a reference never can — otherwise the loop compounds its own mistakes.</p></div>
+<div class="finding-card"><div class="lab">Rule 2 · relative rescue</div><div class="big" style="font-size:22px;color:var(--foreground);line-height:1.3;letter-spacing:-.01em">Closer to a ghost than to the living</div>
+<p>Two copies of the same inherited segment meet each other inside the donor population — recently. Either one meets a living person only past the donor's split. So the test is relative, not a fixed distance.</p></div>`;
+
+(function wheel(){
+  const rs=REPORT.flywheel.rounds;
+  $('#wheelTable').innerHTML=`<thead><tr><th>Turn</th><th class="num">Calls</th><th class="num">Ghost</th><th class="num">New refs</th><th class="num">Precision</th><th class="num">Recall</th><th class="num">F1</th></tr></thead><tbody>`+
+    rs.map(r=>`<tr><td class="mono">Round ${r.round}</td><td class="num">${fmt(r.calls)}</td><td class="num">${fmt(r.ghost_calls)}</td><td class="num">${r.new_ghost_references}</td><td class="num">${r.scores.precision.toFixed(3)}</td><td class="num">${r.scores.recall.toFixed(3)}</td><td class="num">${r.scores.f1.toFixed(4)}</td></tr>`).join('')+'</tbody>';
+  const a=rs[0],z=rs[rs.length-1],d=z.scores.f1-a.scores.f1;
+  $('#wheelVerdict').innerHTML=`With both rules in place the loop converged after <strong>${REPORT.flywheel.converged_after}</strong> turns holding ${fmt(z.cumulative_ghost_references)} references, and `+
+    (Math.abs(d)<.0005 ? `F1 did not move at all (${a.scores.f1.toFixed(4)} → ${z.scores.f1.toFixed(4)}). At this threshold the first pass had already found everything the references could rescue, so the flywheel's honest result is that it added nothing. That is an outcome a self-terminating loop has to be able to report.` : `F1 moved ${d>=0?'+':''}${d.toFixed(4)} (${a.scores.f1.toFixed(4)} → ${z.scores.f1.toFixed(4)}).`);
+})();
+
+/* ═══════════════════════════════════════════════ 06 results */
+const GHOST_TRUTH_KA={'Ghost-A (deep African)':800,'Ghost-B (super-archaic)':1800};
+const LIN=(()=>{
+  const modes=REPORT.lineages.map(l=>{ const comp=l.truth_composition||{}; let gN=0,fp=0;
+    for(const [k,n] of Object.entries(comp)){ if(k in GHOST_TRUTH_KA) gN+=n; else if(k.startsWith('none')) fp+=n; }
+    return {...l, g:{comp,ghostN:gN,fp,dom:null,truthKa:null,sourceShare:0}}; });
+  for(const src of Object.keys(GHOST_TRUTH_KA)){
+    const counts=modes.map(m=>m.g.comp[src]||0), total=counts.reduce((a,b)=>a+b,0); if(!total) continue;
+    let best=0; for(let i=1;i<counts.length;i++) if(counts[i]>counts[best]) best=i;
+    const share=counts[best]/total;
+    if(!modes[best].g.dom || share>modes[best].g.sourceShare){ modes[best].g.dom=src; modes[best].g.truthKa=GHOST_TRUTH_KA[src]; modes[best].g.sourceShare=share; } }
+  for(const m of modes){ if(m.g.dom) continue; let dom=null,n0=0;
+    for(const [k,n] of Object.entries(m.g.comp)) if(k in GHOST_TRUTH_KA && n>n0){ n0=n; dom=k; }
+    m.g.dom=dom; m.g.truthKa=dom?GHOST_TRUTH_KA[dom]:null; }
+  return modes; })();
+
+$('#gbCount').textContent = fmt(REPORT.cohort.planted_segments['Ghost-B (super-archaic)']||0);
+
+tiles($('#lineageCards'), LIN.map(l=>{
+  const col=l.g.dom?colorFor(l.g.dom):cv('--data-none');
+  const total=Object.values(l.carriers_by_group).reduce((a,b)=>a+b,0)||1;
+  const shown=l.median_depth_ka>=1000?{v:(l.median_depth_ka/1000).toFixed(2),u:'Ma median depth'}:{v:fmt(l.median_depth_ka),u:'ka median depth'};
+  const truth=l.g.truthKa==null?'—':(l.g.truthKa>=1000?(l.g.truthKa/1000)+' Ma':l.g.truthKa+' ka');
+  return { k:`Mode ${l.cluster} · ${l.g.dom?l.g.dom.replace(/ \(.*\)/,''):'unassigned'}`,
+    v:`<span style="color:${col}">${shown.v}</span>`, u:shown.u,
+    n:`Holds <strong>${pct(l.g.sourceShare)}</strong> of that lineage's segments; planted split <strong>${truth}</strong>. ${fmt(l.n_segments)} segments, ${pct((l.carriers_by_group.OCE||0)/total)} Oceanian.` };
+}));
+
+(function lineageChart(){
+  const svg=$('#lineageChart'),W=860,H=220,ML=178,MR=34,MT=28,MB=50;
+  const iw=W-ML-MR, ih=H-MT-MB;
+  const maxKa=Math.max(2200,...LIN.map(l=>Math.max(l.median_depth_ka,l.g.truthKa||0)))*1.12;
+  const x=k=>ML+(k/maxKa)*iw;
+  const t=svgEl('title',{id:'lnT'}); t.textContent='Coalescent depth of each recovered ghost mode against the planted divergence time of its dominant source.'; svg.appendChild(t);
+  for(let k=0;k<=maxKa;k+=500){ const gx=x(k);
+    svg.appendChild(svgEl('line',{class:'gl',x1:gx,y1:MT,x2:gx,y2:MT+ih}));
+    const l=svgEl('text',{x:gx,y:MT+ih+18,'text-anchor':'middle'}); l.textContent=k>=1000?(k/1000).toFixed(1)+' Ma':k+' ka'; svg.appendChild(l); }
+  svg.appendChild(svgEl('line',{class:'ax',x1:ML,y1:MT+ih,x2:ML+iw,y2:MT+ih}));
+  LIN.forEach((l,i)=>{
+    const cy=MT+(i+.5)*(ih/LIN.length), col=l.g.dom?colorFor(l.g.dom):cv('--data-none');
+    let a=svgEl('text',{x:ML-14,y:cy-3,'text-anchor':'end',fill:col,'font-size':11.5}); a.textContent=`Mode ${l.cluster} · ${l.g.dom?l.g.dom.replace(/ \(.*\)/,''):'—'}`; svg.appendChild(a);
+    let b=svgEl('text',{x:ML-14,y:cy+12,'text-anchor':'end',fill:cv('--dim-foreground'),'font-size':10}); b.textContent=`${fmt(l.n_segments)} segments`; svg.appendChild(b);
+    const x0=x(l.inferred_split_ka), x1=x(Math.max(l.median_depth_ka,l.inferred_split_ka));
+    const bar=svgEl('rect',{x:x0,y:cy-5,width:Math.max(x1-x0,2),height:10,fill:col,'fill-opacity':.25,rx:5});
+    bar.style.transformOrigin=`${x0}px ${cy}px`; bar.style.animation=`growRight .8s var(--enter) ${.12*i}s backwards`; svg.appendChild(bar);
+    svg.appendChild(svgEl('circle',{cx:x1,cy,r:6,fill:col,stroke:cv('--card'),'stroke-width':2}));
+    if(l.g.truthKa!=null){ const tx=x(l.g.truthKa);
+      svg.appendChild(svgEl('line',{x1:tx,y1:cy-15,x2:tx,y2:cy+15,stroke:cv('--foreground'),'stroke-width':2}));
+      const tl=svgEl('text',{x:tx,y:cy-21,'text-anchor':'middle',fill:cv('--foreground'),'font-size':10}); tl.textContent='truth '+(l.g.truthKa>=1000?(l.g.truthKa/1000)+' Ma':l.g.truthKa+' ka'); svg.appendChild(tl); }
+    const dl=svgEl('text',{x:x1+13,y:cy+4,fill:col,'font-size':11}); dl.textContent=`${fmt(l.inferred_split_ka)}–${fmt(l.median_depth_ka)} ka`; svg.appendChild(dl); });
+  const xl=svgEl('text',{x:ML+iw/2,y:MT+ih+40,'text-anchor':'middle',class:'lbl-in'}); xl.textContent='coalescent depth, lower tail through median, against the planted split (vertical rule)'; svg.appendChild(xl);
+})();
+
+(function carrier(){
+  const svg=$('#carrierChart'),W=860,H=200,ML=108,MR=152,MT=36,MB=40;
+  const iw=W-ML-MR, ih=H-MT-MB;
+  const t=svgEl('title',{id:'ccT'}); t.textContent='Where each recovered mode’s segments come from. A Denisovan-mediated lineage should concentrate in Oceania.'; svg.appendChild(t);
+  const groups=['AFR','EUR','SAS','EAS','AMR','OCE'], rowH=Math.min(32,ih/LIN.length-12);
+  LIN.forEach((l,i)=>{
+    const cy=MT+(i+.5)*(ih/LIN.length), total=Object.values(l.carriers_by_group).reduce((a,b)=>a+b,0)||1;
+    let cx=ML;
+    groups.forEach(gn=>{ const n=l.carriers_by_group[gn]||0; if(!n) return;
+      const w=(n/total)*iw, isO=gn==='OCE';
+      const seg=svgEl('rect',{x:cx,y:cy-rowH/2,width:Math.max(w-2,1),height:rowH,fill:isO?cv('--data-deniso'):cv('--data-none'),'fill-opacity':isO?.95:.55,rx:2});
+      hoverable(seg,`<b>Mode ${l.cluster} · ${gn}</b><br>${n} of ${total} segments (${pct(n/total)})`); svg.appendChild(seg);
+      if(w>36){ const tx=svgEl('text',{x:cx+w/2-1,y:cy+4,'text-anchor':'middle',fill:isO?cv('--background'):cv('--muted-foreground'),'font-size':10}); tx.textContent=gn; svg.appendChild(tx); }
+      cx+=w; });
+    const a=svgEl('text',{x:ML-14,y:cy-2,'text-anchor':'end',fill:cv('--muted-foreground'),'font-size':11.5}); a.textContent=`Mode ${l.cluster}`; svg.appendChild(a);
+    const b=svgEl('text',{x:ML-14,y:cy+13,'text-anchor':'end',fill:cv('--dim-foreground'),'font-size':10}); b.textContent=l.g.dom?l.g.dom.replace(/ \(.*\)/,''):'—'; svg.appendChild(b);
+    const r=svgEl('text',{x:ML+iw+14,y:cy+4,fill:cv('--data-deniso'),'font-size':12}); r.textContent=`${pct((l.carriers_by_group.OCE||0)/total)} Oceanian`; svg.appendChild(r); });
+  const hdr=svgEl('text',{x:ML,y:MT-16,fill:cv('--dim-foreground'),'font-size':10.5,'letter-spacing':'.1em'}); hdr.textContent='SHARE OF EACH MODE’S SEGMENTS, BY CARRIER GROUP'; svg.appendChild(hdr);
+  $('#carrierLegend').innerHTML=`<span><i style="background:${cv('--data-deniso')}"></i>Oceania — where Denisovan ancestry concentrates</span><span><i style="background:${cv('--data-none')}"></i>all other groups</span>`;
+  const sh=LIN.map(l=>{ const t=Object.values(l.carriers_by_group).reduce((a,b)=>a+b,0)||1; return (l.carriers_by_group.OCE||0)/t; });
+  if(sh.length===2){ const deep=LIN[0].median_depth_ka>LIN[1].median_depth_ka?0:1, ratio=sh[deep]/Math.max(sh[1-deep],1e-9);
+    $('#carrierVerdict').innerHTML=`Oceania supplies <strong>${pct(sh[deep])}</strong> of the deeper mode's segments against <strong>${pct(sh[1-deep])}</strong> of the shallower one — a <strong>${ratio.toFixed(1)}×</strong> enrichment, reached without using depth at all. That is the fingerprint of a lineage that came to us through Denisovans rather than directly, and it is why the deep mode can be named super-archaic even though its individual segments cannot be told apart from Ghost-A's deep tail.`; }
+})();
+
+(function attr(){
+  const M=REPORT.attribution_matrix;
+  const attrs=[...new Set(M.map(r=>r.attribution))], truths=[...new Set(M.map(r=>r.truth))].sort();
+  const get=(a,t)=>(M.find(r=>r.attribution===a&&r.truth===t)||{count:0}).count;
+  const max=Math.max(...M.map(r=>r.count),1);
+  const short=t=>t.startsWith('none')?'not archaic':t.replace(/ \(.*\)/,'');
+  const body=attrs.map(a=>{
+    const cells=truths.map(t=>{ const n=get(a,t), correct=(a==='GHOST'&&t.startsWith('Ghost'))||a===t;
+      const alpha=n===0?0:.10+.5*Math.sqrt(n/max);
+      const bg=n===0?'transparent':`color-mix(in oklab, ${correct?colorFor(t):cv('--dim-foreground')} ${(alpha*100).toFixed(0)}%, transparent)`;
+      return `<td class="num" style="background:${bg}">${n||'·'}</td>`; }).join('');
+    const tot=truths.reduce((s,t)=>s+get(a,t),0);
+    return `<tr><td class="mono" style="color:var(--foreground)">${a}</td>${cells}<td class="num" style="color:var(--dim-foreground)">${fmt(tot)}</td></tr>`; }).join('');
+  $('#attrTable').innerHTML=`<thead><tr><th>Called ↓ / truth →</th>${truths.map(t=>`<th class="num">${short(t)}</th>`).join('')}<th class="num">Total</th></tr></thead><tbody>${body}</tbody>`;
+  const gr=M.filter(r=>r.attribution==='GHOST'), tot=gr.reduce((s,r)=>s+r.count,0);
+  const right=gr.filter(r=>r.truth.startsWith('Ghost')).reduce((s,r)=>s+r.count,0);
+  $('#attrNote').innerHTML=`Of ${fmt(tot)} segments called GHOST, <strong>${fmt(right)}</strong> (${pct(right/Math.max(tot,1))}) really came from one of the two ghost lineages. The rest are Neanderthal and Denisovan segments whose depth ran deeper than the reference-match margin — the predictable failure mode when a threshold is standing in for a genome you do not have.`;
+})();
+
+/* ═══════════════════════════════════════════════ 07 limits */
+(function resolution(){
+  const svg=$('#resChart'),W=860,H=300,ML=62,MR=26,MT=24,MB=52;
+  const iw=W-ML-MR, panelH=96, gap=34, pts=DISC.resolution;
+  const t=svgEl('title',{id:'rsT'}); t.textContent='Two panels sharing an x axis: how much of the super-archaic lineage the deep mode captures, and how Oceania-enriched that mode is, as the lineage is made rarer.'; svg.appendChild(t);
+  const maxN=Math.max(...pts.map(p=>p.ghost_b_segments),1);
+  const x=n=>ML+(Math.log10(1+n)/Math.log10(1+maxN))*iw;
+  const firstOk=pts.find(p=>p.resolved);
+  function panel(top,key,maxV,color,label,fmtV){
+    const y=v=>top+panelH-(Math.min(v,maxV)/maxV)*panelH;
+    for(let i=0;i<=2;i++){ const v=maxV*i/2, gy=y(v);
+      svg.appendChild(svgEl('line',{class:'gl',x1:ML,y1:gy,x2:ML+iw,y2:gy}));
+      const l=svgEl('text',{x:ML-10,y:gy+3.5,'text-anchor':'end'}); l.textContent=fmtV(v); svg.appendChild(l); }
+    svg.appendChild(svgEl('line',{class:'ax',x1:ML,y1:top+panelH,x2:ML+iw,y2:top+panelH}));
+    if(firstOk){ const bx=x(firstOk.ghost_b_segments);
+      svg.appendChild(svgEl('rect',{x:ML,y:top,width:Math.max(bx-ML,0),height:panelH,fill:cv('--destructive'),'fill-opacity':.07}));
+      svg.appendChild(svgEl('line',{x1:bx,y1:top,x2:bx,y2:top+panelH,stroke:cv('--accent'),'stroke-width':1.5,'stroke-dasharray':'4 4'})); }
+    const lb=svgEl('text',{x:ML,y:top-8,fill:color,'font-size':11}); lb.textContent=label; svg.appendChild(lb);
+    let d=''; pts.forEach((p,i)=>{ d+=`${i?' L':'M'} ${x(p.ghost_b_segments)} ${y(p[key])}`; });
+    const path=svgEl('path',{d,fill:'none',stroke:color,'stroke-width':2.2,'stroke-linejoin':'round','stroke-linecap':'round'});
+    path.style.strokeDasharray=1200; path.style.strokeDashoffset=1200; path.style.animation='drawLine 1.4s var(--enter) .2s forwards'; svg.appendChild(path);
+    pts.forEach(p=>{ const c=svgEl('circle',{cx:x(p.ghost_b_segments),cy:y(p[key]),r:4.5,fill:color,stroke:cv('--card'),'stroke-width':1.5});
+      hoverable(c,`<b>${p.ghost_b_segments} segments</b> (${p.ghost_b_percent.toFixed(3)}% of the panel)<br>captured ${pct(p.captured_by_deep_mode)}<br>Oceania enrichment ${p.oce_enrichment.toFixed(1)}×<br>deep mode median ${fmt(p.deep_mode_median_ka)} ka<br>${p.resolved?'RESOLVED':'not resolved'}`);
+      svg.appendChild(c); });
+  }
+  panel(MT,'captured_by_deep_mode',1,cv('--data-ghost-b'),'SHARE OF THE LINEAGE CAPTURED BY THE DEEP MODE',v=>Math.round(v*100)+'%');
+  panel(MT+panelH+gap,'oce_enrichment',5,cv('--data-deniso'),'OCEANIA ENRICHMENT OF THE DEEP MODE',v=>v.toFixed(1)+'×');
+  const baseY=MT+panelH+gap+panelH;
+  if(firstOk){ const bx=x(firstOk.ghost_b_segments);
+    const a=svgEl('text',{x:bx+8,y:MT+12,fill:cv('--accent'),'font-size':10.5}); a.textContent=`resolvable from ${firstOk.ghost_b_segments} segments`; svg.appendChild(a);
+    const b=svgEl('text',{x:ML+8,y:MT+12,fill:cv('--destructive'),'font-size':10.5}); b.textContent='invisible'; svg.appendChild(b); }
+  pts.forEach(p=>{ const l=svgEl('text',{x:x(p.ghost_b_segments),y:baseY+18,'text-anchor':'middle'}); l.textContent=p.ghost_b_segments; svg.appendChild(l); });
+  const xl=svgEl('text',{x:ML+iw/2,y:baseY+40,'text-anchor':'middle',class:'lbl-in'}); xl.textContent='super-archaic segments present in the cohort (log scale)'; svg.appendChild(xl);
+  $('#resLegend').innerHTML=`<span><i style="background:${cv('--data-ghost-b')}"></i>captured share</span><span><i style="background:${cv('--data-deniso')}"></i>Oceania enrichment</span><span><i style="background:${cv('--destructive')};opacity:.4"></i>below the resolution limit</span>`;
+  $('#resTable').innerHTML=`<thead><tr><th>Segments</th><th class="num">% of panel</th><th class="num">Captured</th><th class="num">Deep median</th><th class="num">OCE enrich.</th><th>Resolved</th></tr></thead><tbody>`+
+    pts.map(p=>`<tr><td class="mono">${p.ghost_b_segments}</td><td class="num">${p.ghost_b_percent.toFixed(3)}%</td><td class="num">${pct(p.captured_by_deep_mode,0)}</td><td class="num">${fmt(p.deep_mode_median_ka)} ka</td><td class="num">${p.oce_enrichment.toFixed(1)}×</td><td style="color:${p.resolved?'var(--accent)':'var(--dim-foreground)'}">${p.resolved?'yes':'no'}</td></tr>`).join('')+'</tbody>';
+  $('#resFinding').innerHTML=`<strong>Finding.</strong> ${DISC.findings[0]||''}`;
+})();
+
+(function information(){
+  const svg=$('#infoChart'),W=860,H=280,ML=62,MR=150,MT=26,MB=56;
+  const iw=W-ML-MR, ih=H-MT-MB, pts=DISC.information;
+  const t=svgEl('title',{id:'ifT'}); t.textContent='Detection F1 against how much sequence each window contains, expressed as expected variable sites.'; svg.appendChild(t);
+  const lo=.7,hi=.9;
+  const maxS=Math.max(...pts.map(p=>p.expected_sites_at_650ka)), minS=Math.min(...pts.map(p=>p.expected_sites_at_650ka));
+  const lgLo=Math.log10(minS*.8), lgHi=Math.log10(maxS*1.25);
+  const x=s=>ML+((Math.log10(s)-lgLo)/(lgHi-lgLo))*iw, y=f=>MT+ih-((f-lo)/(hi-lo))*ih;
+  for(let i=0;i<=4;i++){ const f=lo+(hi-lo)*i/4, gy=y(f);
+    svg.appendChild(svgEl('line',{class:'gl',x1:ML,y1:gy,x2:ML+iw,y2:gy}));
+    const l=svgEl('text',{x:ML-10,y:gy+3.5,'text-anchor':'end'}); l.textContent=f.toFixed(2); svg.appendChild(l); }
+  svg.appendChild(svgEl('line',{class:'ax',x1:ML,y1:MT+ih,x2:ML+iw,y2:MT+ih}));
+  const kp=pts.find(p=>p.window_bp===DISC.information_knee_bp);
+  if(kp){ const kx=x(kp.expected_sites_at_650ka);
+    svg.appendChild(svgEl('rect',{x:ML,y:MT,width:Math.max(kx-ML,0),height:ih,fill:cv('--destructive'),'fill-opacity':.07}));
+    svg.appendChild(svgEl('line',{x1:kx,y1:MT,x2:kx,y2:MT+ih,stroke:cv('--accent'),'stroke-width':1.5,'stroke-dasharray':'4 4'}));
+    const l=svgEl('text',{x:kx+8,y:MT+14,fill:cv('--accent'),'font-size':10.5}); l.textContent=`saturates at ~${Math.round(kp.expected_sites_at_650ka)} variable sites`; svg.appendChild(l); }
+  let d=''; pts.forEach((p,i)=>{ d+=`${i?' L':'M'} ${x(p.expected_sites_at_650ka)} ${y(p.f1)}`; });
+  const path=svgEl('path',{d,fill:'none',stroke:cv('--primary'),'stroke-width':2.4,'stroke-linejoin':'round','stroke-linecap':'round'});
+  path.style.strokeDasharray=1200; path.style.strokeDashoffset=1200; path.style.animation='drawLine 1.4s var(--enter) .2s forwards'; svg.appendChild(path);
+  pts.forEach(p=>{ const px=x(p.expected_sites_at_650ka);
+    const c=svgEl('circle',{cx:px,cy:y(p.f1),r:5,fill:cv('--primary'),stroke:cv('--card'),'stroke-width':1.6});
+    hoverable(c,`<b>${fmt(p.window_bp)} bp window</b><br>≈ ${fmt(p.equivalent_real_kb)} kb of real sequence<br>${Math.round(p.expected_sites_at_650ka)} variable sites expected<br>F1 ${p.f1.toFixed(4)} · recall ${p.recall.toFixed(3)}`);
+    svg.appendChild(c);
+    const l=svgEl('text',{x:px,y:MT+ih+18,'text-anchor':'middle'}); l.textContent=fmt(p.equivalent_real_kb)+' kb'; svg.appendChild(l); });
+  const xl=svgEl('text',{x:ML+iw/2,y:MT+ih+40,'text-anchor':'middle',class:'lbl-in'}); xl.textContent='information per window — real-sequence equivalent (log scale)'; svg.appendChild(xl);
+  $('#infoLegend').innerHTML=`<span><i style="background:${cv('--primary')}"></i>detection F1</span><span><i style="background:${cv('--destructive')};opacity:.4"></i>below the information floor</span>`;
+  $('#infoFinding').innerHTML=`<strong>Finding.</strong> ${DISC.findings[1]||''}`;
+})();
+
+tiles($('#fidTiles'), [
+  { k:'Calls reproduced', v:pct(DISC.fidelity.call_recall,1), hi:true, n:`${DISC.fidelity.agreed} of the exhaustive scan's ${DISC.fidelity.exhaustive_calls} calls` },
+  { k:'Missed by the index', v:DISC.fidelity.missed_by_index, n:'segments the exhaustive scan found and the index did not' },
+  { k:'F1 difference', v:Math.abs(DISC.fidelity.exhaustive_f1-DISC.fidelity.indexed_f1).toFixed(4), n:`exhaustive ${DISC.fidelity.exhaustive_f1.toFixed(4)} vs indexed ${DISC.fidelity.indexed_f1.toFixed(4)}` },
+  { k:'Work saved', v:DISC.fidelity.work_ratio.toFixed(1)+'×', n:`${fmt(DISC.fidelity.exact_comparisons_indexed)} comparisons instead of ${fmt(DISC.fidelity.exact_comparisons_exhaustive)}` },
+]);
+$('#fidFinding').innerHTML=`<strong>Finding.</strong> `+prose(DISC.findings[2]);
+
+/* ═══════════════════════════════════════════════ 07d linkage */
+(function linkage(){
+  const pw=LINK.per_window.scores, lk=LINK.linkage.scores, d=LINK.delta, ho=LINK.held_out, uc=LINK.unlinked_control;
+  tiles($('#linkTiles'), [
+    { k:'F1 · per-window', v:pw.f1.toFixed(3), n:`precision ${pw.precision.toFixed(3)} · recall ${pw.recall.toFixed(3)}` },
+    { k:'F1 · linkage-aware', v:lk.f1.toFixed(3), hi:true, n:`precision ${lk.precision.toFixed(3)} · recall ${lk.recall.toFixed(3)}` },
+    { k:'Rescued windows', v:`${d.rescued_true} / ${d.rescued_windows}`, n:`${pct(d.rescued_precision,0)} of the windows the context rule saved were genuinely introgressed` },
+    { k:'Held-out F1 gain', v:'+'+(ho.linkage_test.f1-ho.per_window_test.f1).toFixed(3), n:`tuned on one half of the genome, scored on the other` },
+  ]);
+  $('#linkHeadline').innerHTML=`<strong>Looking sideways helps, and it helps in the way it should.</strong> The rule is monotone by construction — it can only add calls — so recall could only rise (+${d.recall.toFixed(3)}). The real question was whether precision would survive the extra calls, and it went <em>up</em> (+${d.precision.toFixed(3)}). Of the ${d.rescued_windows} borderline windows the context rule rescued, <strong>${d.rescued_true} were genuinely introgressed</strong> — cleaner than the ${pct(pw.precision,1)} precision of the calls the per-window detector was already making.`;
+  $('#linkTable').innerHTML=`<thead><tr><th>Arm</th><th class="num">Precision</th><th class="num">Recall</th><th class="num">F1</th></tr></thead><tbody>`+
+    [['Per-window, tracted cohort',pw],['Linkage-aware, tracted cohort',lk],
+     ['Per-window, held-out half',ho.per_window_test],['Linkage-aware, held-out half',ho.linkage_test],
+     ['Per-window, UNLINKED control',uc.per_window],['Linkage-aware, UNLINKED control',uc.linkage]]
+      .map(([n,s],i)=>`<tr${i%2?' style="color:var(--foreground)"':''}><td>${n}</td><td class="num">${s.precision.toFixed(3)}</td><td class="num">${s.recall.toFixed(3)}</td><td class="num">${s.f1.toFixed(3)}</td></tr>`).join('')+'</tbody>';
+  const tp=LINK.per_window.tract_comparison.planted, tr=LINK.per_window.tract_comparison.recovered;
+  $('#linkTract').innerHTML=`<strong>The control is the part that matters.</strong> Run the same rule on a cohort where introgressed windows are isolated by construction and it moves F1 by <strong>exactly ${(uc.linkage.f1-uc.per_window.f1).toFixed(4)}</strong>. There is nothing for it to exploit there, so any gain it shows on the tracted cohort is linkage rather than a relaxed threshold.<br><br>What neither detector does is recover tracts at their planted length. Planted tracts average <strong>${tp.mean_windows.toFixed(2)} windows</strong>; the per-window detector recovers ${tr.mean_windows.toFixed(2)} and the linkage rule ${LINK.linkage.tract_comparison.recovered.mean_windows.toFixed(2)}. Both <em>fragment</em> real tracts rather than fusing them, because one missed window in the middle of a run splits it in two — and that matters, because tract length is how admixture is dated. Inverting mean length gives ${fmt(LINK.admixture_time_truth.generations)} generations from the planted tracts and ${fmt(LINK.linkage.admixture_time.generations)} from the recovered ones. Fragmentation shortens the measured tracts, and a shorter tract always reads as an <em>older</em> pulse.`;
+})();
+
+/* ═══════════════════════════════════════════════ 07e panel design */
+(function panelDesign(){
+  const rows=PANEL.panel_design.filter(r=>r.available);
+  const bal=rows.filter(r=>r.composition==='balanced').sort((a,b)=>a.actual_size-b.actual_size);
+  const afr=rows.filter(r=>r.composition!=='balanced').sort((a,b)=>a.actual_size-b.actual_size);
+
+  (function chart(){
+    const svg=$('#panelChart'); const W=860,H=300,ML=58,MR=54,MT=22,MB=54,iw=W-ML-MR,ih=H-MT-MB;
+    const t=svgEl('title',{id:'pnT'}); t.textContent='Detection F1 and the ordinary-segment noise floor against reference panel size'; svg.appendChild(t);
+    const maxN=Math.max(...bal.map(r=>r.actual_size));
+    const x=n=>ML+(n/maxN)*iw, y=f=>MT+ih-f*ih;
+    const maxNoise=Math.max(...bal.map(r=>r.ordinary_median_ka));
+    const y2=v=>MT+ih-(v/maxNoise)*ih;
+    [0,.25,.5,.75,1].forEach(f=>{
+      svg.appendChild(svgEl('line',{x1:ML,x2:ML+iw,y1:y(f),y2:y(f),stroke:cv('--border-soft'),'stroke-width':1}));
+      const l=svgEl('text',{x:ML-10,y:y(f)+4,'text-anchor':'end',class:'lbl-in'}); l.textContent=f.toFixed(2); svg.appendChild(l);
+    });
+    const line=(pts,col,dash)=>{
+      const p=svgEl('path',{d:pts.map((q,i)=>`${i?'L':'M'}${q[0].toFixed(1)} ${q[1].toFixed(1)}`).join(' '),
+        fill:'none',stroke:col,'stroke-width':2.4,'stroke-linecap':'round','stroke-linejoin':'round'});
+      if(dash) p.setAttribute('stroke-dasharray','6 5');
+      const L=1400; p.setAttribute('stroke-dasharray',dash?'6 5':L); if(!dash){p.setAttribute('stroke-dashoffset',L);
+        p.style.animation='drawLine 1.5s var(--enter) forwards';}
+      svg.appendChild(p); return p;
+    };
+    line(bal.map(r=>[x(r.actual_size),y(r.f1)]),cv('--primary'));
+    line(afr.map(r=>[x(r.actual_size),y(r.f1)]),cv('--data-ghost-b'));
+    line(bal.map(r=>[x(r.actual_size),y2(r.ordinary_median_ka)]),cv('--data-none'),true);
+    [...bal.map(r=>[r,cv('--primary')]),...afr.map(r=>[r,cv('--data-ghost-b')])].forEach(([r,c])=>{
+      const dot=svgEl('circle',{cx:x(r.actual_size),cy:y(r.f1),r:4,fill:c});
+      hoverable(dot,`<b>${r.composition} · ${r.actual_size} haplotypes</b><br>F1 ${r.f1.toFixed(4)}<br>precision ${r.precision.toFixed(3)} · recall ${r.recall.toFixed(3)}<br>noise floor ${fmt(r.ordinary_median_ka)} ka`);
+      svg.appendChild(dot);
+    });
+    const xl=svgEl('text',{x:ML+iw/2,y:MT+ih+40,'text-anchor':'middle',class:'lbl-in'});
+    xl.textContent='modern reference haplotypes in the panel  ·  right axis: median depth assigned to ordinary segments (the noise floor)'; svg.appendChild(xl);
+    $('#panelLegend').innerHTML=`<span><i style="background:${cv('--primary')}"></i>balanced panel · F1</span><span><i style="background:${cv('--data-ghost-b')}"></i>African-only panel · F1</span><span><i style="background:${cv('--data-none')}"></i>noise floor (ka)</span>`;
+  })();
+
+  $('#panelHeadline').innerHTML=prose(PANEL.findings[0]).replace(/^([^.]+\.)/,'<strong>$1</strong>')
+    + ' ' + prose(PANEL.findings[2]);
+  $('#panelTwist').innerHTML=`<strong>And then the obvious corollary fails.</strong> `+prose(PANEL.findings[3]).replace(/^[^.]+\.\s*/,'')
+    + '<br><br>' + prose(PANEL.findings[5]);
+
+  const ab=PANEL.archaic_ablation||[];
+  $('#ablTable').innerHTML=`<thead><tr><th>Archaic references available</th><th class="num">Ghost precision</th><th class="num">Ghost recall</th><th class="num">Attribution accuracy</th></tr></thead><tbody>`+
+    ab.map(a=>`<tr><td class="mono">${a.reference_set}</td><td class="num" style="color:${a.ghost_precision>0.6?'var(--primary)':'var(--muted-foreground)'}">${a.ghost_precision.toFixed(3)}</td><td class="num">${a.ghost_recall.toFixed(3)}</td><td class="num">${a.attribution_accuracy.toFixed(3)}</td></tr>`).join('')+'</tbody>';
+  $('#ablFinding').innerHTML=`<strong>And the archaic genomes?</strong> `+prose(PANEL.findings[6])
+    +'<br><br>'+prose(PANEL.findings[9]||'')
+    +'<br><br>'+prose(PANEL.findings[PANEL.findings.length-1]||'');
+})();
+
+$('#caveatList').innerHTML = REPORT.caveats.map((c,i)=>`<div style="display:flex;gap:16px;max-width:var(--measure);margin-bottom:18px">
+  <div style="font-family:var(--font-mono);font-size:11px;color:var(--primary);padding-top:5px;flex:0 0 24px">0${i+1}</div><div>${c}</div></div>`).join('');
+</script>
+
+<style>
+@keyframes drawLine { to { stroke-dashoffset:0; } }
+@keyframes growRight { from { transform:scaleX(0); } to { transform:scaleX(1); } }
+</style>

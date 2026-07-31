@@ -1,0 +1,16 @@
+{
+  "source_url": "https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/release/20130502/ALL.chr22.phase3_shapeit2_mvncall_integrated_v5b.20130502.genotypes.vcf.gz",
+  "region": "chr22:20000018-20999980",
+  "requested_region": "chr22:20000000-21000000",
+  "n_samples": 400,
+  "n_haplotypes": 800,
+  "n_variants": 21418,
+  "build": "GRCh37",
+  "retrieved_utc": "2026-07-31T03:56:49Z",
+  "subsampled": true,
+  "subsample_note": "Subsampled to 400 of 2504 samples, 80 per superpopulation (AFR/AMR/EAS/EUR/SAS), round-robin across constituent populations, seed=20130502. Column order follows original VCF sample order.",
+  "variant_filter": "biallelic SNPs (single-base ACGT REF and ALT) with fully phased '|' genotypes in all retained samples",
+  "access_method": "tabix linear index parsed in pure Python to get a coffset, then an HTTP Range request into the bgzipped VCF and per-BGZF-block raw-deflate decompression; no tabix/bcftools/pysam",
+  "byte_range": "20604529-25373776",
+  "license_note": "1000 Genomes Project phase 3 (IGSR/EBI) data are openly available with no restrictions on use. Please cite The 1000 Genomes Project Consortium, 'A global reference for human genetic variation', Nature 526, 68-74 (2015). https://www.internationalgenome.org/data"
+}

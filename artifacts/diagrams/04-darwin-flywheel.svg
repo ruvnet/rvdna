@@ -1,0 +1,143 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 664" width="960" height="664" role="img" aria-labelledby="t4 d4">
+  <title id="t4">Two coupled loops: Darwin tunes the detector, the flywheel grows its evidence</title>
+  <desc id="d4">A diagram of the two control loops. The inner Darwin loop mutates the detector's own hyperparameters, evaluates each mutant in a sandbox against a training split, and keeps only changes that measurably improve F1. The outer flywheel loop takes the ghost segments the tuned detector confirms, condenses them into consensus references, writes them back into the vector index, and re-runs — so each turn makes a previously invisible lineage a little more visible. It stops when a turn adds nothing new.</desc>
+
+  <defs>
+    <filter id="g4" x="-70%" y="-70%" width="240%" height="240%">
+      <feGaussianBlur stdDeviation="3.5" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <marker id="a4" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+      <path d="M0,1 L9,5 L0,9 z" fill="context-stroke"/>
+    </marker>
+  </defs>
+
+  <style>
+    .bg    { fill: #0B0E13; }
+    .hdr   { fill: #E6EBEF; font: 600 15px 'JetBrains Mono', ui-monospace, monospace; letter-spacing: .12em; }
+    .sub   { fill: #788696; font: 500 11px 'JetBrains Mono', ui-monospace, monospace; letter-spacing: .08em; }
+    .note  { fill: #788696; font: 400 11.5px 'JetBrains Mono', ui-monospace, monospace; }
+    .step  { fill: #E6EBEF; font: 600 12px 'JetBrains Mono', ui-monospace, monospace; letter-spacing: .04em; }
+    .stepn { fill: #788696; font: 400 10.5px 'JetBrains Mono', ui-monospace, monospace; }
+
+    .box     { fill: #141820; stroke: #262D38; stroke-width: 1; }
+    .box-d   { stroke: #26D968; }
+    .box-f   { stroke: #1DD4E0; }
+    .arc-d   { fill: none; stroke: #26D968; stroke-width: 1.8; marker-end: url(#a4); opacity: .85; }
+    .arc-f   { fill: none; stroke: #1DD4E0; stroke-width: 2;   marker-end: url(#a4); opacity: .85; }
+    .gate    { fill: none; stroke: #C97A22; stroke-width: 1.4; stroke-dasharray: 4 4; }
+
+    .spin  { transform-origin: 258px 300px; animation: spin 14s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .flow-d { stroke-dasharray: 6 8; animation: march 1.6s linear infinite; }
+    .flow-f { stroke-dasharray: 6 9; animation: march 2.2s linear infinite; }
+    @keyframes march { to { stroke-dashoffset: -28; } }
+
+    .rise { animation: rise .6s ease-out backwards; }
+    @keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+    @media (prefers-reduced-motion: reduce) {
+      .spin, .flow-d, .flow-f, .rise { animation: none; }
+    }
+  </style>
+
+  <rect class="bg" width="960" height="664"/>
+  <text class="hdr" x="34" y="38">TWO LOOPS</text>
+  <text class="note" x="34" y="58">The model is frozen. What changes is the harness around it — first its settings, then the evidence it has to work with.</text>
+
+  <!-- ================= DARWIN (inner loop) ================= -->
+  <text class="sub" x="34" y="98" fill="#26D968">DARWIN · the detector tunes itself</text>
+
+  <g class="arc-d flow-d">
+    <path d="M164,150 L246,150"/>
+    <path d="M382,150 L464,150"/>
+    <path d="M600,150 L682,150"/>
+    <!-- return arc back to the mutate box -->
+    <path d="M796,178 C796,236 120,236 120,182"/>
+  </g>
+
+  <g class="rise">
+    <rect class="box box-d" x="34" y="122" width="130" height="56" rx="3"/>
+    <text class="step" x="50" y="146">MUTATE</text>
+    <text class="stepn" x="50" y="164">one hyperparameter</text>
+  </g>
+  <g class="rise" style="animation-delay:.1s">
+    <rect class="box box-d" x="246" y="122" width="136" height="56" rx="3"/>
+    <text class="step" x="262" y="146">SANDBOX</text>
+    <text class="stepn" x="262" y="164">train split only</text>
+  </g>
+  <g class="rise" style="animation-delay:.2s">
+    <rect class="box box-d" x="464" y="122" width="136" height="56" rx="3"/>
+    <text class="step" x="480" y="146">MEASURE</text>
+    <text class="stepn" x="480" y="164">F1 against truth</text>
+  </g>
+  <g class="rise" style="animation-delay:.3s">
+    <rect class="box box-d" x="682" y="122" width="150" height="56" rx="3"/>
+    <text class="step" x="698" y="146">KEEP · OR DISCARD</text>
+    <text class="stepn" x="698" y="164">only real gains survive</text>
+  </g>
+
+  <g class="gate"><rect x="676" y="116" width="162" height="68" rx="5"/></g>
+  <text class="stepn" x="846" y="154" fill="#C97A22">safety gate</text>
+
+  <text class="note" x="34" y="256">A mutation has to clear an explicit margin to be accepted, so evaluation noise cannot ratchet the parameters anywhere. Whatever survives is</text>
+  <text class="note" x="34" y="274">then scored once on a held-out split it never saw — which is where overfitting would show up if there were any.</text>
+
+  <!-- ================= FLYWHEEL (outer loop) ================= -->
+  <text class="sub" x="34" y="302" fill="#1DD4E0">FLYWHEEL · the ghost becomes visible</text>
+
+  <!-- circular loop, four stations -->
+  <g transform="translate(230,434)">
+    <circle cx="0" cy="0" r="78" fill="none" stroke="#1B212A" stroke-width="1"/>
+    <g class="arc-f flow-f">
+      <path d="M-4,-78 A78,78 0 0,1 74,-22"/>
+      <path d="M78,4 A78,78 0 0,1 22,74"/>
+      <path d="M-4,78 A78,78 0 0,1 -78,22"/>
+      <path d="M-78,-4 A78,78 0 0,1 -22,-74"/>
+    </g>
+    <circle cx="0" cy="0" r="30" fill="#141820" stroke="#1DD4E0" stroke-width="1.2"/>
+    <text class="step" x="0" y="-2" text-anchor="middle" fill="#1DD4E0" font-size="10">GHOST</text>
+    <text class="step" x="0" y="12" text-anchor="middle" fill="#1DD4E0" font-size="10">REFS</text>
+  </g>
+
+  <g class="step">
+    <text x="230" y="330" text-anchor="middle">DETECT</text>
+    <text x="352" y="438" >CLUSTER</text>
+    <text x="230" y="546" text-anchor="middle">RE-INDEX</text>
+    <text x="42"  y="438" >CONDENSE</text>
+  </g>
+  <g class="stepn">
+    <text x="230" y="344" text-anchor="middle">deep-coalescence outliers</text>
+    <text x="352" y="454">split by inferred divergence time</text>
+    <text x="230" y="562" text-anchor="middle">write consensus vectors back into HNSW</text>
+    <text x="42"  y="454">one profile per lineage</text>
+  </g>
+
+  <!-- right column: the ratchet -->
+  <g transform="translate(600,336)">
+    <text class="sub" x="0" y="0">WHY IT COMPOUNDS</text>
+    <text class="note" x="0" y="28">Round 1 finds a ghost segment the hard way:</text>
+    <text class="note" x="0" y="46">by proving its genealogy is an outlier</text>
+    <text class="note" x="0" y="64">against the entire living panel.</text>
+    <text class="note" x="0" y="92">Confirmed segments become references, so</text>
+    <text class="note" x="0" y="110">round 2 can recognise a borderline one by</text>
+    <text class="note" x="0" y="128">its resemblance to a lineage that is no</text>
+    <text class="note" x="0" y="146">longer invisible.</text>
+
+    <g stroke="#1DD4E0" stroke-width="2" fill="none" opacity=".75">
+      <path d="M0,174 L36,174"/>
+      <path d="M0,194 L92,194"/>
+      <path d="M0,214 L138,214"/>
+      <path d="M0,234 L152,234"/>
+    </g>
+    <g class="stepn">
+      <text x="164" y="178">round 1</text>
+      <text x="164" y="198">round 2</text>
+      <text x="164" y="218">round 3</text>
+      <text x="164" y="238">dry — stop</text>
+    </g>
+    <text class="note" x="0" y="268">The loop ends itself. When a turn adds no</text>
+    <text class="note" x="0" y="286">new references twice running, it stops.</text>
+  </g>
+</svg>

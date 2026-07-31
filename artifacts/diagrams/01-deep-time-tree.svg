@@ -1,0 +1,175 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 660" width="960" height="660" role="img" aria-labelledby="t1 d1">
+  <title id="t1">The hominin population tree, with two ghost lineages</title>
+  <desc id="d1">A time-scaled tree running from 1.8 million years ago at the bottom to the present at the top. Modern human populations, Neanderthals and Denisovans are drawn as solid lines. Two ghost lineages — one diverging 800,000 years ago and one 1.8 million years ago — are drawn as dashed lines that never reach the present, because no genome from either has ever been sequenced. Arrows show gene flow from each archaic lineage into the populations that carry its DNA today.</desc>
+
+  <defs>
+    <linearGradient id="ghostFade" x1="0" y1="1" x2="0" y2="0">
+      <stop offset="0%" stop-color="currentColor" stop-opacity="0.95"/>
+      <stop offset="70%" stop-color="currentColor" stop-opacity="0.5"/>
+      <stop offset="100%" stop-color="currentColor" stop-opacity="0"/>
+    </linearGradient>
+    <marker id="flow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,1 L9,5 L0,9 z" fill="context-stroke"/>
+    </marker>
+    <filter id="glow" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="4" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <style>
+    .bg      { fill: #0B0E13; }
+    .grid    { stroke: #262D38; stroke-width: 1; }
+    .axis-lb { fill: #56636F; font: 500 11px 'JetBrains Mono', ui-monospace, monospace; letter-spacing: .08em; }
+    .tip-lb  { fill: #A3AEBA; font: 500 11px 'JetBrains Mono', ui-monospace, monospace; letter-spacing: .04em; }
+    .note    { fill: #788696; font: 400 11.5px 'JetBrains Mono', ui-monospace, monospace; }
+    .note-em { fill: #8B98A8; font: 400 11.5px 'JetBrains Mono', ui-monospace, monospace; font-style: italic; }
+    .hdr     { fill: #E6EBEF; font: 600 15px 'JetBrains Mono', ui-monospace, monospace; letter-spacing: .12em; }
+
+    .lin     { fill: none; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+    .modern  { stroke: #A3AEBA; }
+    .archaic { stroke: #C97A22; }
+    .deniso  { stroke: #3F72D6; }
+    .ghostA  { stroke: #10A3AD; }
+    .ghostB  { stroke: #8F5AE0; }
+
+    .ghost-line { stroke-dasharray: 7 6; filter: url(#glow); }
+    .flowline   { fill: none; stroke-width: 2; stroke-dasharray: 5 7; marker-end: url(#flow); opacity: .95; }
+
+    /* Lineages draw themselves upward out of deep time. */
+    .lin, .ghost-line { stroke-dasharray: 1400; stroke-dashoffset: 1400; animation: draw 2.6s cubic-bezier(.25,.6,.2,1) forwards; }
+    .ghost-line { animation-delay: .9s; }
+    @keyframes draw { to { stroke-dashoffset: 0; } }
+
+    /* Gene flow pulses along its path, after the tree has settled. */
+    .flowline { stroke-dashoffset: 0; animation: pulse 2.4s linear infinite; opacity: 0; animation-name: pulse, fadein; animation-duration: 2.4s, .8s; animation-delay: 2.4s, 2.4s; animation-iteration-count: infinite, 1; animation-fill-mode: none, forwards; }
+    @keyframes pulse  { to { stroke-dashoffset: -48; } }
+    @keyframes fadein { to { opacity: .95; } }
+
+    .shimmer { animation: shim 3.6s ease-in-out infinite; }
+    @keyframes shim { 0%,100% { opacity: .55 } 50% { opacity: 1 } }
+
+    @media (prefers-reduced-motion: reduce) {
+      .lin, .ghost-line { stroke-dasharray: none; stroke-dashoffset: 0; animation: none; }
+      .ghost-line { stroke-dasharray: 7 6; }
+      .flowline { animation: none; opacity: .95; }
+      .shimmer { animation: none; opacity: .9; }
+    }
+  </style>
+
+  <rect class="bg" width="960" height="660"/>
+
+  <text class="hdr" x="34" y="36">DEEP TIME · THE HOMININ TREE</text>
+  <text class="note" x="34" y="56">Vertical axis is time before present on a square-root scale, so the last 100,000 years stay legible next to 1.8 million.</text>
+
+  <!-- time grid: y = 92 + 470 * sqrt(t/1800) -->
+  <g class="grid" opacity=".55">
+    <line x1="118" y1="92"  x2="930" y2="92"/>
+    <line x1="118" y1="178" x2="930" y2="178"/>
+    <line x1="118" y1="248" x2="930" y2="248"/>
+    <line x1="118" y1="313" x2="930" y2="313"/>
+    <line x1="118" y1="374" x2="930" y2="374"/>
+    <line x1="118" y1="405" x2="930" y2="405"/>
+    <line x1="118" y1="562" x2="930" y2="562"/>
+  </g>
+  <g class="axis-lb" text-anchor="end">
+    <text x="108" y="96">PRESENT</text>
+    <text x="108" y="182">60 ka</text>
+    <text x="108" y="252">200 ka</text>
+    <text x="108" y="317">400 ka</text>
+    <text x="108" y="378">650 ka</text>
+    <text x="108" y="409">800 ka</text>
+    <text x="108" y="566">1.8 Ma</text>
+  </g>
+
+  <!-- ================= modern human clade ================= -->
+  <!-- root of everything at 1.8 Ma, x = 470 -->
+  <g class="lin modern">
+    <!-- root stem up to the 800 ka ghost split -->
+    <path d="M470,562 L470,405"/>
+    <!-- 800 ka node: ghost-A splits right; rest continues -->
+    <path d="M470,405 L380,405 L380,374"/>
+    <!-- 650 ka node: archaic clade splits right, modern continues left -->
+    <path d="M380,374 L280,374 L280,248"/>
+    <!-- 200 ka: deep African structure -->
+    <path d="M280,248 L140,248 L140,92"/>
+    <path d="M280,248 L280,178"/>
+    <!-- African populations -->
+    <path d="M280,178 L196,178 L196,92"/>
+    <path d="M280,178 L240,178 L240,92"/>
+    <path d="M280,178 L284,178 L284,92"/>
+    <!-- out of Africa -->
+    <path d="M280,178 L400,178 L400,150"/>
+    <path d="M400,150 L530,150 L530,92"/>
+    <path d="M400,150 L390,150 L390,130"/>
+    <path d="M390,130 L360,130 L360,92"/>
+    <path d="M390,130 L404,130 L404,92"/>
+    <path d="M404,130 L448,130 L448,92"/>
+  </g>
+
+  <!-- ================= archaic clade ================= -->
+  <g class="lin archaic">
+    <path d="M380,374 L640,374 L640,313"/>
+    <path d="M640,313 L600,313 L600,120"/>
+  </g>
+  <g class="lin deniso">
+    <path d="M640,313 L690,313 L690,150"/>
+  </g>
+
+  <!-- ================= ghost lineages ================= -->
+  <g class="lin ghost-line ghostA" color="#10A3AD">
+    <path d="M470,405 L800,405 L800,168"/>
+  </g>
+  <g class="lin ghost-line ghostB" color="#8F5AE0">
+    <path d="M470,562 L880,562 L880,262"/>
+  </g>
+
+  <!-- extinction caps: the ghosts simply stop; nothing was ever sequenced -->
+  <g class="shimmer">
+    <circle cx="800" cy="168" r="4.5" fill="#10A3AD" filter="url(#glow)"/>
+    <circle cx="880" cy="262" r="4.5" fill="#8F5AE0" filter="url(#glow)"/>
+    <circle cx="600" cy="120" r="4"   fill="#C97A22"/>
+    <circle cx="690" cy="150" r="4"   fill="#3F72D6"/>
+  </g>
+
+  <!-- ================= gene flow ================= -->
+  <!-- Ghost-A into the modern human lineage, inside Africa, before the last exodus -->
+  <path class="flowline" stroke="#10A3AD" d="M795,200 C640,206 420,196 288,192"/>
+  <!-- Super-archaic into Denisovans, more than 200 ka -->
+  <path class="flowline" stroke="#8F5AE0" d="M876,286 C820,292 740,296 697,290"/>
+  <!-- Denisovan into Oceania -->
+  <path class="flowline" stroke="#3F72D6" d="M686,158 C650,150 578,146 537,144"/>
+  <!-- Neanderthal into everyone outside Africa -->
+  <path class="flowline" stroke="#C97A22" d="M596,128 C540,126 460,140 406,146"/>
+
+  <!-- ================= labels ================= -->
+  <g class="tip-lb" text-anchor="middle">
+    <text x="140" y="84">SAN</text>
+    <text x="196" y="84">YRI</text>
+    <text x="240" y="84">MSL</text>
+    <text x="284" y="84">LWK</text>
+    <text x="360" y="84">CEU</text>
+    <text x="404" y="84">SAS</text>
+    <text x="448" y="84">CHB</text>
+    <text x="530" y="84">PNG</text>
+  </g>
+  <g class="tip-lb">
+    <text x="612" y="116" fill="#C97A22">NEANDERTHAL</text>
+    <text x="702" y="146" fill="#3F72D6">DENISOVAN</text>
+    <text x="812" y="164" fill="#10A3AD">GHOST-A</text>
+    <text x="812" y="180" fill="#56636F" font-size="10">diverged 800 ka</text>
+    <text x="812" y="194" fill="#56636F" font-size="10">never sequenced</text>
+  </g>
+  <g class="tip-lb" text-anchor="end">
+    <text x="866" y="258" fill="#8F5AE0">GHOST-B · SUPER-ARCHAIC</text>
+    <text x="866" y="274" fill="#56636F" font-size="10">diverged 1.8 Ma · never sequenced</text>
+  </g>
+
+  <g class="note-em">
+    <text x="300" y="214" fill="#10A3AD" opacity=".85">gene flow into every living human</text>
+    <text x="620" y="336" fill="#8F5AE0" opacity=".85">…and into Denisovans, who passed it on</text>
+  </g>
+
+  <text class="note" x="34" y="614">Solid lines are lineages we have genomes for. Dashed lines are inferred entirely from the shape of present-day genealogies —</text>
+  <text class="note" x="34" y="632">the ghosts are visible only in how deep their donated segments have to reach before they meet anyone else alive.</text>
+</svg>

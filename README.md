@@ -39,6 +39,7 @@ cognitive-container format.
 | `kmer`, `kmer_pagerank` | k-mer analysis & PageRank over genomic graphs |
 | `epigenomics` | temporal **epigenomic** modeling |
 | `health` | health & biomarker reporting |
+| `archaic` | **archaic introgression & ghost-lineage recovery** — structured coalescent, HNSW-accelerated genealogy search, Darwin-mode tuning, flywheel refinement |
 
 ## Install
 
@@ -82,10 +83,35 @@ Consumer genomics & 23andMe analysis · precision medicine & pharmacogenomics ·
 risk scoring · variant calling pipelines · protein prediction · genomic similarity / cohort
 search with HNSW · edge & in-browser genomics.
 
+## Ghost lineages — a worked study
+
+`examples/dna/src/archaic.rs` rebuilds, from first principles, the logic behind
+[TRACE](https://news.berkeley.edu/2026/07/30/new-technique-pinpoints-human-dna-inherited-from-ghost-ancestors/)
+(*Science*, 30 July 2026), which recovered two extinct hominin lineages from
+present-day genomes alone. It simulates a hominin cohort under a structured
+coalescent, finds introgressed segments by their coalescent depth using a
+RuVector HNSW index for candidate retrieval, tunes itself with metaharness
+**Darwin mode**, and refines with a **flywheel** that turns each confirmed ghost
+segment into evidence for the next.
+
+```bash
+cargo build --release
+./target/release/depth-hist artifacts/data   # the brute-force reference measurement
+./target/release/trace-rv   artifacts/data   # simulate, evolve, spin, cluster
+node artifacts/build.mjs                     # render the illustrated report
+```
+
+The rendered study, with animated diagrams, lives in [`artifacts/`](artifacts).
+See [ADR-016](examples/dna/adr/ADR-016-archaic-introgression-ghost-lineages.md).
+
+> The cohort is simulated against known truth, not real 1000 Genomes data. It
+> validates the method; it makes no claim about any living person's ancestry.
+
 ## Layout
 
 - [`examples/dna`](examples/dna) — the `rvdna` Rust crate (library + `rvdna-cli`)
 - [`npm/packages/rvdna`](npm/packages/rvdna) — `@ruvector/rvdna` NAPI/WASM wrapper
+- [`artifacts`](artifacts) — the ghost-lineage study: animated diagrams, generated data, illustrated report
 
 ## License
 

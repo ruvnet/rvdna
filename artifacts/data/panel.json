@@ -1,0 +1,454 @@
+{
+  "generated_utc": "2026-07-31T04:12:38.865481109+00:00",
+  "params": {
+    "k": 8,
+    "dims": 256,
+    "hnsw_m": 16,
+    "ef_search": 96,
+    "top_k": 20,
+    "tau_archaic_ka": 551.0,
+    "match_margin_ka": 520.0,
+    "ghost_link_ka": 900.0
+  },
+  "cohort": {
+    "n_windows": 360,
+    "window_bp": 2000,
+    "modern_haplotypes": 58,
+    "african_modern_haplotypes": 24,
+    "neanderthal_references": 3,
+    "denisovan_references": 1,
+    "true_neanderthal_segments": 238,
+    "true_denisovan_segments": 125,
+    "true_ghost_segments": 183
+  },
+  "panel_design": [
+    {
+      "composition": "balanced",
+      "requested_size": 6,
+      "actual_size": 6,
+      "available": true,
+      "calls": 2769,
+      "true_positives": 529,
+      "false_positives": 2240,
+      "false_negatives": 17,
+      "precision": 0.19104369808595162,
+      "recall": 0.9688644688644689,
+      "f1": 0.3191553544494721,
+      "f1_per_haplotype": 0.053192559074912014,
+      "precision_afr_queries": 0.04318936877076412,
+      "precision_nonafr_queries": 0.3670886075949367,
+      "ordinary_median_ka": 139.81823048425522,
+      "exact_comparisons": 123120
+    },
+    {
+      "composition": "balanced",
+      "requested_size": 12,
+      "actual_size": 12,
+      "available": true,
+      "calls": 1712,
+      "true_positives": 516,
+      "false_positives": 1196,
+      "false_negatives": 30,
+      "precision": 0.3014018691588785,
+      "recall": 0.945054945054945,
+      "f1": 0.45704162976085033,
+      "f1_per_haplotype": 0.03808680248007086,
+      "precision_afr_queries": 0.06842105263157895,
+      "precision_nonafr_queries": 0.5918635170603674,
+      "ordinary_median_ka": 91.14245504192374,
+      "exact_comparisons": 246240
+    },
+    {
+      "composition": "balanced",
+      "requested_size": 24,
+      "actual_size": 24,
+      "available": true,
+      "calls": 968,
+      "true_positives": 498,
+      "false_positives": 470,
+      "false_negatives": 48,
+      "precision": 0.5144628099173554,
+      "recall": 0.9120879120879121,
+      "f1": 0.6578599735799208,
+      "f1_per_haplotype": 0.0274108322324967,
+      "precision_afr_queries": 0.14161220043572983,
+      "precision_nonafr_queries": 0.8506876227897839,
+      "ordinary_median_ka": 58.855775123845625,
+      "exact_comparisons": 492480
+    },
+    {
+      "composition": "balanced",
+      "requested_size": 36,
+      "actual_size": 36,
+      "available": true,
+      "calls": 741,
+      "true_positives": 479,
+      "false_positives": 262,
+      "false_negatives": 67,
+      "precision": 0.6464237516869096,
+      "recall": 0.8772893772893773,
+      "f1": 0.7443667443667443,
+      "f1_per_haplotype": 0.020676854010187342,
+      "precision_afr_queries": 0.21666666666666667,
+      "precision_nonafr_queries": 0.9387755102040817,
+      "ordinary_median_ka": 48.122453338601375,
+      "exact_comparisons": 738720
+    },
+    {
+      "composition": "balanced",
+      "requested_size": 46,
+      "actual_size": 46,
+      "available": true,
+      "calls": 601,
+      "true_positives": 459,
+      "false_positives": 142,
+      "false_negatives": 87,
+      "precision": 0.7637271214642263,
+      "recall": 0.8406593406593407,
+      "f1": 0.8003487358326069,
+      "f1_per_haplotype": 0.01739888556157841,
+      "precision_afr_queries": 0.33678756476683935,
+      "precision_nonafr_queries": 0.9656862745098039,
+      "ordinary_median_ka": 37.40351938848023,
+      "exact_comparisons": 943920
+    },
+    {
+      "composition": "balanced",
+      "requested_size": 58,
+      "actual_size": 58,
+      "available": true,
+      "calls": 540,
+      "true_positives": 458,
+      "false_positives": 82,
+      "false_negatives": 88,
+      "precision": 0.8481481481481481,
+      "recall": 0.8388278388278388,
+      "f1": 0.8434622467771637,
+      "f1_per_haplotype": 0.014542452530640754,
+      "precision_afr_queries": 0.47101449275362317,
+      "precision_nonafr_queries": 0.9776119402985075,
+      "ordinary_median_ka": 32.04943580752551,
+      "exact_comparisons": 1190160
+    },
+    {
+      "composition": "african_only",
+      "requested_size": 6,
+      "actual_size": 6,
+      "available": true,
+      "calls": 2720,
+      "true_positives": 544,
+      "false_positives": 2176,
+      "false_negatives": 2,
+      "precision": 0.2,
+      "recall": 0.9963369963369964,
+      "f1": 0.33312921004286594,
+      "f1_per_haplotype": 0.055521535007144324,
+      "precision_afr_queries": 0.06784968684759916,
+      "precision_nonafr_queries": 0.27185017026106695,
+      "ordinary_median_ka": 194.25222918261755,
+      "exact_comparisons": 123120
+    },
+    {
+      "composition": "african_only",
+      "requested_size": 12,
+      "actual_size": 12,
+      "available": true,
+      "calls": 1448,
+      "true_positives": 544,
+      "false_positives": 904,
+      "false_negatives": 2,
+      "precision": 0.3756906077348066,
+      "recall": 0.9963369963369964,
+      "f1": 0.5456369107321967,
+      "f1_per_haplotype": 0.04546974256101639,
+      "precision_afr_queries": 0.1724137931034483,
+      "precision_nonafr_queries": 0.44724556489262374,
+      "ordinary_median_ka": 145.24498571759125,
+      "exact_comparisons": 246240
+    },
+    {
+      "composition": "african_only",
+      "requested_size": 24,
+      "actual_size": 24,
+      "available": true,
+      "calls": 882,
+      "true_positives": 543,
+      "false_positives": 339,
+      "false_negatives": 3,
+      "precision": 0.6156462585034014,
+      "recall": 0.9945054945054945,
+      "f1": 0.7605042016806723,
+      "f1_per_haplotype": 0.03168767507002802,
+      "precision_afr_queries": 0.3551912568306011,
+      "precision_nonafr_queries": 0.6838340486409156,
+      "ordinary_median_ka": 107.33481331766889,
+      "exact_comparisons": 492480
+    },
+    {
+      "composition": "african_only",
+      "requested_size": 36,
+      "actual_size": 24,
+      "available": false,
+      "note": "cohort holds only 24 African modern haplotypes; an African-only panel of 36 cannot be built",
+      "calls": 0,
+      "true_positives": 0,
+      "false_positives": 0,
+      "false_negatives": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "f1_per_haplotype": 0.0,
+      "precision_afr_queries": 0.0,
+      "precision_nonafr_queries": 0.0,
+      "ordinary_median_ka": 0.0,
+      "exact_comparisons": 0
+    },
+    {
+      "composition": "african_only",
+      "requested_size": 46,
+      "actual_size": 24,
+      "available": false,
+      "note": "cohort holds only 24 African modern haplotypes; an African-only panel of 46 cannot be built",
+      "calls": 0,
+      "true_positives": 0,
+      "false_positives": 0,
+      "false_negatives": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "f1_per_haplotype": 0.0,
+      "precision_afr_queries": 0.0,
+      "precision_nonafr_queries": 0.0,
+      "ordinary_median_ka": 0.0,
+      "exact_comparisons": 0
+    },
+    {
+      "composition": "african_only",
+      "requested_size": 58,
+      "actual_size": 24,
+      "available": false,
+      "note": "cohort holds only 24 African modern haplotypes; an African-only panel of 58 cannot be built",
+      "calls": 0,
+      "true_positives": 0,
+      "false_positives": 0,
+      "false_negatives": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "f1_per_haplotype": 0.0,
+      "precision_afr_queries": 0.0,
+      "precision_nonafr_queries": 0.0,
+      "ordinary_median_ka": 0.0,
+      "exact_comparisons": 0
+    }
+  ],
+  "balanced_saturation_size": 58,
+  "african_beats_balanced_at_matched_size": true,
+  "african_beats_balanced_for_nonafrican_queries": false,
+  "balanced_size_matching_best_african": 46,
+  "african_haplotype_value_multiple": 1.9166666666666667,
+  "archaic_ablation": [
+    {
+      "reference_set": "all four (3 NEA + 1 DEN)",
+      "neanderthal_refs": 3,
+      "denisovan_refs": 1,
+      "total_calls": 540,
+      "attributed_neanderthal": 195,
+      "attributed_denisovan": 78,
+      "attributed_ghost": 267,
+      "confusion": {
+        "Denisovan": {
+          "Denisovan": 77,
+          "GHOST": 1,
+          "Neanderthal": 1
+        },
+        "Ghost-A": {
+          "GHOST": 165
+        },
+        "Ghost-B": {
+          "GHOST": 18
+        },
+        "Neanderthal": {
+          "Denisovan": 1,
+          "GHOST": 1,
+          "Neanderthal": 194
+        },
+        "not-introgressed": {
+          "GHOST": 82
+        }
+      },
+      "true_neanderthal_as_ghost": 1,
+      "true_denisovan_as_ghost": 1,
+      "true_neanderthal_as_denisovan": 1,
+      "true_denisovan_as_neanderthal": 1,
+      "not_introgressed_as_ghost": 82,
+      "ghost_precision": 0.6853932584269663,
+      "ghost_recall": 1.0,
+      "ghost_f1": 0.8133333333333332,
+      "attribution_accuracy": 0.9912663755458515
+    },
+    {
+      "reference_set": "Neanderthal only (3)",
+      "neanderthal_refs": 3,
+      "denisovan_refs": 0,
+      "total_calls": 540,
+      "attributed_neanderthal": 215,
+      "attributed_denisovan": 0,
+      "attributed_ghost": 325,
+      "confusion": {
+        "Denisovan": {
+          "GHOST": 59,
+          "Neanderthal": 20
+        },
+        "Ghost-A": {
+          "GHOST": 165
+        },
+        "Ghost-B": {
+          "GHOST": 18
+        },
+        "Neanderthal": {
+          "GHOST": 1,
+          "Neanderthal": 195
+        },
+        "not-introgressed": {
+          "GHOST": 82
+        }
+      },
+      "true_neanderthal_as_ghost": 1,
+      "true_denisovan_as_ghost": 59,
+      "true_neanderthal_as_denisovan": 0,
+      "true_denisovan_as_neanderthal": 20,
+      "not_introgressed_as_ghost": 82,
+      "ghost_precision": 0.563076923076923,
+      "ghost_recall": 1.0,
+      "ghost_f1": 0.7204724409448818,
+      "attribution_accuracy": 0.8253275109170306
+    },
+    {
+      "reference_set": "Denisovan only (1)",
+      "neanderthal_refs": 0,
+      "denisovan_refs": 1,
+      "total_calls": 540,
+      "attributed_neanderthal": 0,
+      "attributed_denisovan": 162,
+      "attributed_ghost": 378,
+      "confusion": {
+        "Denisovan": {
+          "Denisovan": 78,
+          "GHOST": 1
+        },
+        "Ghost-A": {
+          "GHOST": 165
+        },
+        "Ghost-B": {
+          "GHOST": 18
+        },
+        "Neanderthal": {
+          "Denisovan": 84,
+          "GHOST": 112
+        },
+        "not-introgressed": {
+          "GHOST": 82
+        }
+      },
+      "true_neanderthal_as_ghost": 112,
+      "true_denisovan_as_ghost": 1,
+      "true_neanderthal_as_denisovan": 84,
+      "true_denisovan_as_neanderthal": 0,
+      "not_introgressed_as_ghost": 82,
+      "ghost_precision": 0.48412698412698413,
+      "ghost_recall": 1.0,
+      "ghost_f1": 0.6524064171122994,
+      "attribution_accuracy": 0.5698689956331878
+    },
+    {
+      "reference_set": "single Neanderthal (1)",
+      "neanderthal_refs": 1,
+      "denisovan_refs": 0,
+      "total_calls": 540,
+      "attributed_neanderthal": 210,
+      "attributed_denisovan": 0,
+      "attributed_ghost": 330,
+      "confusion": {
+        "Denisovan": {
+          "GHOST": 63,
+          "Neanderthal": 16
+        },
+        "Ghost-A": {
+          "GHOST": 165
+        },
+        "Ghost-B": {
+          "GHOST": 18
+        },
+        "Neanderthal": {
+          "GHOST": 2,
+          "Neanderthal": 194
+        },
+        "not-introgressed": {
+          "GHOST": 82
+        }
+      },
+      "true_neanderthal_as_ghost": 2,
+      "true_denisovan_as_ghost": 63,
+      "true_neanderthal_as_denisovan": 0,
+      "true_denisovan_as_neanderthal": 16,
+      "not_introgressed_as_ghost": 82,
+      "ghost_precision": 0.5545454545454546,
+      "ghost_recall": 1.0,
+      "ghost_f1": 0.7134502923976608,
+      "attribution_accuracy": 0.8231441048034934
+    },
+    {
+      "reference_set": "none",
+      "neanderthal_refs": 0,
+      "denisovan_refs": 0,
+      "total_calls": 540,
+      "attributed_neanderthal": 0,
+      "attributed_denisovan": 0,
+      "attributed_ghost": 540,
+      "confusion": {
+        "Denisovan": {
+          "GHOST": 79
+        },
+        "Ghost-A": {
+          "GHOST": 165
+        },
+        "Ghost-B": {
+          "GHOST": 18
+        },
+        "Neanderthal": {
+          "GHOST": 196
+        },
+        "not-introgressed": {
+          "GHOST": 82
+        }
+      },
+      "true_neanderthal_as_ghost": 196,
+      "true_denisovan_as_ghost": 79,
+      "true_neanderthal_as_denisovan": 0,
+      "true_denisovan_as_neanderthal": 0,
+      "not_introgressed_as_ghost": 82,
+      "ghost_precision": 0.3388888888888889,
+      "ghost_recall": 1.0,
+      "ghost_f1": 0.5062240663900415,
+      "attribution_accuracy": 0.39956331877729256
+    }
+  ],
+  "ghost_precision_all_references": 0.6853932584269663,
+  "ghost_precision_no_references": 0.3388888888888889,
+  "ghost_precision_neanderthal_only": 0.563076923076923,
+  "findings": [
+    "Panel size buys precision and *costs* recall. Growing a balanced panel from 6 to 58 haplotypes lifts precision from 0.191 to 0.848 while recall falls from 0.969 to 0.839, for a net F1 gain of 0.3192 -> 0.8435. Both halves have the same cause: every extra haplotype is another chance for a segment to find a close relative, which suppresses false positives and also hides some genuinely introgressed segments whose nearest relative happens to be shallow. The noise floor — the median depth assigned to ordinary segments — drops from 140 ka to 32 ka over the same range, and that is what the archaic threshold has to clear.",
+    "Returns had not saturated at the largest panel tested. The best balanced F1 (0.8435) was still the largest panel, 58 haplotypes, so within the range studied there is no plateau — the answer to 'how many do I need?' is bounded by what you can afford, not by diminishing returns.",
+    "The prediction HELD, and by a wide margin. At every size both compositions could be built, an African-only panel scored higher F1 than a balanced one (n=6: +0.0140, n=12: +0.0886, n=24: +0.1026). In purchasing terms: 24 African haplotypes (F1 0.7605) are worth 46 balanced ones — 1.92x the detection value per genome sequenced. The advantage is also recall-shaped: an African-only panel holds recall at 0.995 at every size tested, while a balanced panel trades recall away as it grows, from 0.969 down to 0.839.",
+    "But the natural corollary — that an African panel is therefore the better panel for everyone — did NOT hold, and this is the prediction the data refuses. Split by where the query comes from, an African-only panel of 24 scores 0.355 precision on African queries and only 0.684 on non-African ones; a balanced panel of the same size scores 0.142 and 0.851. The African panel wins overall *despite* being strictly worse for every non-African query, because African queries are where the false positives are concentrated: a balanced panel spends most of its slots on populations whose internal diversity is shallow, leaving African queries with no close relative and a precision of 0.142. The lesson is not 'African haplotypes are better haplotypes' but 'a panel is only informative about the populations it actually contains, and African populations need the most coverage to cover.'",
+    "Composition beats count outright in this cohort. An African-only panel of 24 haplotypes (F1 0.7605) outperforms a balanced panel of 36 (F1 0.7444) — 12 fewer genomes to sequence, better answers. Anyone choosing between 'more genomes' and 'the right genomes' should choose the right genomes, until the right ones run out.",
+    "And they do run out. An African-only panel cannot be scaled past 24 haplotypes in this cohort at all, so the three largest panel sizes tested have no African-only counterpart and are recorded as unavailable rather than silently downsized. Composition and count are not independent knobs: picking the more informative composition also caps how much of it you can buy, which is why the best *overall* result still belongs to the largest balanced panel.",
+    "Removing archaic references never changes which segments are called — detection reads only the modern panel — but it changes what they are called. Ghost precision falls from 0.685 with all four archaic genomes to 0.339 with none, a drop of 0.347 (50.6% relative), because with nothing to attribute against, 'ghost' degenerates into 'not modern' and every real Neanderthal and Denisovan segment is filed as a new lineage.",
+    "The cost of having only one Denisovan genome is measurable on its own. Deleting it — the 'Neanderthal only' arm — pushes 59 true Denisovan segments into the GHOST pile and drops ghost precision from 0.685 to 0.563. Deleting the three Neanderthal genomes instead costs 112 misfiled Neanderthal segments and leaves ghost precision at 0.484: the Denisovan reference is the scarcer resource per genome, but the Neanderthal references protect more segments in total.",
+    "Archaic references are partly substitutable, which is why the single-Denisovan problem is survivable. With only a Denisovan reference, 84 of 196 called true Neanderthal segments are still caught as archaic-and-named — misfiled as 'Denisovan' rather than escaping into GHOST — because Neanderthal and Denisovan split 400 ka, well inside the 520 ka attribution margin. A reference from a sister lineage is a blunt but real substitute; overall attribution accuracy is 0.991 with all four references, 0.823 with a single Neanderthal, and 0.400 with none.",
+    "Cutting the Neanderthal panel from three genomes to one costs almost nothing next to cutting it to zero: ghost precision goes 0.563 -> 0.555 -> 0.339 across three, one, and no Neanderthal references, and the number of true Neanderthal segments escaping into GHOST rises only from 1 to 2 before jumping to 196 at zero. Archaic reference value is steeply diminishing — the first genome of a lineage does nearly all the work, which is the reassuring reading of the single-Denisovan problem: n=1 is a long way from n=0.",
+    "Ghost *recall* is untouched by any of this: 1.000 in every arm, because a ghost segment is deeper than anything an observed archaic reference could match, so no reference set can pull one out of the ghost pile. The whole cost of missing archaic genomes is paid in precision, which means the failure mode of an under-referenced study is inventing lineages, never missing them.",
+    "One caveat on the headline number: even with all four archaic references, ghost precision is only 0.685, and 82 of the 84 impurities in the ghost pile are detection false positives — segments that were never introgressed at all — against just 2 genuinely archaic segments filed under the wrong lineage. Better archaic references cannot move that ceiling; a better modern panel can, which is exactly what sweep 1 measures. The two sweeps are the two halves of the same error budget."
+  ]
+}
