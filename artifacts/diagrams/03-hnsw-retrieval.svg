@@ -8,32 +8,32 @@
       <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
     </filter>
     <marker id="hop" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M0,1 L9,5 L0,9 z" fill="#F2C14E"/>
+      <path d="M0,1 L9,5 L0,9 z" fill="#1DD4E0"/>
     </marker>
   </defs>
 
   <style>
-    .bg   { fill: #0A0C11; }
-    .hdr  { fill: #E7E9E6; font: 600 15px ui-monospace, "DejaVu Sans Mono", monospace; letter-spacing: .12em; }
-    .sub  { fill: #8b96b0; font: 500 11px ui-monospace, "DejaVu Sans Mono", monospace; letter-spacing: .08em; }
-    .note { fill: #7d8aa6; font: 400 11.5px ui-sans-serif, system-ui, sans-serif; }
-    .big  { fill: #E7E9E6; font: 600 22px ui-monospace, "DejaVu Sans Mono", monospace; }
-    .lbl  { fill: #6b7590; font: 500 10px ui-monospace, "DejaVu Sans Mono", monospace; letter-spacing: .06em; }
+    .bg   { fill: #0B0E13; }
+    .hdr  { fill: #E6EBEF; font: 600 15px 'JetBrains Mono', ui-monospace, monospace; letter-spacing: .12em; }
+    .sub  { fill: #788696; font: 500 11px 'JetBrains Mono', ui-monospace, monospace; letter-spacing: .08em; }
+    .note { fill: #788696; font: 400 11.5px 'JetBrains Mono', ui-monospace, monospace; }
+    .big  { fill: #E6EBEF; font: 600 22px 'JetBrains Mono', ui-monospace, monospace; }
+    .lbl  { fill: #56636F; font: 500 10px 'JetBrains Mono', ui-monospace, monospace; letter-spacing: .06em; }
 
-    .layer { fill: #10131c; stroke: #232a3b; }
-    .e     { stroke: #2b3346; stroke-width: 1; fill: none; }
-    .node  { fill: #4a5570; }
-    .cand  { fill: #C9C3B4; }
-    .ghost { fill: #17A48C; filter: url(#g3); }
-    .query { fill: #F2C14E; filter: url(#g3); }
-    .hopline { stroke: #F2C14E; stroke-width: 1.8; fill: none; marker-end: url(#hop); }
+    .layer { fill: #141820; stroke: #262D38; }
+    .e     { stroke: #262D38; stroke-width: 1; fill: none; }
+    .node  { fill: #3A4551; }
+    .cand  { fill: #A3AEBA; }
+    .ghost { fill: #10A3AD; filter: url(#g3); }
+    .query { fill: #1DD4E0; filter: url(#g3); }
+    .hopline { stroke: #1DD4E0; stroke-width: 1.8; fill: none; marker-end: url(#hop); }
 
     .hopline { stroke-dasharray: 200; stroke-dashoffset: 200; animation: hop 2.2s ease-out forwards; }
     @keyframes hop { to { stroke-dashoffset: 0; } }
     .h2 { animation-delay: .7s; }
     .h3 { animation-delay: 1.3s; }
 
-    .ring { fill: none; stroke: #F2C14E; stroke-width: 1.2; opacity: 0; animation: ring 2.6s ease-out 1.9s infinite; }
+    .ring { fill: none; stroke: #1DD4E0; stroke-width: 1.2; opacity: 0; animation: ring 2.6s ease-out 1.9s infinite; }
     @keyframes ring { 0% { r: 6; opacity: .9 } 100% { r: 46; opacity: 0 } }
 
     .breathe { animation: br 4s ease-in-out infinite; }
@@ -100,17 +100,17 @@
     <text class="sub" x="0" y="0">WHAT THE INDEX BUYS</text>
 
     <text class="lbl" x="0" y="34">ALL-PAIRS SCAN</text>
-    <rect x="0" y="42" width="280" height="14" fill="#2b3346"/>
+    <rect x="0" y="42" width="280" height="14" fill="#262D38"/>
     <text class="big" x="0" y="84">O(n²)</text>
     <text class="note" x="0" y="104">every segment against every other</text>
 
     <text class="lbl" x="0" y="146">HNSW RETRIEVAL</text>
-    <rect x="0" y="154" width="46" height="14" fill="#F2C14E"/>
+    <rect x="0" y="154" width="46" height="14" fill="#1DD4E0"/>
     <text class="big" x="0" y="196">O(n log n)</text>
     <text class="note" x="0" y="216">exact divergence only against</text>
     <text class="note" x="0" y="232">the handful worth checking</text>
 
-    <line x1="0" y1="262" x2="280" y2="262" stroke="#232a3b"/>
+    <line x1="0" y1="262" x2="280" y2="262" stroke="#262D38"/>
     <text class="note" x="0" y="286">The genealogy still decides the answer.</text>
     <text class="note" x="0" y="302">The index only decides what to look at.</text>
   </g>

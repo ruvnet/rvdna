@@ -10,18 +10,18 @@
   </defs>
 
   <style>
-    .bg    { fill: #0A0C11; }
-    .panel { fill: #10131c; stroke: #232a3b; stroke-width: 1; }
-    .hdr   { fill: #E7E9E6; font: 600 15px ui-monospace, "DejaVu Sans Mono", monospace; letter-spacing: .12em; }
-    .sub   { fill: #8b96b0; font: 500 11px ui-monospace, "DejaVu Sans Mono", monospace; letter-spacing: .08em; }
-    .note  { fill: #7d8aa6; font: 400 11.5px ui-sans-serif, system-ui, sans-serif; }
-    .tick  { fill: #5c6680; font: 500 10px ui-monospace, "DejaVu Sans Mono", monospace; }
-    .grid  { stroke: #1e2432; stroke-width: 1; }
-    .tree  { fill: none; stroke: #C9C3B4; stroke-width: 1.8; stroke-linecap: round; }
-    .deep  { fill: none; stroke: #17A48C; stroke-width: 2.6; stroke-linecap: round; filter: url(#g2); }
-    .tip   { fill: #C9C3B4; }
-    .tipg  { fill: #17A48C; }
-    .stat  { font: 600 13px ui-monospace, "DejaVu Sans Mono", monospace; }
+    .bg    { fill: #0B0E13; }
+    .panel { fill: #141820; stroke: #262D38; stroke-width: 1; }
+    .hdr   { fill: #E6EBEF; font: 600 15px 'JetBrains Mono', ui-monospace, monospace; letter-spacing: .12em; }
+    .sub   { fill: #788696; font: 500 11px 'JetBrains Mono', ui-monospace, monospace; letter-spacing: .08em; }
+    .note  { fill: #788696; font: 400 11.5px 'JetBrains Mono', ui-monospace, monospace; }
+    .tick  { fill: #56636F; font: 500 10px 'JetBrains Mono', ui-monospace, monospace; }
+    .grid  { stroke: #1B212A; stroke-width: 1; }
+    .tree  { fill: none; stroke: #A3AEBA; stroke-width: 1.8; stroke-linecap: round; }
+    .deep  { fill: none; stroke: #10A3AD; stroke-width: 2.6; stroke-linecap: round; filter: url(#g2); }
+    .tip   { fill: #A3AEBA; }
+    .tipg  { fill: #10A3AD; }
+    .stat  { font: 600 13px 'JetBrains Mono', ui-monospace, monospace; }
 
     .tree, .deep { stroke-dasharray: 900; stroke-dashoffset: 900; animation: dr 2s ease-out forwards; }
     .deep { animation-delay: 1.1s; }
@@ -77,8 +77,8 @@
     <circle cx="406" cy="392" r="3.5"/>
   </g>
   <g class="marker-pop">
-    <circle cx="116" cy="170" r="5" fill="none" stroke="#C9C3B4" stroke-width="1.6"/>
-    <text class="stat" x="132" y="174" fill="#C9C3B4">nearest relative: 240 ka</text>
+    <circle cx="116" cy="170" r="5" fill="none" stroke="#A3AEBA" stroke-width="1.6"/>
+    <text class="stat" x="132" y="174" fill="#A3AEBA">nearest relative: 240 ka</text>
   </g>
   <text class="note" x="92" y="424">Every lineage meets a cousin quickly. Nothing to explain.</text>
 
@@ -106,14 +106,14 @@
   <circle class="tipg" cx="896" cy="392" r="5"/>
 
   <g class="sweep">
-    <rect x="866" y="100" width="60" height="292" fill="#17A48C" opacity=".07"/>
+    <rect x="866" y="100" width="60" height="292" fill="#10A3AD" opacity=".07"/>
   </g>
 
   <g class="marker-pop">
-    <circle cx="756" cy="372" r="5" fill="none" stroke="#17A48C" stroke-width="1.8"/>
-    <text class="stat" x="600" y="352" fill="#17A48C">nearest relative: 820 ka</text>
+    <circle cx="756" cy="372" r="5" fill="none" stroke="#10A3AD" stroke-width="1.8"/>
+    <text class="stat" x="600" y="352" fill="#10A3AD">nearest relative: 820 ka</text>
   </g>
-  <text class="note" x="520" y="424" fill="#17A48C">This one has to reach past every living relative before it finds a branch to join.</text>
+  <text class="note" x="520" y="424" fill="#10A3AD">This one has to reach past every living relative before it finds a branch to join.</text>
   <text class="note" x="520" y="442">That depth is the whole signal. No ancient DNA is involved.</text>
 
   <text class="note" x="34" y="484">A depth that lands near 650 ka points at Neanderthals or Denisovans — lineages we can check against real sequenced genomes. A depth that lands</text>

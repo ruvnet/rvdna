@@ -18,20 +18,20 @@
   </defs>
 
   <style>
-    .bg      { fill: #0A0C11; }
-    .grid    { stroke: #23293a; stroke-width: 1; }
-    .axis-lb { fill: #6b7590; font: 500 11px ui-monospace, "DejaVu Sans Mono", monospace; letter-spacing: .08em; }
-    .tip-lb  { fill: #C9C3B4; font: 500 11px ui-monospace, "DejaVu Sans Mono", monospace; letter-spacing: .04em; }
-    .note    { fill: #7d8aa6; font: 400 11.5px ui-sans-serif, system-ui, sans-serif; }
-    .note-em { fill: #9aa6c2; font: 400 11.5px ui-sans-serif, system-ui, sans-serif; font-style: italic; }
-    .hdr     { fill: #E7E9E6; font: 600 15px ui-monospace, "DejaVu Sans Mono", monospace; letter-spacing: .12em; }
+    .bg      { fill: #0B0E13; }
+    .grid    { stroke: #262D38; stroke-width: 1; }
+    .axis-lb { fill: #56636F; font: 500 11px 'JetBrains Mono', ui-monospace, monospace; letter-spacing: .08em; }
+    .tip-lb  { fill: #A3AEBA; font: 500 11px 'JetBrains Mono', ui-monospace, monospace; letter-spacing: .04em; }
+    .note    { fill: #788696; font: 400 11.5px 'JetBrains Mono', ui-monospace, monospace; }
+    .note-em { fill: #8B98A8; font: 400 11.5px 'JetBrains Mono', ui-monospace, monospace; font-style: italic; }
+    .hdr     { fill: #E6EBEF; font: 600 15px 'JetBrains Mono', ui-monospace, monospace; letter-spacing: .12em; }
 
     .lin     { fill: none; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
-    .modern  { stroke: #C9C3B4; }
-    .archaic { stroke: #C9832F; }
-    .deniso  { stroke: #4E86CC; }
-    .ghostA  { stroke: #17A48C; }
-    .ghostB  { stroke: #9B6BEF; }
+    .modern  { stroke: #A3AEBA; }
+    .archaic { stroke: #C97A22; }
+    .deniso  { stroke: #3F72D6; }
+    .ghostA  { stroke: #10A3AD; }
+    .ghostB  { stroke: #8F5AE0; }
 
     .ghost-line { stroke-dasharray: 7 6; filter: url(#glow); }
     .flowline   { fill: none; stroke-width: 2; stroke-dasharray: 5 7; marker-end: url(#flow); opacity: .95; }
@@ -117,30 +117,30 @@
   </g>
 
   <!-- ================= ghost lineages ================= -->
-  <g class="lin ghost-line ghostA" color="#17A48C">
+  <g class="lin ghost-line ghostA" color="#10A3AD">
     <path d="M470,405 L800,405 L800,168"/>
   </g>
-  <g class="lin ghost-line ghostB" color="#9B6BEF">
+  <g class="lin ghost-line ghostB" color="#8F5AE0">
     <path d="M470,562 L880,562 L880,262"/>
   </g>
 
   <!-- extinction caps: the ghosts simply stop; nothing was ever sequenced -->
   <g class="shimmer">
-    <circle cx="800" cy="168" r="4.5" fill="#17A48C" filter="url(#glow)"/>
-    <circle cx="880" cy="262" r="4.5" fill="#9B6BEF" filter="url(#glow)"/>
-    <circle cx="600" cy="120" r="4"   fill="#C9832F"/>
-    <circle cx="690" cy="150" r="4"   fill="#4E86CC"/>
+    <circle cx="800" cy="168" r="4.5" fill="#10A3AD" filter="url(#glow)"/>
+    <circle cx="880" cy="262" r="4.5" fill="#8F5AE0" filter="url(#glow)"/>
+    <circle cx="600" cy="120" r="4"   fill="#C97A22"/>
+    <circle cx="690" cy="150" r="4"   fill="#3F72D6"/>
   </g>
 
   <!-- ================= gene flow ================= -->
   <!-- Ghost-A into the modern human lineage, inside Africa, before the last exodus -->
-  <path class="flowline" stroke="#17A48C" d="M795,200 C640,206 420,196 288,192"/>
+  <path class="flowline" stroke="#10A3AD" d="M795,200 C640,206 420,196 288,192"/>
   <!-- Super-archaic into Denisovans, more than 200 ka -->
-  <path class="flowline" stroke="#9B6BEF" d="M876,286 C820,292 740,296 697,290"/>
+  <path class="flowline" stroke="#8F5AE0" d="M876,286 C820,292 740,296 697,290"/>
   <!-- Denisovan into Oceania -->
-  <path class="flowline" stroke="#4E86CC" d="M686,158 C650,150 578,146 537,144"/>
+  <path class="flowline" stroke="#3F72D6" d="M686,158 C650,150 578,146 537,144"/>
   <!-- Neanderthal into everyone outside Africa -->
-  <path class="flowline" stroke="#C9832F" d="M596,128 C540,126 460,140 406,146"/>
+  <path class="flowline" stroke="#C97A22" d="M596,128 C540,126 460,140 406,146"/>
 
   <!-- ================= labels ================= -->
   <g class="tip-lb" text-anchor="middle">
@@ -154,20 +154,20 @@
     <text x="530" y="84">PNG</text>
   </g>
   <g class="tip-lb">
-    <text x="612" y="116" fill="#C9832F">NEANDERTHAL</text>
-    <text x="702" y="146" fill="#4E86CC">DENISOVAN</text>
-    <text x="812" y="164" fill="#17A48C">GHOST-A</text>
-    <text x="812" y="180" fill="#5a6b7f" font-size="10">diverged 800 ka</text>
-    <text x="812" y="194" fill="#5a6b7f" font-size="10">never sequenced</text>
+    <text x="612" y="116" fill="#C97A22">NEANDERTHAL</text>
+    <text x="702" y="146" fill="#3F72D6">DENISOVAN</text>
+    <text x="812" y="164" fill="#10A3AD">GHOST-A</text>
+    <text x="812" y="180" fill="#56636F" font-size="10">diverged 800 ka</text>
+    <text x="812" y="194" fill="#56636F" font-size="10">never sequenced</text>
   </g>
   <g class="tip-lb" text-anchor="end">
-    <text x="866" y="258" fill="#9B6BEF">GHOST-B · SUPER-ARCHAIC</text>
-    <text x="866" y="274" fill="#5a6b7f" font-size="10">diverged 1.8 Ma · never sequenced</text>
+    <text x="866" y="258" fill="#8F5AE0">GHOST-B · SUPER-ARCHAIC</text>
+    <text x="866" y="274" fill="#56636F" font-size="10">diverged 1.8 Ma · never sequenced</text>
   </g>
 
   <g class="note-em">
-    <text x="300" y="214" fill="#17A48C" opacity=".85">gene flow into every living human</text>
-    <text x="620" y="336" fill="#9B6BEF" opacity=".85">…and into Denisovans, who passed it on</text>
+    <text x="300" y="214" fill="#10A3AD" opacity=".85">gene flow into every living human</text>
+    <text x="620" y="336" fill="#8F5AE0" opacity=".85">…and into Denisovans, who passed it on</text>
   </g>
 
   <text class="note" x="34" y="614">Solid lines are lineages we have genomes for. Dashed lines are inferred entirely from the shape of present-day genealogies —</text>

@@ -68,6 +68,13 @@ struct Output {
     /// Encoded as one string per window with one character per haplotype:
     /// `.` none, `N` Neanderthal, `D` Denisovan, `A` Ghost-A, `B` Ghost-B.
     truth_map: Vec<String>,
+    /// `depth_map[window][i]` — coalescent depth in ka, rounded, for the i-th
+    /// *modern* haplotype in roster order. This is the raw measurement behind
+    /// every figure, kept so the narrative can paint it directly rather than
+    /// re-deriving it.
+    depth_map: Vec<Vec<u32>>,
+    /// Indices into `roster` that `depth_map` columns correspond to.
+    depth_map_haplotypes: Vec<usize>,
     note: String,
 }
 
@@ -106,8 +113,10 @@ fn main() -> anyhow::Result<()> {
     );
 
     let mut by_label: BTreeMap<String, Vec<f64>> = BTreeMap::new();
+    let mut depth_map: Vec<Vec<u32>> = Vec::with_capacity(cohort.sequences.len());
     let t0 = std::time::Instant::now();
     for w in 0..cohort.sequences.len() {
+        let mut row: Vec<u32> = Vec::with_capacity(modern.len());
         for &h in &modern {
             let mut best = f64::INFINITY;
             for &o in &modern {
@@ -120,6 +129,7 @@ fn main() -> anyhow::Result<()> {
                     best = t;
                 }
             }
+            row.push(best.max(0.0).round() as u32);
             let label = cohort
                 .truth
                 .get(&(w, h))
@@ -127,6 +137,7 @@ fn main() -> anyhow::Result<()> {
                 .unwrap_or_else(|| "No archaic ancestry".to_string());
             by_label.entry(label).or_default().push(best);
         }
+        depth_map.push(row);
     }
     println!("   done in {:.1}s", t0.elapsed().as_secs_f64());
 
@@ -251,6 +262,8 @@ fn main() -> anyhow::Result<()> {
         n_windows: cohort.sequences.len(),
         roster,
         truth_map,
+        depth_map,
+        depth_map_haplotypes: modern.clone(),
         series,
         overlap: Overlap {
             best_threshold_ka: best_threshold,
