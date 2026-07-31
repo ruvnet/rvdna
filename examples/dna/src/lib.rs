@@ -17,6 +17,7 @@
 #![allow(clippy::all)]
 
 pub mod alignment;
+pub mod archaic;
 pub mod biomarker;
 pub mod biomarker_stream;
 pub mod epigenomics;
@@ -34,6 +35,10 @@ pub mod types;
 pub mod variant;
 
 pub use alignment::{AlignmentConfig, SmithWaterman};
+pub use archaic::{
+    build_population_tree, simulate_cohort, ArchaicCall, ArchaicSource, Cohort, DemographyConfig,
+    DetectionRun, DetectorParams, GhostCluster, Haplotype, Role, Scores, TraceEngine,
+};
 pub use epigenomics::{
     CancerSignalDetector, CancerSignalResult, CpGSite, HorvathClock, MethylationProfile,
 };

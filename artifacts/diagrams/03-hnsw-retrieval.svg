@@ -1,0 +1,120 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 500" width="960" height="500" role="img" aria-labelledby="t3 d3">
+  <title id="t3">Why the genealogy search runs on a vector index</title>
+  <desc id="d3">A diagram of the retrieval step. Every window of every haplotype is embedded as a k-mer profile vector and placed in an HNSW graph. A query segment descends through the graph's coarse upper layer into a dense lower layer, touching only a handful of candidates instead of the whole panel. Exact divergence is then computed against those candidates alone.</desc>
+
+  <defs>
+    <filter id="g3" x="-70%" y="-70%" width="240%" height="240%">
+      <feGaussianBlur stdDeviation="3" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <marker id="hop" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0,1 L9,5 L0,9 z" fill="#F2C14E"/>
+    </marker>
+  </defs>
+
+  <style>
+    .bg   { fill: #0A0C11; }
+    .hdr  { fill: #E7E9E6; font: 600 15px ui-monospace, "DejaVu Sans Mono", monospace; letter-spacing: .12em; }
+    .sub  { fill: #8b96b0; font: 500 11px ui-monospace, "DejaVu Sans Mono", monospace; letter-spacing: .08em; }
+    .note { fill: #7d8aa6; font: 400 11.5px ui-sans-serif, system-ui, sans-serif; }
+    .big  { fill: #E7E9E6; font: 600 22px ui-monospace, "DejaVu Sans Mono", monospace; }
+    .lbl  { fill: #6b7590; font: 500 10px ui-monospace, "DejaVu Sans Mono", monospace; letter-spacing: .06em; }
+
+    .layer { fill: #10131c; stroke: #232a3b; }
+    .e     { stroke: #2b3346; stroke-width: 1; fill: none; }
+    .node  { fill: #4a5570; }
+    .cand  { fill: #C9C3B4; }
+    .ghost { fill: #17A48C; filter: url(#g3); }
+    .query { fill: #F2C14E; filter: url(#g3); }
+    .hopline { stroke: #F2C14E; stroke-width: 1.8; fill: none; marker-end: url(#hop); }
+
+    .hopline { stroke-dasharray: 200; stroke-dashoffset: 200; animation: hop 2.2s ease-out forwards; }
+    @keyframes hop { to { stroke-dashoffset: 0; } }
+    .h2 { animation-delay: .7s; }
+    .h3 { animation-delay: 1.3s; }
+
+    .ring { fill: none; stroke: #F2C14E; stroke-width: 1.2; opacity: 0; animation: ring 2.6s ease-out 1.9s infinite; }
+    @keyframes ring { 0% { r: 6; opacity: .9 } 100% { r: 46; opacity: 0 } }
+
+    .breathe { animation: br 4s ease-in-out infinite; }
+    @keyframes br { 0%,100% { opacity: .75 } 50% { opacity: 1 } }
+
+    @media (prefers-reduced-motion: reduce) {
+      .hopline { stroke-dasharray: none; stroke-dashoffset: 0; animation: none; }
+      .ring { display: none; }
+      .breathe { animation: none; }
+    }
+  </style>
+
+  <rect class="bg" width="960" height="500"/>
+  <text class="hdr" x="34" y="38">RETRIEVAL · RUVECTOR HNSW</text>
+  <text class="note" x="34" y="58">Comparing every segment to every other segment is quadratic and wasteful. The index answers "who could possibly be related to this?" first.</text>
+
+  <!-- ===== upper layer: coarse ===== -->
+  <g transform="translate(60,96)">
+    <path class="layer" d="M0,60 L300,0 L560,52 L260,120 Z" opacity=".55"/>
+    <text class="lbl" x="2" y="16">LAYER 1</text>
+    <g class="e">
+      <path d="M90,62 L200,36"/><path d="M200,36 L330,44"/><path d="M330,44 L430,62"/>
+      <path d="M90,62 L180,82"/><path d="M180,82 L300,70"/><path d="M300,70 L430,62"/>
+    </g>
+    <g class="node">
+      <circle cx="90" cy="62" r="4"/><circle cx="200" cy="36" r="4"/><circle cx="330" cy="44" r="4"/>
+      <circle cx="430" cy="62" r="4"/><circle cx="180" cy="82" r="4"/><circle cx="300" cy="70" r="4"/>
+    </g>
+    <path class="hopline" d="M90,62 L196,38"/>
+    <path class="hopline h2" d="M204,38 L326,45"/>
+  </g>
+
+  <!-- ===== lower layer: dense ===== -->
+  <g transform="translate(60,236)">
+    <path class="layer" d="M0,60 L300,0 L560,52 L260,120 Z"/>
+    <text class="lbl" x="2" y="16">LAYER 0</text>
+    <g class="e">
+      <path d="M60,66 L110,50"/><path d="M110,50 L165,40"/><path d="M165,40 L230,34"/><path d="M230,34 L300,42"/>
+      <path d="M300,42 L360,50"/><path d="M360,50 L420,60"/><path d="M60,66 L120,80"/><path d="M120,80 L190,74"/>
+      <path d="M190,74 L250,64"/><path d="M250,64 L300,42"/><path d="M250,64 L320,72"/><path d="M320,72 L390,78"/>
+      <path d="M165,40 L190,74"/><path d="M230,34 L250,64"/><path d="M360,50 L320,72"/>
+    </g>
+    <g class="node breathe">
+      <circle cx="60"  cy="66" r="3.5"/><circle cx="110" cy="50" r="3.5"/><circle cx="120" cy="80" r="3.5"/>
+      <circle cx="190" cy="74" r="3.5"/><circle cx="360" cy="50" r="3.5"/><circle cx="390" cy="78" r="3.5"/>
+      <circle cx="420" cy="60" r="3.5"/>
+    </g>
+    <!-- retrieved candidates -->
+    <g class="cand">
+      <circle cx="165" cy="40" r="4.5"/><circle cx="230" cy="34" r="4.5"/>
+      <circle cx="250" cy="64" r="4.5"/><circle cx="320" cy="72" r="4.5"/>
+    </g>
+    <!-- the query segment -->
+    <circle class="query" cx="300" cy="42" r="6"/>
+    <circle class="ring" cx="300" cy="42"/>
+    <path class="hopline h3" d="M326,45 L306,42" transform="translate(0,-140)"/>
+  </g>
+
+  <!-- descent arrow between layers -->
+  <path class="hopline h3" d="M386,186 L360,272"/>
+
+  <!-- ===== right column: the payoff ===== -->
+  <g transform="translate(640,110)">
+    <text class="sub" x="0" y="0">WHAT THE INDEX BUYS</text>
+
+    <text class="lbl" x="0" y="34">ALL-PAIRS SCAN</text>
+    <rect x="0" y="42" width="280" height="14" fill="#2b3346"/>
+    <text class="big" x="0" y="84">O(n²)</text>
+    <text class="note" x="0" y="104">every segment against every other</text>
+
+    <text class="lbl" x="0" y="146">HNSW RETRIEVAL</text>
+    <rect x="0" y="154" width="46" height="14" fill="#F2C14E"/>
+    <text class="big" x="0" y="196">O(n log n)</text>
+    <text class="note" x="0" y="216">exact divergence only against</text>
+    <text class="note" x="0" y="232">the handful worth checking</text>
+
+    <line x1="0" y1="262" x2="280" y2="262" stroke="#232a3b"/>
+    <text class="note" x="0" y="286">The genealogy still decides the answer.</text>
+    <text class="note" x="0" y="302">The index only decides what to look at.</text>
+  </g>
+
+  <text class="note" x="34" y="462">Windows are independent loci, so segments from the same window cluster tightly in k-mer space and segments from different windows do not.</text>
+  <text class="note" x="34" y="480">That structure is what makes approximate nearest-neighbour search a genealogical shortcut rather than a heuristic.</text>
+</svg>

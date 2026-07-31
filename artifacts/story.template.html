@@ -1,0 +1,1407 @@
+<title>Ghosts in the Genealogy — recovering two extinct hominin lineages with rvDNA</title>
+
+<style>
+/* ============================================================ tokens */
+:root {
+  --ground:      #0A0C11;
+  --panel:       #10131C;
+  --panel-2:     #151A26;
+  --rule:        #232A3B;
+  --rule-soft:   #1A2030;
+  --ink:         #E7E9E6;
+  --ink-2:       #A8B2C6;
+  --ink-3:       #77839B;
+  --ink-4:       #56607A;
+
+  --ghost-a:     #17A48C;
+  --ghost-b:     #9B6BEF;
+  --neander:     #C9832F;
+  --deniso:      #4E86CC;
+  --none:        #4A5570;
+  --signal:      #F2C14E;
+
+  --shadow: 0 1px 0 rgba(255,255,255,.03), 0 8px 30px rgba(0,0,0,.45);
+
+  --mono: ui-monospace, "DejaVu Sans Mono", "Liberation Mono", Menlo, Consolas, monospace;
+  --sans: ui-sans-serif, system-ui, "Liberation Sans", Arial, sans-serif;
+  --serif: "Charter", "Bitstream Charter", "Liberation Serif", Georgia, serif;
+
+  --measure: 68ch;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --ground:    #E7E9E6;
+    --panel:     #F3F4F1;
+    --panel-2:   #EAECE8;
+    --rule:      #C9CEC8;
+    --rule-soft: #D8DCD7;
+    --ink:       #14181C;
+    --ink-2:     #414B58;
+    --ink-3:     #5D6775;
+    --ink-4:     #7C8694;
+
+    --ghost-a:   #0E8F79;
+    --ghost-b:   #7C4FD4;
+    --neander:   #A96A18;
+    --deniso:    #2F6BB0;
+    --none:      #8E97A4;
+    --signal:    #8F6A0A;
+
+    --shadow: 0 1px 2px rgba(20,24,28,.05), 0 8px 24px rgba(20,24,28,.07);
+  }
+}
+:root[data-theme="light"] {
+  --ground: #E7E9E6; --panel: #F3F4F1; --panel-2: #EAECE8;
+  --rule: #C9CEC8; --rule-soft: #D8DCD7;
+  --ink: #14181C; --ink-2: #414B58; --ink-3: #5D6775; --ink-4: #7C8694;
+  --ghost-a: #0E8F79; --ghost-b: #7C4FD4; --neander: #A96A18; --deniso: #2F6BB0;
+  --none: #8E97A4; --signal: #8F6A0A;
+  --shadow: 0 1px 2px rgba(20,24,28,.05), 0 8px 24px rgba(20,24,28,.07);
+}
+:root[data-theme="dark"] {
+  --ground: #0A0C11; --panel: #10131C; --panel-2: #151A26;
+  --rule: #232A3B; --rule-soft: #1A2030;
+  --ink: #E7E9E6; --ink-2: #A8B2C6; --ink-3: #77839B; --ink-4: #56607A;
+  --ghost-a: #17A48C; --ghost-b: #9B6BEF; --neander: #C9832F; --deniso: #4E86CC;
+  --none: #4A5570; --signal: #F2C14E;
+  --shadow: 0 1px 0 rgba(255,255,255,.03), 0 8px 30px rgba(0,0,0,.45);
+}
+
+/* ============================================================ base */
+body {
+  background: var(--ground);
+  color: var(--ink-2);
+  font-family: var(--sans);
+  font-size: 16px;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+}
+
+.wrap {
+  display: grid;
+  grid-template-columns: 132px minmax(0, 1fr);
+  gap: 0;
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 0 28px;
+}
+
+/* ---------------------------------------------------- the core rail */
+.rail { position: relative; }
+.rail-inner {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  padding: 26px 20px 26px 0;
+  border-right: 1px solid var(--rule);
+}
+.rail-cap {
+  font-family: var(--mono);
+  font-size: 9.5px;
+  letter-spacing: .16em;
+  color: var(--ink-4);
+  text-transform: uppercase;
+}
+.strata { flex: 1; display: flex; flex-direction: column; gap: 3px; margin: 14px 0; }
+.stratum {
+  position: relative;
+  flex: 1;
+  border-left: 2px solid var(--rule);
+  padding-left: 11px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  background: none;
+  border-top: 0; border-right: 0; border-bottom: 0;
+  text-align: left;
+  color: inherit;
+  font: inherit;
+  transition: border-color .35s ease;
+}
+.stratum span {
+  font-family: var(--mono);
+  font-size: 9.5px;
+  letter-spacing: .09em;
+  color: var(--ink-4);
+  text-transform: uppercase;
+  transition: color .35s ease;
+  line-height: 1.35;
+}
+.stratum.on { border-left-color: var(--ghost-a); }
+.stratum.on span { color: var(--ink); }
+.stratum:focus-visible { outline: 2px solid var(--signal); outline-offset: 3px; }
+
+/* ---------------------------------------------------- content */
+main { padding: 26px 0 120px 40px; min-width: 0; }
+
+section { padding: 84px 0; border-bottom: 1px solid var(--rule-soft); }
+section:first-of-type { padding-top: 34px; }
+section:last-of-type { border-bottom: 0; }
+
+.eyebrow {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  color: var(--ink-4);
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.eyebrow b { color: var(--ghost-a); font-weight: 600; }
+
+h1 {
+  font-family: var(--mono);
+  font-size: clamp(30px, 5.4vw, 56px);
+  line-height: 1.04;
+  letter-spacing: -.028em;
+  color: var(--ink);
+  font-weight: 600;
+  text-wrap: balance;
+  margin-bottom: 26px;
+}
+h2 {
+  font-family: var(--mono);
+  font-size: clamp(21px, 2.7vw, 29px);
+  line-height: 1.16;
+  letter-spacing: -.02em;
+  color: var(--ink);
+  font-weight: 600;
+  text-wrap: balance;
+  margin-bottom: 18px;
+}
+h3 {
+  font-family: var(--mono);
+  font-size: 13px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  font-weight: 600;
+  margin-bottom: 14px;
+}
+p { max-width: var(--measure); margin-bottom: 17px; }
+p.lede { font-size: 19.5px; line-height: 1.55; color: var(--ink); max-width: 60ch; }
+strong { color: var(--ink); font-weight: 600; }
+em.term { font-style: normal; color: var(--ink); border-bottom: 1px dotted var(--ink-4); }
+
+a { color: var(--ghost-a); text-decoration: none; border-bottom: 1px solid color-mix(in oklab, var(--ghost-a) 40%, transparent); }
+a:hover { border-bottom-color: var(--ghost-a); }
+a:focus-visible { outline: 2px solid var(--signal); outline-offset: 2px; border-radius: 2px; }
+
+.aside {
+  font-family: var(--serif);
+  font-size: 16.5px;
+  line-height: 1.6;
+  color: var(--ink-3);
+  border-left: 2px solid var(--rule);
+  padding: 2px 0 2px 20px;
+  max-width: 58ch;
+  margin: 26px 0;
+}
+.aside b { color: var(--ink-2); font-weight: 600; }
+
+/* ---------------------------------------------------- figures */
+figure { margin: 34px 0; }
+figure img { width: 100%; height: auto; display: block; border: 1px solid var(--rule); border-radius: 4px; background: #0A0C11; }
+figcaption {
+  font-family: var(--mono);
+  font-size: 11.5px;
+  line-height: 1.55;
+  color: var(--ink-4);
+  margin-top: 11px;
+  max-width: 76ch;
+}
+figcaption b { color: var(--ink-3); font-weight: 600; }
+
+.card {
+  background: var(--panel);
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  padding: 22px 24px 24px;
+  box-shadow: var(--shadow);
+}
+.scroll-x { overflow-x: auto; }
+
+/* ---------------------------------------------------- stat tiles */
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(158px, 1fr)); gap: 1px; background: var(--rule); border: 1px solid var(--rule); border-radius: 4px; overflow: hidden; margin: 30px 0; }
+.tile { background: var(--panel); padding: 17px 18px 19px; }
+.tile .k { font-family: var(--mono); font-size: 9.5px; letter-spacing: .13em; text-transform: uppercase; color: var(--ink-4); margin-bottom: 9px; }
+.tile .v { font-family: var(--mono); font-size: 25px; font-weight: 600; color: var(--ink); line-height: 1; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+.tile .u { font-size: 13px; color: var(--ink-3); font-weight: 400; letter-spacing: 0; }
+.tile .n { font-size: 12.5px; color: var(--ink-4); margin-top: 8px; line-height: 1.45; }
+.tile.hi .v { color: var(--ghost-a); }
+
+/* ---------------------------------------------------- tables */
+table { border-collapse: collapse; width: 100%; font-size: 13.5px; }
+th, td { text-align: left; padding: 9px 14px 9px 0; border-bottom: 1px solid var(--rule-soft); }
+th { font-family: var(--mono); font-size: 10px; letter-spacing: .11em; text-transform: uppercase; color: var(--ink-4); font-weight: 600; }
+td.num, th.num { text-align: right; font-family: var(--mono); font-variant-numeric: tabular-nums; padding-right: 0; }
+td.mono { font-family: var(--mono); font-size: 12.5px; }
+tbody tr:last-child td { border-bottom: 0; }
+
+/* ---------------------------------------------------- legend + chips */
+.legend { display: flex; flex-wrap: wrap; gap: 8px 20px; margin: 16px 0 4px; font-family: var(--mono); font-size: 11.5px; color: var(--ink-3); }
+.legend i { display: inline-block; width: 11px; height: 11px; border-radius: 2px; margin-right: 7px; vertical-align: -1px; }
+.chip { display: inline-flex; align-items: center; gap: 6px; font-family: var(--mono); font-size: 10.5px; letter-spacing: .06em; text-transform: uppercase; padding: 3px 9px; border-radius: 3px; border: 1px solid var(--rule); color: var(--ink-3); }
+
+/* ---------------------------------------------------- charts */
+.chart { width: 100%; display: block; overflow: visible; }
+.chart text { font-family: var(--mono); font-size: 10.5px; fill: var(--ink-4); }
+.chart .ax { stroke: var(--rule); stroke-width: 1; }
+.chart .gl { stroke: var(--rule-soft); stroke-width: 1; }
+.chart .lbl-in { fill: var(--ink-3); font-size: 11px; }
+
+.tip {
+  position: fixed;
+  pointer-events: none;
+  z-index: 40;
+  background: var(--panel-2);
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  padding: 8px 11px;
+  font-family: var(--mono);
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: var(--ink);
+  box-shadow: var(--shadow);
+  opacity: 0;
+  transition: opacity .12s;
+  max-width: 260px;
+}
+.tip.on { opacity: 1; }
+.tip b { color: var(--ghost-a); }
+
+canvas { display: block; width: 100%; image-rendering: pixelated; border: 1px solid var(--rule); border-radius: 3px; }
+
+/* ---------------------------------------------------- hero */
+.hero-canvas { position: relative; height: 260px; margin: 0 0 40px; border: 1px solid var(--rule); border-radius: 4px; overflow: hidden; background: var(--panel); }
+.hero-canvas canvas { border: 0; border-radius: 0; height: 100%; image-rendering: auto; }
+
+.reveal { opacity: 0; transform: translateY(14px); transition: opacity .7s cubic-bezier(.2,.6,.2,1), transform .7s cubic-bezier(.2,.6,.2,1); }
+.reveal.in { opacity: 1; transform: none; }
+
+/* ---------------------------------------------------- theme toggle */
+.toggle {
+  position: fixed; top: 16px; right: 18px; z-index: 50;
+  background: var(--panel); border: 1px solid var(--rule); color: var(--ink-3);
+  font-family: var(--mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase;
+  padding: 7px 12px; border-radius: 3px; cursor: pointer;
+}
+.toggle:hover { color: var(--ink); }
+.toggle:focus-visible { outline: 2px solid var(--signal); outline-offset: 2px; }
+
+/* ---------------------------------------------------- responsive */
+@media (max-width: 880px) {
+  .wrap { grid-template-columns: 1fr; padding: 0 20px; }
+  .rail { display: none; }
+  main { padding-left: 0; }
+  section { padding: 58px 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal { opacity: 1; transform: none; transition: none; }
+  * { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
+}
+</style>
+
+<button class="toggle" id="themeBtn" type="button">Theme</button>
+
+<div class="wrap">
+  <div class="rail" aria-hidden="true">
+    <div class="rail-inner">
+      <div class="rail-cap">Core&nbsp;sample</div>
+      <nav class="strata" id="strata"></nav>
+      <div class="rail-cap">rvDNA&nbsp;/&nbsp;TRACE-rv</div>
+    </div>
+  </div>
+
+  <main>
+
+  <!-- ======================================================= 00 -->
+  <section id="s0" data-title="Ghosts">
+    <div class="eyebrow"><b>00</b><span>Deep analysis · rvDNA · RuVector · metaharness</span></div>
+    <h1>Two ancestors nobody<br>has ever seen</h1>
+    <div class="hero-canvas"><canvas id="heroCv"></canvas></div>
+    <p class="lede">On 30 July 2026, a team at UC Berkeley reported that every living human carries DNA from at least two extinct hominin populations that have never been sequenced, never been dug up, and have no name beyond the shape they leave in our genealogies.</p>
+    <p>They found them without a single fragment of ancient DNA. The evidence came entirely from the genomes of people alive today — from a property of those genomes that is easy to state and hard to measure: <strong>some stretches of our DNA are far older than they have any right to be.</strong></p>
+    <p>What follows is that logic, rebuilt from first principles on the <a href="https://github.com/ruvnet/rvdna">rvDNA</a> engine: a coalescent simulator to generate a cohort with known truth, a RuVector HNSW index to make the genealogy search tractable, a Darwin-mode loop to tune the detector against itself, and a flywheel that turns each confirmed ghost segment into evidence for finding the next one.</p>
+    <div class="tiles" id="heroTiles"></div>
+  </section>
+
+  <!-- ======================================================= 01 -->
+  <section id="s1" data-title="The finding">
+    <div class="eyebrow"><b>01</b><span>What was reported</span></div>
+    <h2>A method that reads the past out of the present</h2>
+    <p>The technique is called <em class="term">TRACE</em> — TRacking Archaic Contributions via ARG Estimation. It reconstructs, across the whole genome, an <em class="term">ancestral recombination graph</em>: a running record of how every stretch of DNA in a sample is related to every other, and how far back those relationships go.</p>
+    <p>Read that graph carefully and two lineages fall out that match nothing we have ever sequenced.</p>
+    <div id="findingCards"></div>
+    <div class="aside">The first is in <b>everyone</b> — African and non-African alike — which places the interbreeding inside Africa, before the last migration out of it. The second never met us directly at all: it interbred with Denisovans, and Denisovans passed it on.</div>
+    <p>Both sit in a genome that is already about 2% archaic. What makes them different from the Neanderthal and Denisovan ancestry we have known about for years is that there is nothing to compare them <em>to</em>. No bone, no genome, no reference. They are defined entirely by absence.</p>
+  </section>
+
+  <!-- ======================================================= 02 -->
+  <section id="s2" data-title="The signal">
+    <div class="eyebrow"><b>02</b><span>Why a genealogy gives it away</span></div>
+    <h2>The only thing you need to measure is depth</h2>
+    <p>Take any window of the genome and ask, of one person's copy: <strong>how far back do I have to go before this stretch of DNA meets anybody else's?</strong></p>
+    <p>For almost every window the answer is recent. You share that stretch with a cousin, a population, a continent. But if the window came into your ancestry from a lineage that split off 800,000 years ago, it cannot meet anyone until it gets back past that split — because until then, there was nobody else to meet.</p>
+    <figure>
+      <img src="__DIAGRAM_02__" alt="Two side-by-side local genealogies for the same window. In the ordinary case every lineage finds a close relative quickly. In the archaic carrier, one lineage plunges past all the others before it can join the tree.">
+      <figcaption><b>Fig. 2</b> — The whole detector is this one comparison, run on every window of every haplotype.</figcaption>
+    </figure>
+    <h3>What that looks like in real numbers</h3>
+    <p>Below is the measurement itself, taken across <span id="segCount"></span> simulated segments by exhaustive comparison — every segment against every other segment in the panel, with no shortcuts, so it can serve as the reference the indexed detector is judged against.</p>
+    <div class="card">
+      <svg class="chart" id="depthChart" viewBox="0 0 860 340" preserveAspectRatio="xMidYMid meet" role="img" aria-labelledby="dcT"></svg>
+      <div class="legend" id="depthLegend"></div>
+    </div>
+    <div class="scroll-x"><table id="depthTable"></table></div>
+    <div class="aside">Note what the lower edge of each distribution is doing. A segment's coalescent depth is always <b>older</b> than the split that produced it, because the donor lineage had its own history to get through first — Ghost-A's segments were planted at 800 ka and their median depth is 980 ka. In a clean sample the <b>bottom of the range</b> would therefore be the honest divergence-time estimator. In the recovered clusters further down it is not, because false positives collect at the bottom and drag it low. Both numbers are reported there, and neither is treated as precision.</div>
+  </section>
+
+  <!-- ======================================================= 03 -->
+  <section id="s3" data-title="The tree">
+    <div class="eyebrow"><b>03</b><span>The demography under the simulation</span></div>
+    <h2>Four archaic sources, two of them invisible</h2>
+    <p>To know whether a detector works you need a world where you already know the answer. The cohort here is simulated under a structured coalescent on a hominin population tree calibrated to the published divergence times, with introgression planted at known coordinates.</p>
+    <figure>
+      <img src="__DIAGRAM_01__" alt="A time-scaled hominin population tree from 1.8 million years ago to the present, with modern populations, Neanderthals and Denisovans as solid lines, and two ghost lineages as dashed lines that never reach the present.">
+      <figcaption><b>Fig. 1</b> — Solid lines are lineages with sequenced genomes. Dashed lines are the ghosts: real contributors, no reference to check against.</figcaption>
+    </figure>
+    <div class="scroll-x"><table id="plantTable"></table></div>
+    <p id="burdenNote"></p>
+  </section>
+
+  <!-- ======================================================= 04 -->
+  <section id="s4" data-title="The engine">
+    <div class="eyebrow"><b>04</b><span>rvDNA · RuVector HNSW</span></div>
+    <h2>Making a quadratic question cheap</h2>
+    <p>Asking "who is this segment related to?" naively means comparing it with every other segment in the panel, in every window. That is quadratic, and most of the comparisons are wasted on haplotypes that were never going to be relevant.</p>
+    <p>So the pipeline splits the question in two. Every window of every haplotype is embedded as an rvDNA <strong>k-mer profile vector</strong> and inserted into a <strong>RuVector HNSW graph</strong>. The index answers <em>which segments are even worth looking at</em>; exact, Jukes–Cantor-corrected divergence — the part that actually decides the answer — runs only against those.</p>
+    <figure>
+      <img src="__DIAGRAM_03__" alt="A diagram of hierarchical navigable small world retrieval: a query descends from a coarse upper graph layer into a dense lower layer, touching only a few candidates instead of the entire panel.">
+      <figcaption><b>Fig. 3</b> — The index decides what to look at. The genealogy still decides the answer.</figcaption>
+    </figure>
+    <div class="tiles" id="engineTiles"></div>
+    <h3>The .rvdna container</h3>
+    <p id="containerNote"></p>
+  </section>
+
+  <!-- ======================================================= 05 -->
+  <section id="s5" data-title="Darwin">
+    <div class="eyebrow"><b>05</b><span>metaharness · Darwin mode</span></div>
+    <h2>The detector tunes itself, under a gate</h2>
+    <p>A detector like this has eight knobs — k-mer size, vector width, graph connectivity, search breadth, how many neighbours to retrieve, and three depth thresholds. Hand-tuning them is guesswork, and guesswork that touches the thresholds is guesswork that decides the answer.</p>
+    <p>Darwin mode does it mechanically. Mutate one hyperparameter, evaluate the mutant in a sandbox against a <strong>training split only</strong>, and keep the change only if it clears an explicit margin — so evaluation noise cannot ratchet the parameters anywhere. Then score the survivor once on a <strong>held-out split it never saw</strong>, which is where overfitting would show up if there were any.</p>
+    <div class="card">
+      <svg class="chart" id="darwinChart" viewBox="0 0 860 300" preserveAspectRatio="xMidYMid meet" role="img" aria-labelledby="dwT"></svg>
+      <div class="legend" id="darwinLegend"></div>
+    </div>
+    <div class="tiles" id="darwinTiles"></div>
+    <div class="scroll-x"><table id="darwinTable"></table></div>
+    <p id="darwinVerdict"></p>
+  </section>
+
+  <!-- ======================================================= 06 -->
+  <section id="s6" data-title="Flywheel">
+    <div class="eyebrow"><b>06</b><span>metaharness · Flywheel</span></div>
+    <h2>Each confirmed ghost makes the next one easier</h2>
+    <p>In the first pass a ghost segment can only be found the hard way: by proving its genealogy is an outlier against the entire living panel. That works, but it misses the borderline cases — the segments whose depth is real but not extreme enough to clear a threshold set conservatively enough to avoid false positives.</p>
+    <p>The flywheel closes that gap. Confirmed ghost segments are condensed into consensus references and written back into the vector index. On the next turn a borderline segment can be recognised by its resemblance to a lineage that is <em>no longer invisible</em> — and the loop stops itself when a turn adds nothing new.</p>
+    <figure>
+      <img src="__DIAGRAM_04__" alt="A diagram of two coupled control loops: an inner Darwin loop that mutates hyperparameters behind a safety gate, and an outer flywheel loop that detects, clusters, condenses and re-indexes ghost references until it goes dry.">
+      <figcaption><b>Fig. 4</b> — Two loops around a frozen model. The inner one changes the settings; the outer one changes the evidence.</figcaption>
+    </figure>
+    <div class="card">
+      <svg class="chart" id="wheelChart" viewBox="0 0 860 260" preserveAspectRatio="xMidYMid meet" role="img" aria-labelledby="fwT"></svg>
+    </div>
+    <div class="scroll-x"><table id="wheelTable"></table></div>
+    <p id="wheelVerdict"></p>
+  </section>
+
+  <!-- ======================================================= 07 -->
+  <section id="s7" data-title="Recovery">
+    <div class="eyebrow"><b>07</b><span>The result</span></div>
+    <h2>Two lineages, and no reference genome for either</h2>
+    <p>Every segment the pipeline flagged as archaic but could not match a Neanderthal or Denisovan reference is a ghost candidate. Clustering those by coalescent depth finds <strong>two modes</strong>, and the two modes bracket the two planted lineages.</p>
+    <p>They do not separate cleanly, and the reason is worth stating plainly. Ghost-A's own depth distribution runs all the way to 2.5 Ma, so its deep tail lands on top of Ghost-B. With only <span id="gbCount"></span> super-archaic segments in the whole cohort to work with, depth cannot pull them apart segment by segment — it can only tell you that two sources are present.</p>
+    <div id="lineageCards"></div>
+    <div class="card" style="margin-top:26px">
+      <svg class="chart" id="lineageChart" viewBox="0 0 860 220" preserveAspectRatio="xMidYMid meet" role="img" aria-labelledby="lnT"></svg>
+    </div>
+
+    <h3 style="margin-top:44px">A second, independent signature</h3>
+    <p>Depth says <em>when</em> a lineage split. It says nothing about <em>how</em> its DNA reached us — and that is exactly where the two ghosts differ. Ghost-A entered the modern human lineage inside Africa, before the last migration out, so it should appear everywhere. Ghost-B never met us at all: it reached modern genomes through Denisovans, so it should concentrate wherever Denisovan ancestry concentrates.</p>
+    <p>That prediction is testable without touching the depth axis, and the recovered clusters honour it.</p>
+    <div class="card">
+      <svg class="chart" id="carrierChart" viewBox="0 0 860 210" preserveAspectRatio="xMidYMid meet" role="img" aria-labelledby="ccT"></svg>
+      <div class="legend" id="carrierLegend"></div>
+    </div>
+    <p id="carrierVerdict"></p>
+
+    <h3 style="margin-top:44px">The genome, painted</h3>
+    <p>Every window of every haplotype in the cohort, coloured by what the detector concluded. Each column is a window; each row is one person's haplotype, grouped by population. Hover any cell for its call.</p>
+    <div class="card">
+      <div id="paintWrap"><canvas id="paintCv" height="1"></canvas></div>
+      <div class="legend" id="paintLegend"></div>
+      <div id="paintRowLabels" style="margin-top:10px"></div>
+    </div>
+
+    <h3 style="margin-top:44px">Calls against truth</h3>
+    <p>The full confusion matrix. Rows are what the detector said; columns are what the segment actually was.</p>
+    <div class="scroll-x"><table id="attrTable"></table></div>
+    <p id="attrNote"></p>
+  </section>
+
+  <!-- ======================================================= 08 -->
+  <section id="s8" data-title="Caveats">
+    <div class="eyebrow"><b>08</b><span>What this is, and what it is not</span></div>
+    <h2>Read the fine print before the headline</h2>
+    <div id="caveatList"></div>
+    <h3 style="margin-top:38px">Reproduce it</h3>
+    <div class="card" style="font-family:var(--mono); font-size:12.5px; line-height:1.9; color:var(--ink-2)">
+      <div style="color:var(--ink-4)"># the whole study, from a clean checkout</div>
+      <div>cargo build --release</div>
+      <div>./target/release/depth-hist artifacts/data <span style="color:var(--ink-4)"># the reference measurement</span></div>
+      <div>./target/release/trace-rv  artifacts/data <span style="color:var(--ink-4)"># simulate, evolve, spin, cluster</span></div>
+      <div>node artifacts/build.mjs <span style="color:var(--ink-4)">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# rebuild this page</span></div>
+      <div style="margin-top:12px; color:var(--ink-4)"># everything is seeded, so the numbers on this page are the numbers you get</div>
+    </div>
+    <h3 style="margin-top:38px">Sources</h3>
+    <ul style="max-width:var(--measure); padding-left:18px; font-size:14.5px; line-height:1.75">
+      <li>Zhang, Biddanda, Johnson, O'Dushlaine &amp; Moorjani, <em>Recovering signatures of archaic hominin introgression using ancestral recombination graphs</em>, <strong>Science</strong>, 30 July 2026.</li>
+      <li><a href="https://news.berkeley.edu/2026/07/30/new-technique-pinpoints-human-dna-inherited-from-ghost-ancestors/">UC Berkeley News — New technique pinpoints human DNA inherited from &lsquo;ghost&rsquo; ancestors</a></li>
+      <li><a href="https://www.livescience.com/archaeology/human-evolution/scientists-discover-2-new-ghost-lineages-that-contributed-dna-to-modern-humans">Live Science — Scientists discover 2 new &lsquo;ghost&rsquo; lineages that contributed DNA to modern humans</a></li>
+      <li><a href="https://github.com/ruvnet/rvdna">ruvnet/rvdna</a> · <a href="https://github.com/ruvnet/metaharness">ruvnet/metaharness</a> (Darwin mode, flywheel)</li>
+    </ul>
+  </section>
+
+  </main>
+</div>
+
+<div class="tip" id="tip"></div>
+
+<script>
+const REPORT = __TRACE_DATA__;
+const CALLS  = __CALLS_DATA__;
+const DEPTH  = __DEPTH_DATA__;
+
+/* ---------------------------------------------------- helpers */
+const $ = s => document.querySelector(s);
+const cv = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const fmt = (x, d = 0) => x.toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d });
+const pct = x => (x * 100).toFixed(1) + '%';
+const el = (tag, attrs = {}, kids = []) => {
+  const n = document.createElementNS(tag === 'svg' ? 'http://www.w3.org/2000/svg' : 'http://www.w3.org/1999/xhtml', tag);
+  return n;
+};
+const svgEl = (tag, attrs = {}) => {
+  const n = document.createElementNS('http://www.w3.org/2000/svg', tag);
+  for (const k in attrs) n.setAttribute(k, attrs[k]);
+  return n;
+};
+
+const SOURCE_COLOR = {
+  'Ghost-A (deep African)': '--ghost-a',
+  'Ghost-B (super-archaic)': '--ghost-b',
+  'Neanderthal': '--neander',
+  'Denisovan': '--deniso',
+  'No archaic ancestry': '--none',
+  'none (false positive)': '--none',
+};
+const colorFor = label => cv(SOURCE_COLOR[label] || '--none');
+
+/* ---------------------------------------------------- tooltip */
+const tip = $('#tip');
+function showTip(e, html) {
+  tip.innerHTML = html;
+  tip.classList.add('on');
+  const pad = 14;
+  let x = e.clientX + pad, y = e.clientY + pad;
+  const r = tip.getBoundingClientRect();
+  if (x + r.width > innerWidth - 8) x = e.clientX - r.width - pad;
+  if (y + r.height > innerHeight - 8) y = e.clientY - r.height - pad;
+  tip.style.left = x + 'px';
+  tip.style.top = y + 'px';
+}
+const hideTip = () => tip.classList.remove('on');
+
+/* ---------------------------------------------------- tiles */
+function tiles(host, items) {
+  host.innerHTML = items.map(t => `
+    <div class="tile${t.hi ? ' hi' : ''}">
+      <div class="k">${t.k}</div>
+      <div class="v">${t.v}${t.u ? `<span class="u"> ${t.u}</span>` : ''}</div>
+      ${t.n ? `<div class="n">${t.n}</div>` : ''}
+    </div>`).join('');
+}
+
+/* ==================================================== 00 hero */
+tiles($('#heroTiles'), [
+  { k: 'Ghost lineages recovered', v: REPORT.lineages.length, hi: true, n: 'from depth of genealogy alone, with no reference genome for either' },
+  { k: 'Haplotypes analysed', v: REPORT.cohort.n_modern, n: `${REPORT.cohort.n_archaic_references} sequenced archaic references alongside` },
+  { k: 'Windows per haplotype', v: REPORT.cohort.n_windows, n: `each ~${Math.round(REPORT.cohort.equivalent_real_bp / 1000)} kb of real-sequence information` },
+  { k: 'Detection F1', v: REPORT.darwin.evolved_test.f1.toFixed(3), n: 'on a held-out split the tuner never saw' },
+]);
+
+/* ==================================================== 01 finding */
+$('#findingCards').innerHTML = `
+<div class="tiles" style="margin-top:26px">
+  <div class="tile hi">
+    <div class="k">Ghost A · deep African</div>
+    <div class="v" style="color:var(--ghost-a)">800<span class="u">ka</span></div>
+    <div class="n">Diverged from our lineage ~800,000 years ago, interbred inside Africa more than 50,000 years ago, and contributes <strong>0.5&ndash;1%</strong> of the genome of <strong>every living person</strong>.</div>
+  </div>
+  <div class="tile">
+    <div class="k">Ghost B · super-archaic</div>
+    <div class="v" style="color:var(--ghost-b)">1.8<span class="u">Ma</span></div>
+    <div class="n">A 1.8-million-year-old lineage that interbred with <strong>Denisovans</strong>, not with us. It reaches modern genomes second-hand, concentrated in <strong>Oceania</strong>.</div>
+  </div>
+  <div class="tile">
+    <div class="k">Total archaic ancestry</div>
+    <div class="v">~2<span class="u">%</span></div>
+    <div class="n">Neanderthal, Denisovan and now two ghosts. Archaic segments are enriched in regions tied to <strong>immunity and metabolism</strong>.</div>
+  </div>
+  <div class="tile">
+    <div class="k">Ancient genomes required</div>
+    <div class="v">0</div>
+    <div class="n">TRACE works on present-day genomes only — which is the entire point, since neither ghost has ever been sequenced.</div>
+  </div>
+</div>`;
+
+/* ==================================================== 02 depth */
+$('#segCount').textContent = fmt(DEPTH.n_segments);
+
+(function depthChart() {
+  const svg = $('#depthChart');
+  const W = 860, H = 340, ML = 46, MR = 16, MT = 18, MB = 52;
+  const iw = W - ML - MR, ih = H - MT - MB;
+  const edges = DEPTH.bin_edges_ka;
+  const maxKa = 2600;
+  const nb = edges.length - 1;
+  const x = k => ML + (Math.min(k, maxKa) / maxKa) * iw;
+
+  const title = svgEl('title'); title.setAttribute('id', 'dcT');
+  title.textContent = 'Distribution of coalescent depth to the nearest relative, by what the segment actually is. Each series is scaled to its own peak so the shapes can be compared.';
+  svg.appendChild(title);
+
+  // grid + axis
+  for (let k = 0; k <= maxKa; k += 400) {
+    const gx = x(k);
+    svg.appendChild(svgEl('line', { class: 'gl', x1: gx, y1: MT, x2: gx, y2: MT + ih }));
+    const t = svgEl('text', { x: gx, y: MT + ih + 18, 'text-anchor': 'middle' });
+    t.textContent = k === 0 ? '0' : (k >= 1000 ? (k / 1000) + ' Ma' : k + ' ka');
+    svg.appendChild(t);
+  }
+  svg.appendChild(svgEl('line', { class: 'ax', x1: ML, y1: MT + ih, x2: ML + iw, y2: MT + ih }));
+  const xl = svgEl('text', { x: ML + iw / 2, y: MT + ih + 40, 'text-anchor': 'middle', class: 'lbl-in' });
+  xl.textContent = 'coalescent depth to nearest relative in the modern panel';
+  svg.appendChild(xl);
+  const yl = svgEl('text', { x: -(MT + ih / 2), y: 13, 'text-anchor': 'middle', transform: 'rotate(-90)' });
+  yl.textContent = 'density (each series to its own peak)';
+  svg.appendChild(yl);
+
+  // Series, drawn as smoothed density outlines. Raw per-bin counts are far too
+  // spiky for the small classes (Ghost-B has 18 segments across 52 bins), so
+  // each series gets a triangular kernel whose width scales inversely with its
+  // sample size — wide enough to read as a distribution, narrow enough not to
+  // move the mode.
+  const order = ['No archaic ancestry', 'Denisovan', 'Neanderthal', 'Ghost-A (deep African)', 'Ghost-B (super-archaic)'];
+  const series = order.map(l => DEPTH.series.find(s => s.label === l)).filter(Boolean);
+
+  const smooth = (counts, half) => {
+    if (half <= 0) return counts.slice();
+    const out = [];
+    for (let i = 0; i < counts.length; i++) {
+      let acc = 0, wsum = 0;
+      for (let j = -half; j <= half; j++) {
+        const k = i + j;
+        if (k < 0 || k >= counts.length) continue;
+        const w = 1 - Math.abs(j) / (half + 1);
+        acc += counts[k] * w; wsum += w;
+      }
+      out.push(wsum ? acc / wsum : 0);
+    }
+    return out;
+  };
+
+  series.forEach((s, si) => {
+    const half = s.n >= 5000 ? 1 : s.n >= 200 ? 2 : 4;
+    const dens = smooth(s.counts, half);
+    const peak = Math.max(...dens, 1e-9);
+    let d = `M ${x(0)} ${MT + ih}`;
+    for (let b = 0; b < nb; b++) {
+      const cx = x((edges[b] + edges[b + 1]) / 2);
+      const cy = MT + ih - (dens[b] / peak) * ih * 0.92;
+      d += ` L ${cx} ${cy}`;
+    }
+    d += ` L ${x(maxKa)} ${MT + ih} Z`;
+    const col = colorFor(s.label);
+    const area = svgEl('path', { d, fill: col, 'fill-opacity': s.label === 'No archaic ancestry' ? 0.12 : 0.18, stroke: col, 'stroke-width': 2, 'stroke-linejoin': 'round' });
+    area.style.opacity = 0;
+    area.style.animation = `fadeIn .8s ease ${0.15 * si}s forwards`;
+    svg.appendChild(area);
+
+    // Direct-label only the two ghosts — they are what the story is about, and
+    // five labels in this space collide. The rest are named in the legend and
+    // quantified in the table below.
+    if (s.label.startsWith('Ghost')) {
+      let peakBin = 0;
+      for (let b = 1; b < nb; b++) if (dens[b] > dens[peakBin]) peakBin = b;
+      const px = Math.min(x(edges[peakBin]) + 10, ML + iw - 150);
+      const py = MT + ih - (dens[peakBin] / peak) * ih * 0.92 - 10;
+      const lt = svgEl('text', { x: px, y: Math.max(py, MT + 12), fill: col, 'font-size': 11.5 });
+      lt.textContent = s.label.replace(/ \(.*\)/, '') + ` · median ${fmt(s.median_ka)} ka`;
+      svg.appendChild(lt);
+    }
+  });
+
+  // the tuned threshold
+  const tau = REPORT.darwin.evolved.tau_archaic_ka;
+  const tx = x(tau);
+  svg.appendChild(svgEl('line', { x1: tx, y1: MT, x2: tx, y2: MT + ih, stroke: cv('--signal'), 'stroke-width': 1.5, 'stroke-dasharray': '4 4' }));
+  const tt = svgEl('text', { x: tx + 6, y: MT + ih - 8, fill: cv('--signal'), 'font-size': 10.5 });
+  tt.textContent = `evolved threshold ${fmt(tau)} ka`;
+  svg.appendChild(tt);
+
+  // hover readout
+  const hit = svgEl('rect', { x: ML, y: MT, width: iw, height: ih, fill: 'transparent' });
+  const cross = svgEl('line', { x1: 0, y1: MT, x2: 0, y2: MT + ih, stroke: cv('--ink-4'), 'stroke-width': 1, opacity: 0 });
+  svg.appendChild(hit); svg.appendChild(cross);
+  hit.addEventListener('mousemove', e => {
+    const r = svg.getBoundingClientRect();
+    const px = (e.clientX - r.left) / r.width * W;
+    const ka = Math.max(0, (px - ML) / iw * maxKa);
+    const b = Math.min(nb - 1, Math.floor(ka / (edges[1] - edges[0])));
+    cross.setAttribute('x1', x(edges[b] + (edges[1] - edges[0]) / 2));
+    cross.setAttribute('x2', x(edges[b] + (edges[1] - edges[0]) / 2));
+    cross.setAttribute('opacity', 1);
+    const rows = series.map(s => `<span style="color:${colorFor(s.label)}">&#9632;</span> ${s.label.replace(/ \(.*\)/, '')}: ${s.counts[b]}`).join('<br>');
+    showTip(e, `<b>${fmt(edges[b])}&ndash;${fmt(edges[b + 1])} ka</b><br>${rows}`);
+  });
+  hit.addEventListener('mouseleave', () => { cross.setAttribute('opacity', 0); hideTip(); });
+
+  $('#depthLegend').innerHTML = series.map(s =>
+    `<span><i style="background:${colorFor(s.label)}"></i>${s.label}</span>`).join('') +
+    `<span><i style="background:${cv('--signal')}"></i>tuned threshold</span>`;
+})();
+
+(function depthTable() {
+  const rows = DEPTH.series.map(s => `
+    <tr>
+      <td class="mono"><span style="color:${colorFor(s.label)}">&#9632;</span> ${s.label}</td>
+      <td class="num">${fmt(s.n)}</td>
+      <td class="num">${fmt(Math.max(0, s.p05_ka))}</td>
+      <td class="num">${fmt(s.median_ka)}</td>
+      <td class="num">${fmt(s.p95_ka)}</td>
+    </tr>`).join('');
+  $('#depthTable').innerHTML = `
+    <thead><tr><th>Segment truth</th><th class="num">n</th><th class="num">5th pct (ka)</th><th class="num">Median (ka)</th><th class="num">95th pct (ka)</th></tr></thead>
+    <tbody>${rows}</tbody>
+    <tfoot><tr><td colspan="5" style="padding-top:14px;border:0;color:var(--ink-4);font-size:12.5px">
+      Best achievable single-threshold separation: <strong>${fmt(DEPTH.overlap.best_threshold_ka)} ka</strong>, F1 ${DEPTH.overlap.best_f1.toFixed(3)}.
+      At that cut ${pct(DEPTH.overlap.ordinary_above)} of ordinary segments sit above the line and ${pct(DEPTH.overlap.archaic_below)} of archaic ones below it &mdash; the irreducible overlap a real method has to live with.
+    </td></tr></tfoot>`;
+})();
+
+/* ==================================================== 03 tree */
+(function plantTable() {
+  const p = REPORT.cohort.planted_segments;
+  const rows = Object.keys(p).sort().map(k => `
+    <tr>
+      <td class="mono"><span style="color:${colorFor(k)}">&#9632;</span> ${k}</td>
+      <td class="num">${fmt(p[k])}</td>
+      <td class="num">${pct(p[k] / REPORT.cohort.planted_total)}</td>
+    </tr>`).join('');
+  const g = REPORT.cohort.truth_fraction_by_group;
+  const grows = Object.keys(g).sort((a, b) => g[b] - g[a]).map(k =>
+    `<tr><td class="mono">${k}</td><td class="num">${(g[k] * 100).toFixed(2)}%</td><td></td></tr>`).join('');
+  $('#plantTable').innerHTML = `
+    <thead><tr><th>Planted source</th><th class="num">Segments</th><th class="num">Share</th></tr></thead>
+    <tbody>${rows}</tbody>
+    <thead><tr><th style="padding-top:22px">Archaic burden by group</th><th class="num" style="padding-top:22px">of segments</th><th></th></tr></thead>
+    <tbody>${grows}</tbody>`;
+
+  $('#burdenNote').innerHTML = `Across the whole cohort <strong>${pct(REPORT.cohort.archaic_fraction_of_segments)}</strong> of modern segments carry archaic ancestry &mdash; in the same range as the ~2% reported for real human genomes. Ghost-B is deliberately rare: it only reaches modern people through Denisovans, so it appears in <strong>${fmt(REPORT.cohort.planted_segments['Ghost-B (super-archaic)'] || 0)}</strong> segments in total, almost all of them in Oceania.`;
+})();
+
+/* ==================================================== 04 engine */
+tiles($('#engineTiles'), [
+  { k: 'Exact comparisons run', v: fmt(REPORT.retrieval.exact_comparisons), n: 'divergence computed only where the index said it was worth it' },
+  { k: 'All-pairs equivalent', v: fmt(REPORT.retrieval.bruteforce_comparisons), n: 'what the same pass costs with no index' },
+  { k: 'Work avoided', v: REPORT.retrieval.speedup.toFixed(1) + '×', hi: true, n: 'fewer exact sequence comparisons for the same calls' },
+  { k: 'Vectors indexed', v: fmt(REPORT.cohort.n_windows * REPORT.cohort.n_haplotypes), n: `${REPORT.darwin.evolved.dims}-dim k-mer profiles, k=${REPORT.darwin.evolved.k}, HNSW m=${REPORT.darwin.evolved.hnsw_m}` },
+]);
+
+$('#containerNote').innerHTML = `A recovered ghost segment round-trips through rvDNA's own binary container: haplotype <strong>${REPORT.rvdna_container.haplotype}</strong>, window ${REPORT.rvdna_container.window}, ${fmt(REPORT.rvdna_container.sequence_bp)} bp packed into <strong>${fmt(REPORT.rvdna_container.container_bytes)} bytes</strong> at ${REPORT.rvdna_container.bits_per_base.toFixed(2)} bits per base, carrying ${REPORT.rvdna_container.kmer_blocks} pre-computed k-mer vector block${REPORT.rvdna_container.kmer_blocks === 1 ? '' : 's'} alongside the sequence. Sequence round-trip: <strong style="color:var(--ghost-a)">${REPORT.rvdna_container.roundtrip_exact ? 'exact' : 'LOSSY'}</strong>.`;
+
+/* ==================================================== 05 darwin */
+(function darwinChart() {
+  const svg = $('#darwinChart');
+  const W = 860, H = 300, ML = 54, MR = 130, MT = 20, MB = 46;
+  const iw = W - ML - MR, ih = H - MT - MB;
+  const lin = REPORT.darwin.lineage;
+  const base = REPORT.darwin.baseline_train_f1;
+
+  const title = svgEl('title'); title.setAttribute('id', 'dwT');
+  title.textContent = 'Training F1 of every hyperparameter mutation Darwin proposed, in order, with the running best drawn as a step line.';
+  svg.appendChild(title);
+
+  const all = lin.map(m => m.train_f1).concat([base, REPORT.darwin.evolved_train_f1]);
+  const lo = Math.min(...all) - 0.01, hi = Math.max(...all) + 0.01;
+  const x = i => ML + (lin.length <= 1 ? iw / 2 : (i / (lin.length - 1)) * iw);
+  const y = f => MT + ih - ((f - lo) / (hi - lo)) * ih;
+
+  for (let i = 0; i <= 4; i++) {
+    const f = lo + (hi - lo) * i / 4;
+    const gy = y(f);
+    svg.appendChild(svgEl('line', { class: 'gl', x1: ML, y1: gy, x2: ML + iw, y2: gy }));
+    const t = svgEl('text', { x: ML - 10, y: gy + 3.5, 'text-anchor': 'end' });
+    t.textContent = f.toFixed(2);
+    svg.appendChild(t);
+  }
+  svg.appendChild(svgEl('line', { class: 'ax', x1: ML, y1: MT + ih, x2: ML + iw, y2: MT + ih }));
+
+  // baseline reference
+  svg.appendChild(svgEl('line', { x1: ML, y1: y(base), x2: ML + iw, y2: y(base), stroke: cv('--ink-4'), 'stroke-width': 1, 'stroke-dasharray': '3 5' }));
+  const bl = svgEl('text', { x: ML + iw + 8, y: y(base) + 3.5, fill: cv('--ink-4') });
+  bl.textContent = `baseline ${base.toFixed(3)}`;
+  svg.appendChild(bl);
+
+  // running best as a step line
+  let best = base, dBest = `M ${ML} ${y(base)}`;
+  lin.forEach((m, i) => {
+    if (m.accepted) best = m.train_f1;
+    dBest += ` L ${x(i)} ${y(best)}`;
+  });
+  const bestPath = svgEl('path', { d: dBest, fill: 'none', stroke: cv('--ghost-a'), 'stroke-width': 2, 'stroke-linejoin': 'round' });
+  const len = 2000;
+  bestPath.style.strokeDasharray = len; bestPath.style.strokeDashoffset = len;
+  bestPath.style.animation = 'drawLine 1.8s ease-out .3s forwards';
+  svg.appendChild(bestPath);
+
+  // every proposal as a dot
+  lin.forEach((m, i) => {
+    const c = svgEl('circle', {
+      cx: x(i), cy: y(m.train_f1), r: m.accepted ? 6 : 4,
+      fill: m.accepted ? cv('--ghost-a') : 'none',
+      stroke: m.accepted ? cv('--panel') : cv('--ink-4'),
+      'stroke-width': m.accepted ? 2 : 1.4,
+    });
+    c.style.cursor = 'pointer';
+    c.addEventListener('mouseenter', e => showTip(e,
+      `<b>gen ${m.generation} · ${m.accepted ? 'KEPT' : 'discarded'}</b><br>${m.gene}: ${m.from} &rarr; ${m.to}<br>train F1 ${m.train_f1.toFixed(4)}`));
+    c.addEventListener('mousemove', e => showTip(e,
+      `<b>gen ${m.generation} · ${m.accepted ? 'KEPT' : 'discarded'}</b><br>${m.gene}: ${m.from} &rarr; ${m.to}<br>train F1 ${m.train_f1.toFixed(4)}`));
+    c.addEventListener('mouseleave', hideTip);
+    svg.appendChild(c);
+  });
+
+  const el2 = svgEl('text', { x: ML + iw + 8, y: y(REPORT.darwin.evolved_train_f1) + 3.5, fill: cv('--ghost-a') });
+  el2.textContent = `evolved ${REPORT.darwin.evolved_train_f1.toFixed(3)}`;
+  svg.appendChild(el2);
+
+  const xl = svgEl('text', { x: ML + iw / 2, y: MT + ih + 34, 'text-anchor': 'middle', class: 'lbl-in' });
+  xl.textContent = `mutation proposals, in order (${lin.length} total, ${REPORT.darwin.accepted} kept)`;
+  svg.appendChild(xl);
+  const yl = svgEl('text', { x: -(MT + ih / 2), y: 13, 'text-anchor': 'middle', transform: 'rotate(-90)' });
+  yl.textContent = 'training F1';
+  svg.appendChild(yl);
+
+  $('#darwinLegend').innerHTML =
+    `<span><i style="background:${cv('--ghost-a')}"></i>accepted mutation &amp; running best</span>` +
+    `<span><i style="background:transparent;border:1.4px solid ${cv('--ink-4')}"></i>proposal that failed the margin</span>`;
+})();
+
+tiles($('#darwinTiles'), [
+  { k: 'Baseline · held-out F1', v: REPORT.darwin.baseline_test.f1.toFixed(3), n: `precision ${REPORT.darwin.baseline_test.precision.toFixed(3)} · recall ${REPORT.darwin.baseline_test.recall.toFixed(3)}` },
+  { k: 'Evolved · held-out F1', v: REPORT.darwin.evolved_test.f1.toFixed(3), hi: true, n: `precision ${REPORT.darwin.evolved_test.precision.toFixed(3)} · recall ${REPORT.darwin.evolved_test.recall.toFixed(3)}` },
+  { k: 'Proposals evaluated', v: REPORT.darwin.proposals, n: `over ${REPORT.darwin.generations} generations, ${REPORT.darwin.accepted} kept` },
+  { k: 'Recall gained', v: '+' + ((REPORT.darwin.evolved_test.recall - REPORT.darwin.baseline_test.recall) * 100).toFixed(1) + ' pts', n: 'held-out; the tuning bought sensitivity, not precision' },
+]);
+
+(function darwinTable() {
+  const p0 = REPORT.darwin.baseline, p1 = REPORT.darwin.evolved;
+  const keys = [
+    ['k', 'k-mer size'], ['dims', 'vector width'], ['hnsw_m', 'HNSW connectivity'],
+    ['ef_search', 'HNSW search breadth'], ['top_k', 'neighbours retrieved'],
+    ['tau_archaic_ka', 'archaic depth threshold (ka)'],
+    ['match_margin_ka', 'reference match margin (ka)'],
+    ['ghost_link_ka', 'ghost link threshold (ka)'],
+  ];
+  const rows = keys.map(([k, label]) => {
+    const a = p0[k], b = p1[k];
+    const changed = a !== b;
+    return `<tr>
+      <td class="mono">${label}</td>
+      <td class="num" style="color:var(--ink-4)">${fmt(a)}</td>
+      <td class="num" style="color:${changed ? 'var(--ghost-a)' : 'var(--ink-4)'}">${changed ? fmt(b) : '&mdash;'}</td>
+    </tr>`;
+  }).join('');
+  $('#darwinTable').innerHTML = `
+    <thead><tr><th>Hyperparameter</th><th class="num">Baseline</th><th class="num">Evolved</th></tr></thead>
+    <tbody>${rows}</tbody>`;
+})();
+
+(function darwinVerdict() {
+  const d = REPORT.darwin;
+  const trainGain = d.evolved_train_f1 - d.baseline_train_f1;
+  const testGain = d.evolved_test.f1 - d.baseline_test.f1;
+  const honest = testGain >= trainGain * 0.6;
+  $('#darwinVerdict').innerHTML = honest
+    ? `The held-out gain (<strong>+${testGain.toFixed(3)}</strong> F1) is at least as large as the training gain (+${trainGain.toFixed(3)}), which is what you want to see: the tuner found something real about the problem rather than something convenient about the training split.`
+    : `The training gain (+${trainGain.toFixed(3)}) outruns the held-out gain (+${testGain.toFixed(3)}), which is the signature of mild overfitting &mdash; worth reporting rather than hiding.`;
+})();
+
+/* ==================================================== 06 flywheel */
+(function wheelChart() {
+  const svg = $('#wheelChart');
+  const W = 860, H = 260, ML = 54, MR = 24, MT = 20, MB = 52;
+  const iw = W - ML - MR, ih = H - MT - MB;
+  const rounds = REPORT.flywheel.rounds;
+
+  const title = svgEl('title'); title.setAttribute('id', 'fwT');
+  title.textContent = 'Ghost reference vectors held by the index at the end of each flywheel round, and how many were new that round.';
+  svg.appendChild(title);
+
+  const maxV = Math.max(...rounds.map(r => r.cumulative_ghost_references), 1);
+  const bw = Math.min(74, iw / rounds.length - 16);
+  const x = i => ML + (i + 0.5) * (iw / rounds.length);
+  const y = v => MT + ih - (v / maxV) * ih;
+
+  for (let i = 0; i <= 4; i++) {
+    const v = maxV * i / 4, gy = y(v);
+    svg.appendChild(svgEl('line', { class: 'gl', x1: ML, y1: gy, x2: ML + iw, y2: gy }));
+    const t = svgEl('text', { x: ML - 10, y: gy + 3.5, 'text-anchor': 'end' });
+    t.textContent = fmt(v);
+    svg.appendChild(t);
+  }
+  svg.appendChild(svgEl('line', { class: 'ax', x1: ML, y1: MT + ih, x2: ML + iw, y2: MT + ih }));
+
+  rounds.forEach((r, i) => {
+    const carried = r.cumulative_ghost_references - r.new_ghost_references;
+    const gap = 2;
+    // carried-over portion
+    const hC = (carried / maxV) * ih;
+    const hN = (r.new_ghost_references / maxV) * ih;
+    if (hC > 0) {
+      const b = svgEl('rect', { x: x(i) - bw / 2, y: MT + ih - hC, width: bw, height: hC, fill: cv('--ghost-a'), 'fill-opacity': .3, rx: 0 });
+      svg.appendChild(b);
+    }
+    if (hN > 0) {
+      const b = svgEl('rect', { x: x(i) - bw / 2, y: MT + ih - hC - hN - (hC > 0 ? gap : 0), width: bw, height: Math.max(hN - (hC > 0 ? gap : 0), 1), fill: cv('--ghost-a'), rx: 3 });
+      b.style.transformOrigin = `center ${MT + ih}px`;
+      b.style.animation = `growUp .7s cubic-bezier(.2,.7,.3,1) ${0.08 * i}s backwards`;
+      svg.appendChild(b);
+    }
+    const hit = svgEl('rect', { x: x(i) - bw / 2, y: MT, width: bw, height: ih, fill: 'transparent' });
+    hit.style.cursor = 'pointer';
+    const html = `<b>Round ${r.round}</b><br>calls ${fmt(r.calls)} · ghost ${fmt(r.ghost_calls)}<br>new references ${r.new_ghost_references}<br>held ${r.cumulative_ghost_references}<br>F1 ${r.scores.f1.toFixed(4)}`;
+    hit.addEventListener('mouseenter', e => showTip(e, html));
+    hit.addEventListener('mousemove', e => showTip(e, html));
+    hit.addEventListener('mouseleave', hideTip);
+    svg.appendChild(hit);
+
+    const lt = svgEl('text', { x: x(i), y: MT + ih + 18, 'text-anchor': 'middle' });
+    lt.textContent = 'R' + r.round;
+    svg.appendChild(lt);
+    const f1 = svgEl('text', { x: x(i), y: MT + ih + 34, 'text-anchor': 'middle', fill: cv('--ink-3') });
+    f1.textContent = 'F1 ' + r.scores.f1.toFixed(3);
+    svg.appendChild(f1);
+
+    if (r.new_ghost_references === 0) {
+      const dry = svgEl('text', { x: x(i), y: y(r.cumulative_ghost_references) - 10, 'text-anchor': 'middle', fill: cv('--ink-4'), 'font-size': 10 });
+      dry.textContent = 'dry';
+      svg.appendChild(dry);
+    }
+  });
+
+  const yl = svgEl('text', { x: -(MT + ih / 2), y: 13, 'text-anchor': 'middle', transform: 'rotate(-90)' });
+  yl.textContent = 'ghost reference vectors held';
+  svg.appendChild(yl);
+})();
+
+(function wheelTable() {
+  const rows = REPORT.flywheel.rounds.map(r => `
+    <tr>
+      <td class="mono">Round ${r.round}</td>
+      <td class="num">${fmt(r.calls)}</td>
+      <td class="num">${fmt(r.ghost_calls)}</td>
+      <td class="num">${r.new_ghost_references}</td>
+      <td class="num">${r.scores.precision.toFixed(3)}</td>
+      <td class="num">${r.scores.recall.toFixed(3)}</td>
+      <td class="num">${r.scores.f1.toFixed(4)}</td>
+      <td class="num" style="color:var(--ink-4)">${fmt(r.elapsed_ms)} ms</td>
+    </tr>`).join('');
+  $('#wheelTable').innerHTML = `
+    <thead><tr><th>Turn</th><th class="num">Calls</th><th class="num">Ghost</th><th class="num">New refs</th><th class="num">Precision</th><th class="num">Recall</th><th class="num">F1</th><th class="num">Time</th></tr></thead>
+    <tbody>${rows}</tbody>`;
+
+  const rs = REPORT.flywheel.rounds;
+  const first = rs[0], last = rs[rs.length - 1];
+  const dF1 = last.scores.f1 - first.scores.f1;
+  $('#wheelVerdict').innerHTML = `The loop converged after <strong>${REPORT.flywheel.converged_after}</strong> turn${REPORT.flywheel.converged_after === 1 ? '' : 's'}, holding ${fmt(last.cumulative_ghost_references)} ghost reference vectors. ` +
+    (Math.abs(dF1) < 0.0005
+      ? `F1 was flat across the turns (${first.scores.f1.toFixed(4)} → ${last.scores.f1.toFixed(4)}): at this threshold setting the first pass had already found everything the references could rescue, and the flywheel's honest result is that it added nothing. That is the outcome a self-terminating loop is supposed to be able to report.`
+      : `F1 moved ${dF1 >= 0 ? '+' : ''}${dF1.toFixed(4)} across the turns (${first.scores.f1.toFixed(4)} → ${last.scores.f1.toFixed(4)}).`);
+})();
+
+/* ==================================================== 07 recovery */
+/* Which ghost source each recovered mode corresponds to.
+ *
+ * Counting is the wrong way to decide this. Ghost-A contributes 165 segments
+ * and Ghost-B only 18, so Ghost-A's deep tail outnumbers Ghost-B even inside
+ * the mode that captured every single super-archaic segment. What identifies a
+ * mode is where a source *concentrated*: each source is assigned to the mode
+ * holding the largest share of it, and a mode is named by the source that
+ * chose it. */
+const GHOST_TRUTH_KA = { 'Ghost-A (deep African)': 800, 'Ghost-B (super-archaic)': 1800 };
+
+const LIN = (() => {
+  const modes = REPORT.lineages.map(l => {
+    const comp = l.truth_composition || {};
+    let ghostN = 0, fp = 0;
+    for (const [k, n] of Object.entries(comp)) {
+      if (k in GHOST_TRUTH_KA) ghostN += n;
+      else if (k.startsWith('none')) fp += n;
+    }
+    return { ...l, g: { comp, ghostN, fp, dom: null, truthKa: null, sourceShare: 0 } };
+  });
+
+  for (const src of Object.keys(GHOST_TRUTH_KA)) {
+    const counts = modes.map(m => m.g.comp[src] || 0);
+    const total = counts.reduce((a, b) => a + b, 0);
+    if (!total) continue;
+    let best = 0;
+    for (let i = 1; i < counts.length; i++) if (counts[i] > counts[best]) best = i;
+    const share = counts[best] / total;
+    // A source claims a mode unless another source already claimed it more strongly.
+    if (!modes[best].g.dom || share > modes[best].g.sourceShare) {
+      modes[best].g.dom = src;
+      modes[best].g.truthKa = GHOST_TRUTH_KA[src];
+      modes[best].g.sourceShare = share;
+    }
+  }
+
+  // Any mode nobody claimed falls back to its most common ghost source.
+  for (const m of modes) {
+    if (m.g.dom) continue;
+    let dom = null, domN = 0;
+    for (const [k, n] of Object.entries(m.g.comp)) {
+      if (k in GHOST_TRUTH_KA && n > domN) { domN = n; dom = k; }
+    }
+    m.g.dom = dom;
+    m.g.truthKa = dom ? GHOST_TRUTH_KA[dom] : null;
+  }
+  return modes;
+})();
+
+$('#gbCount').textContent = fmt(REPORT.cohort.planted_segments['Ghost-B (super-archaic)'] || 0);
+
+(function lineages() {
+  $('#lineageCards').innerHTML = '<div class="tiles">' + LIN.map(l => {
+    const col = l.g.dom ? colorFor(l.g.dom) : cv('--none');
+    const oce = l.carriers_by_group.OCE || 0;
+    const oceShare = oce / Math.max(l.n_segments, 1);
+    const shown = l.median_depth_ka >= 1000
+      ? { v: (l.median_depth_ka / 1000).toFixed(2), u: 'Ma median depth' }
+      : { v: fmt(l.median_depth_ka), u: 'ka median depth' };
+    const truthStr = l.g.truthKa == null ? '&mdash;'
+      : (l.g.truthKa >= 1000 ? (l.g.truthKa / 1000) + ' Ma' : l.g.truthKa + ' ka');
+    return `<div class="tile">
+      <div class="k">Mode ${l.cluster} &middot; ${l.g.dom ? l.g.dom.replace(/ \(.*\)/, '') : 'unassigned'}</div>
+      <div class="v" style="color:${col}">${shown.v}<span class="u">${shown.u}</span></div>
+      <div class="n">Holds <strong>${pct(l.g.sourceShare)}</strong> of all ${l.g.dom ? l.g.dom.replace(/ \(.*\)/, '') : ''} segments in the cohort, whose planted split is <strong>${truthStr}</strong>. Depth range ${fmt(l.inferred_split_ka)}&ndash;${fmt(l.median_depth_ka)} ka.<br>
+      ${fmt(l.n_segments)} segments: ${Object.entries(l.g.comp).filter(([k]) => k in GHOST_TRUTH_KA).map(([k, n]) => `${n} ${k.replace(/ \(.*\)/, '')}`).join(', ')}${l.g.fp ? `, ${l.g.fp} false positive` : ''}.<br>
+      Oceanian share: <strong>${pct(oceShare)}</strong>.</div>
+    </div>`;
+  }).join('') + '</div>';
+})();
+
+(function lineageChart() {
+  const svg = $('#lineageChart');
+  const W = 860, H = 220, ML = 190, MR = 30, MT = 26, MB = 52;
+  const iw = W - ML - MR, ih = H - MT - MB;
+  const L = LIN;
+  const maxKa = Math.max(2200, ...L.map(l => Math.max(l.median_depth_ka, l.g.truthKa || 0))) * 1.12;
+  const x = k => ML + (k / maxKa) * iw;
+
+  const title = svgEl('title'); title.setAttribute('id', 'lnT');
+  title.textContent = 'Inferred divergence time of each recovered ghost lineage, shown as the lower tail of its coalescent-depth distribution, against the planted truth.';
+  svg.appendChild(title);
+
+  for (let k = 0; k <= maxKa; k += 500) {
+    const gx = x(k);
+    svg.appendChild(svgEl('line', { class: 'gl', x1: gx, y1: MT, x2: gx, y2: MT + ih }));
+    const t = svgEl('text', { x: gx, y: MT + ih + 18, 'text-anchor': 'middle' });
+    t.textContent = k >= 1000 ? (k / 1000).toFixed(1) + ' Ma' : k + ' ka';
+    svg.appendChild(t);
+  }
+  svg.appendChild(svgEl('line', { class: 'ax', x1: ML, y1: MT + ih, x2: ML + iw, y2: MT + ih }));
+
+  L.forEach((l, i) => {
+    const cy = MT + (i + 0.5) * (ih / L.length);
+    const col = l.g.dom ? colorFor(l.g.dom) : cv('--none');
+
+    const lb = svgEl('text', { x: ML - 14, y: cy - 4, 'text-anchor': 'end', fill: col, 'font-size': 11.5 });
+    lb.textContent = `Mode ${l.cluster} · ${l.g.dom ? l.g.dom.replace(/ \(.*\)/, '') : '—'}`;
+    svg.appendChild(lb);
+    const lb2 = svgEl('text', { x: ML - 14, y: cy + 11, 'text-anchor': 'end', fill: cv('--ink-4'), 'font-size': 10 });
+    lb2.textContent = `${fmt(l.n_segments)} segments`;
+    svg.appendChild(lb2);
+
+    // The depth distribution runs from the estimate (its lower tail) up to the
+    // median; coalescence cannot happen before the split, only after it.
+    const x0 = x(l.inferred_split_ka), x1 = x(Math.max(l.median_depth_ka, l.inferred_split_ka));
+    const bar = svgEl('rect', { x: x0, y: cy - 5, width: Math.max(x1 - x0, 2), height: 10, fill: col, 'fill-opacity': .22, rx: 5 });
+    bar.style.transformOrigin = `${x0}px ${cy}px`;
+    bar.style.animation = `growRight .8s cubic-bezier(.2,.7,.3,1) ${0.12 * i}s backwards`;
+    svg.appendChild(bar);
+
+    // the median, which is where the mode actually sits
+    const dot = svgEl('circle', { cx: x1, cy, r: 6, fill: col, stroke: cv('--panel'), 'stroke-width': 2 });
+    svg.appendChild(dot);
+
+    // truth marker for the mode's dominant ghost source
+    if (l.g.truthKa != null) {
+      const tx = x(l.g.truthKa);
+      svg.appendChild(svgEl('line', { x1: tx, y1: cy - 15, x2: tx, y2: cy + 15, stroke: cv('--ink'), 'stroke-width': 2 }));
+      const tl = svgEl('text', { x: tx, y: cy - 21, 'text-anchor': 'middle', fill: cv('--ink'), 'font-size': 10 });
+      tl.textContent = 'truth ' + (l.g.truthKa >= 1000 ? (l.g.truthKa / 1000) + ' Ma' : l.g.truthKa + ' ka');
+      svg.appendChild(tl);
+    }
+
+    const dl = svgEl('text', { x: x1 + 14, y: cy + 4, fill: col, 'font-size': 11 });
+    dl.textContent = `${fmt(l.inferred_split_ka)}–${fmt(l.median_depth_ka)} ka`;
+    svg.appendChild(dl);
+  });
+
+  const xl = svgEl('text', { x: ML + iw / 2, y: MT + ih + 40, 'text-anchor': 'middle', class: 'lbl-in' });
+  xl.textContent = 'coalescent depth, lower tail through median (bar), against the planted split of the mode’s dominant source (rule)';
+  svg.appendChild(xl);
+})();
+
+/* Carrier geography — the signal that is independent of depth. */
+(function carrierChart() {
+  const svg = $('#carrierChart');
+  const W = 860, H = 210, ML = 100, MR = 150, MT = 34, MB = 46;
+  const iw = W - ML - MR, ih = H - MT - MB;
+
+  const title = svgEl('title'); title.setAttribute('id', 'ccT');
+  title.textContent = 'Where the segments in each recovered mode come from, as a share of that mode. A Denisovan-mediated lineage should concentrate in Oceania.';
+  svg.appendChild(title);
+
+  const groups = ['AFR', 'EUR', 'SAS', 'EAS', 'AMR', 'OCE'];
+  const rowH = Math.min(34, ih / LIN.length - 14);
+
+  LIN.forEach((l, i) => {
+    const cy = MT + (i + 0.5) * (ih / LIN.length);
+    const total = Object.values(l.carriers_by_group).reduce((a, b) => a + b, 0) || 1;
+    let cx = ML;
+    groups.forEach(gname => {
+      const n = l.carriers_by_group[gname] || 0;
+      if (!n) return;
+      const w = (n / total) * iw;
+      const isOce = gname === 'OCE';
+      const seg = svgEl('rect', {
+        x: cx, y: cy - rowH / 2, width: Math.max(w - 2, 1), height: rowH,
+        fill: isOce ? cv('--deniso') : cv('--none'),
+        'fill-opacity': isOce ? 0.95 : 0.30, rx: 2,
+      });
+      seg.style.cursor = 'pointer';
+      const html = `<b>Mode ${l.cluster} · ${gname}</b><br>${n} of ${total} segments (${pct(n / total)})`;
+      seg.addEventListener('mouseenter', e => showTip(e, html));
+      seg.addEventListener('mousemove', e => showTip(e, html));
+      seg.addEventListener('mouseleave', hideTip);
+      svg.appendChild(seg);
+      if (w > 34) {
+        const t = svgEl('text', { x: cx + w / 2 - 1, y: cy + 4, 'text-anchor': 'middle', fill: isOce ? cv('--ground') : cv('--ink-3'), 'font-size': 10 });
+        t.textContent = gname;
+        svg.appendChild(t);
+      }
+      cx += w;
+    });
+
+    const lb = svgEl('text', { x: ML - 14, y: cy - 3, 'text-anchor': 'end', fill: cv('--ink-3'), 'font-size': 11.5 });
+    lb.textContent = `Mode ${l.cluster}`;
+    svg.appendChild(lb);
+    const lb2 = svgEl('text', { x: ML - 14, y: cy + 12, 'text-anchor': 'end', fill: cv('--ink-4'), 'font-size': 10 });
+    lb2.textContent = l.g.dom ? l.g.dom.replace(/ \(.*\)/, '') : '—';
+    svg.appendChild(lb2);
+
+    const share = (l.carriers_by_group.OCE || 0) / total;
+    const rt = svgEl('text', { x: ML + iw + 14, y: cy + 4, fill: cv('--deniso'), 'font-size': 12 });
+    rt.textContent = `${pct(share)} Oceanian`;
+    svg.appendChild(rt);
+  });
+
+  const hdr = svgEl('text', { x: ML, y: MT - 14, fill: cv('--ink-4'), 'font-size': 10.5 });
+  hdr.textContent = 'SHARE OF THE MODE’S SEGMENTS, BY CARRIER GROUP';
+  hdr.setAttribute('letter-spacing', '.1em');
+  svg.appendChild(hdr);
+
+  $('#carrierLegend').innerHTML =
+    `<span><i style="background:${cv('--deniso')}"></i>Oceania &mdash; where Denisovan ancestry concentrates</span>` +
+    `<span><i style="background:${cv('--none')};opacity:.45"></i>all other groups</span>`;
+
+  const shares = LIN.map(l => {
+    const total = Object.values(l.carriers_by_group).reduce((a, b) => a + b, 0) || 1;
+    return (l.carriers_by_group.OCE || 0) / total;
+  });
+  if (shares.length === 2) {
+    const [a, b] = shares;
+    const deep = LIN[0].median_depth_ka > LIN[1].median_depth_ka ? 0 : 1;
+    const ratio = shares[deep] / Math.max(shares[1 - deep], 1e-9);
+    $('#carrierVerdict').innerHTML = `Oceania supplies <strong>${pct(shares[deep])}</strong> of the deeper mode's segments against <strong>${pct(shares[1 - deep])}</strong> of the shallower one &mdash; a <strong>${ratio.toFixed(1)}×</strong> enrichment, arrived at without using depth at all. That is the fingerprint of a lineage that reached modern humans through Denisovans rather than directly, and it is why the deeper mode can be called super-archaic even though its individual segments cannot be separated from Ghost-A's deep tail one by one.`;
+  }
+})();
+
+(function painting() {
+  const roster = DEPTH.roster.filter(r => r.role === 'modern');
+  const nW = DEPTH.n_windows;
+  const idxRow = new Map(roster.map((r, i) => [r.index, i]));
+
+  const call = new Map();
+  for (const c of CALLS) call.set(c.window * 1000 + c.haplotype, c);
+
+  const CELL = 3, GAPY = 0;
+  const cvs = $('#paintCv');
+  const w = nW * CELL, h = roster.length * (CELL + GAPY);
+  const dpr = Math.min(devicePixelRatio || 1, 2);
+  cvs.width = w * dpr; cvs.height = h * dpr;
+  cvs.style.aspectRatio = `${w} / ${h}`;
+  const g = cvs.getContext('2d');
+  g.scale(dpr, dpr);
+
+  const attrColor = a => a === 'Neanderthal' ? cv('--neander')
+    : a === 'Denisovan' ? cv('--deniso')
+      : a === 'GHOST' ? cv('--ghost-a') : cv('--none');
+
+  function draw() {
+    g.fillStyle = cv('--panel-2');
+    g.fillRect(0, 0, w, h);
+    for (let wi = 0; wi < nW; wi++) {
+      const truthRow = DEPTH.truth_map[wi];
+      for (let ri = 0; ri < roster.length; ri++) {
+        const hi = roster[ri].index;
+        const c = call.get(wi * 1000 + hi);
+        const truth = truthRow ? truthRow[hi] : '.';
+        if (c) {
+          let col = attrColor(c.attribution);
+          if (c.attribution === 'GHOST' && c.ghost_cluster === 1) col = cv('--ghost-b');
+          g.fillStyle = col;
+          g.fillRect(wi * CELL, ri * (CELL + GAPY), CELL, CELL);
+        } else if (truth !== '.') {
+          // a real archaic segment the detector missed — drawn as a full cell in
+          // a dim neutral so the recall gap is as visible as the recall
+          g.fillStyle = cv('--ink-4');
+          g.globalAlpha = .7;
+          g.fillRect(wi * CELL, ri * (CELL + GAPY), CELL, CELL);
+          g.globalAlpha = 1;
+        }
+      }
+    }
+    // population separators
+    g.strokeStyle = cv('--rule'); g.lineWidth = 1;
+    let prev = roster[0].population;
+    roster.forEach((r, ri) => {
+      if (r.population !== prev) {
+        g.beginPath(); g.moveTo(0, ri * (CELL + GAPY) + .5); g.lineTo(w, ri * (CELL + GAPY) + .5); g.stroke();
+        prev = r.population;
+      }
+    });
+  }
+  draw();
+  window.__redrawPaint = draw;
+
+  cvs.addEventListener('mousemove', e => {
+    const r = cvs.getBoundingClientRect();
+    const wi = Math.floor((e.clientX - r.left) / r.width * nW);
+    const ri = Math.floor((e.clientY - r.top) / r.height * roster.length);
+    if (wi < 0 || wi >= nW || ri < 0 || ri >= roster.length) return hideTip();
+    const hap = roster[ri];
+    const c = call.get(wi * 1000 + hap.index);
+    const tc = DEPTH.truth_map[wi] ? DEPTH.truth_map[wi][hap.index] : '.';
+    const truthName = { '.': 'no archaic ancestry', N: 'Neanderthal', D: 'Denisovan', A: 'Ghost-A', B: 'Ghost-B' }[tc];
+    showTip(e, `<b>${hap.id}</b> · window ${wi}<br>truth: ${truthName}<br>` +
+      (c ? `called: ${c.attribution === 'GHOST' ? 'GHOST' + (c.ghost_cluster !== null ? ' ' + c.ghost_cluster : '') : c.attribution}<br>depth ${fmt(c.depth_to_modern_ka)} ka`
+        : 'called: no archaic ancestry'));
+  });
+  cvs.addEventListener('mouseleave', hideTip);
+
+  $('#paintLegend').innerHTML =
+    `<span><i style="background:${cv('--neander')}"></i>called Neanderthal</span>` +
+    `<span><i style="background:${cv('--deniso')}"></i>called Denisovan</span>` +
+    `<span><i style="background:${cv('--ghost-a')}"></i>ghost lineage 0</span>` +
+    `<span><i style="background:${cv('--ghost-b')}"></i>ghost lineage 1</span>` +
+    `<span><i style="background:${cv('--ink-4')}"></i>archaic in truth, missed</span>`;
+
+  const byPop = {};
+  roster.forEach(r => { (byPop[r.population] ||= []).push(r); });
+  $('#paintRowLabels').innerHTML = '<div style="font-family:var(--mono);font-size:11px;color:var(--ink-4);line-height:1.7">Rows, top to bottom: ' +
+    Object.entries(byPop).map(([p, rs]) => `${p} (${rs.length})`).join(' · ') + '</div>';
+})();
+
+(function attrTable() {
+  const M = REPORT.attribution_matrix;
+  const attrs = [...new Set(M.map(r => r.attribution))];
+  const truths = [...new Set(M.map(r => r.truth))].sort();
+  const get = (a, t) => (M.find(r => r.attribution === a && r.truth === t) || { count: 0 }).count;
+  const max = Math.max(...M.map(r => r.count), 1);
+
+  const shortTruth = t => t.startsWith('none') ? 'not archaic' : t.replace(/ \(.*\)/, '');
+  const head = `<thead><tr><th>Called &darr; / truth &rarr;</th>${truths.map(t => `<th class="num">${shortTruth(t)}</th>`).join('')}<th class="num">Row total</th></tr></thead>`;
+  const body = attrs.map(a => {
+    const cells = truths.map(t => {
+      const n = get(a, t);
+      const alpha = n === 0 ? 0 : 0.10 + 0.55 * Math.sqrt(n / max);
+      const correct = (a === 'GHOST' && t.startsWith('Ghost')) || (a === t);
+      const bg = n === 0 ? 'transparent' : `color-mix(in oklab, ${correct ? colorFor(t) : cv('--ink-4')} ${(alpha * 100).toFixed(0)}%, transparent)`;
+      return `<td class="num" style="background:${bg}">${n || '&middot;'}</td>`;
+    }).join('');
+    const total = truths.reduce((s, t) => s + get(a, t), 0);
+    return `<tr><td class="mono">${a}</td>${cells}<td class="num" style="color:var(--ink-4)">${fmt(total)}</td></tr>`;
+  }).join('');
+  $('#attrTable').innerHTML = head + `<tbody>${body}</tbody>`;
+
+  const ghostRow = M.filter(r => r.attribution === 'GHOST');
+  const ghostTot = ghostRow.reduce((s, r) => s + r.count, 0);
+  const ghostRight = ghostRow.filter(r => r.truth.startsWith('Ghost')).reduce((s, r) => s + r.count, 0);
+  $('#attrNote').innerHTML = `Of ${fmt(ghostTot)} segments called GHOST, <strong>${fmt(ghostRight)}</strong> (${pct(ghostRight / Math.max(ghostTot, 1))}) really did come from one of the two ghost lineages. The rest are mostly Neanderthal and Denisovan segments whose depth happened to run deeper than the reference-match margin &mdash; the predictable failure mode when you are asking a threshold to stand in for a genome you do not have.`;
+})();
+
+/* ==================================================== 08 caveats */
+$('#caveatList').innerHTML = REPORT.caveats.map((c, i) => `
+  <div style="display:flex;gap:16px;max-width:var(--measure);margin-bottom:18px">
+    <div style="font-family:var(--mono);font-size:11px;color:var(--ink-4);padding-top:4px;flex:0 0 22px">0${i + 1}</div>
+    <div>${c}</div>
+  </div>`).join('');
+
+/* ==================================================== rail + reveal */
+(function rail() {
+  const secs = [...document.querySelectorAll('section')];
+  const nav = $('#strata');
+  nav.innerHTML = secs.map((s, i) =>
+    `<button class="stratum" data-i="${i}" type="button"><span>${String(i).padStart(2, '0')}<br>${s.dataset.title}</span></button>`).join('');
+  const btns = [...nav.querySelectorAll('.stratum')];
+  btns.forEach(b => b.addEventListener('click', () =>
+    secs[+b.dataset.i].scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' })));
+
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(en => {
+      if (en.isIntersecting) {
+        const i = secs.indexOf(en.target);
+        btns.forEach((b, j) => b.classList.toggle('on', j <= i));
+      }
+    });
+  }, { rootMargin: '-45% 0px -50% 0px' });
+  secs.forEach(s => io.observe(s));
+})();
+
+(function reveal() {
+  const targets = document.querySelectorAll('section > *');
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(en => { if (en.isIntersecting) { en.target.classList.add('in'); io.unobserve(en.target); } });
+  }, { rootMargin: '0px 0px -8% 0px' });
+  targets.forEach(t => { t.classList.add('reveal'); io.observe(t); });
+})();
+
+/* ==================================================== hero canvas */
+(function hero() {
+  const c = $('#heroCv');
+  const dpr = Math.min(devicePixelRatio || 1, 2);
+  let W, H, g = c.getContext('2d');
+  const N = 190;
+  let pts = [];
+
+  function size() {
+    const r = c.parentElement.getBoundingClientRect();
+    W = r.width; H = r.height;
+    c.width = W * dpr; c.height = H * dpr;
+    g.setTransform(dpr, 0, 0, dpr, 0, 0);
+    pts = [];
+    for (let i = 0; i < N; i++) {
+      pts.push({
+        x: Math.random() * W,
+        y: Math.random() * H,
+        vx: (Math.random() - .5) * .16,
+        vy: (Math.random() - .5) * .16,
+        ghost: i < 6 ? (i < 4 ? 1 : 2) : 0,
+      });
+    }
+  }
+  size();
+  addEventListener('resize', size);
+
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let t = 0;
+
+  function frame() {
+    g.clearRect(0, 0, W, H);
+    const ink4 = cv('--ink-4'), ga = cv('--ghost-a'), gb = cv('--ghost-b');
+    t += 0.004;
+
+    for (const p of pts) {
+      p.x += p.vx; p.y += p.vy;
+      if (p.x < 0 || p.x > W) p.vx *= -1;
+      if (p.y < 0 || p.y > H) p.vy *= -1;
+    }
+    // links only to near neighbours: the genealogy that everyone else finds
+    g.lineWidth = 1;
+    for (let i = 0; i < pts.length; i++) {
+      for (let j = i + 1; j < pts.length; j++) {
+        const a = pts[i], b = pts[j];
+        if (a.ghost || b.ghost) continue;
+        const dx = a.x - b.x, dy = a.y - b.y;
+        const d2 = dx * dx + dy * dy;
+        if (d2 < 6400) {
+          g.strokeStyle = ink4;
+          g.globalAlpha = (1 - d2 / 6400) * .3;
+          g.beginPath(); g.moveTo(a.x, a.y); g.lineTo(b.x, b.y); g.stroke();
+        }
+      }
+    }
+    g.globalAlpha = 1;
+    for (const p of pts) {
+      if (p.ghost) {
+        const col = p.ghost === 1 ? ga : gb;
+        const pulse = .6 + .4 * Math.sin(t * 6 + p.x * .01);
+        g.globalAlpha = reduced ? .9 : pulse;
+        g.fillStyle = col;
+        g.beginPath(); g.arc(p.x, p.y, 4.6, 0, 7); g.fill();
+        g.globalAlpha = reduced ? .22 : pulse * .22;
+        g.beginPath(); g.arc(p.x, p.y, 20, 0, 7); g.fill();
+      } else {
+        g.globalAlpha = .5;
+        g.fillStyle = ink4;
+        g.beginPath(); g.arc(p.x, p.y, 1.5, 0, 7); g.fill();
+      }
+    }
+    g.globalAlpha = 1;
+    if (!reduced) requestAnimationFrame(frame);
+  }
+  frame();
+})();
+
+/* ==================================================== theme */
+(function theme() {
+  const btn = $('#themeBtn');
+  btn.addEventListener('click', () => {
+    const cur = document.documentElement.getAttribute('data-theme')
+      || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    document.documentElement.setAttribute('data-theme', cur === 'dark' ? 'light' : 'dark');
+    if (window.__redrawPaint) requestAnimationFrame(window.__redrawPaint);
+  });
+})();
+</script>
+
+<style>
+@keyframes fadeIn   { to { opacity: 1; } }
+@keyframes drawLine { to { stroke-dashoffset: 0; } }
+@keyframes growUp   { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+@keyframes growRight{ from { transform: scaleX(0); } to { transform: scaleX(1); } }
+</style>

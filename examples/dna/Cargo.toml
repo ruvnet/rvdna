@@ -66,6 +66,14 @@ tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 name = "rvdna-cli"
 path = "src/main.rs"
 
+[[bin]]
+name = "trace-rv"
+path = "src/bin/trace_rv.rs"
+
+[[bin]]
+name = "depth-hist"
+path = "src/bin/depth_hist.rs"
+
 [dev-dependencies]
 criterion = { version = "0.5", features = ["html_reports"] }
 tempfile = "3.8"
