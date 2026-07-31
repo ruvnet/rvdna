@@ -78,6 +78,18 @@ path = "src/bin/depth_hist.rs"
 name = "discover"
 path = "src/bin/discover.rs"
 
+[[bin]]
+name = "real-dna"
+path = "src/bin/real_dna.rs"
+
+[[bin]]
+name = "linkage-study"
+path = "src/bin/linkage_study.rs"
+
+[[bin]]
+name = "panel-study"
+path = "src/bin/panel_study.rs"
+
 [dev-dependencies]
 criterion = { version = "0.5", features = ["html_reports"] }
 tempfile = "3.8"
@@ -133,7 +145,6 @@ manual_div_ceil = "allow"
 manual_is_multiple_of = "allow"
 manual_range_contains = "allow"
 manual_clamp = "allow"
-manual_checked_ops = "allow"
 manual_let_else = "allow"
 manual_memcpy = "allow"
 manual_repeat_n = "allow"

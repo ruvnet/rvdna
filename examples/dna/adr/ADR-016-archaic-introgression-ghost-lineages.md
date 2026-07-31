@@ -112,3 +112,59 @@ p10 as the divergence-time estimate.
   memory for speed.
 - Everything is seeded. The same checkout produces the same numbers, which is
   what makes the generated report and the visual story auditable.
+
+## Addendum — real genomes (`real-dna`)
+
+The original decision record covers a simulated cohort only. A later stage adds
+`src/bin/real_dna.rs`, which runs on real data and makes two decisions worth
+recording.
+
+### Why the panel is loaded as bitsets and compared exhaustively
+
+The real-data stage does not use HNSW. The whole point of the index is to avoid
+comparisons that cannot matter, and the fidelity sweep already establishes it
+costs nothing to use it — so on real data the more informative choice is to do
+the work exactly and report the cost. 800 haplotypes over 19 windows is
+6,072,400 exact pairwise comparisons, and by popcount over bit-packed haplotypes
+that runs in 0.4 s. There is nothing to approximate away at this scale, and an
+exact number is easier to defend.
+
+Subsampling 400 of the 2,504 phase 3 samples does not bias a pairwise
+comparison: any site at which two included haplotypes differ is by definition
+polymorphic and therefore present in the VCF.
+
+### Why the introgression claim rests on D and not on divergence
+
+The natural comparison is divergence from each modern haplotype to a sequenced
+archaic, contrasted between Africans and non-Africans. It is not sound. GRCh37 is
+a European-weighted reference and the archaic genotypes were called against it,
+so African haplotypes accumulate apparent mismatches to *any* archaic genome for
+reasons unrelated to admixture. Running it gives a directionally correct,
+uninterpretable number.
+
+`real-dna` computes it anyway — as `archaic_affinity`, flagged in both the doc
+comment and the report caveats — and rests the claim on Patterson's D instead.
+ABBA and BABA both condition on the archaic carrying the derived allele, so bias
+in the archaic call set is shared between the two counts and cancels in the
+ratio.
+
+The standard error is a leave-one-window-out block jackknife rather than a
+binomial, because sites inside a 50 kb window are linked and are not independent
+draws. With 19 blocks the resulting Z is 1.1 — the effect is correctly signed and
+not significant, and the report says so in those words. The extrapolated
+sequence length needed for Z = 3 (~7 Mb) is emitted as `mb_for_z3` so the limit
+is a number in the output rather than a hedge in the prose.
+
+### Consequences
+
+- Archaic genotypes are the producers' raw snpAD calls with no extra GQ/DP
+  filter. Damage and reference bias inflate absolute divergence; neither acts
+  differently on African and non-African haplotypes, which is why the contrast
+  and not the absolute value carries the result.
+- Per-base divergence to an archaic needs a callable-base denominator, but the
+  archaic table stores only variable sites. Total callable bases come from the
+  producers' own per-individual count, apportioned across windows in proportion
+  to local callable-site density. This affects only `archaic_affinity`; D is
+  a ratio of site-pattern counts and does not use it.
+- `data/real/` is checked in (~35 MB) so the stage is reproducible without
+  network access. Re-fetching needs outbound HTTPS to EBI and MPI-EVA.

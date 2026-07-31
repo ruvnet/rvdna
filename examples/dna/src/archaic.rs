@@ -243,6 +243,30 @@ pub struct Pulse {
     pub recipient_group: String,
     /// Expected fraction of that group's windows carrying a donated segment.
     pub fraction: f64,
+    /// Mean length, in consecutive windows, of each donated tract.
+    ///
+    /// `1.0` is the original behaviour: every planted segment is one isolated
+    /// window, which models a panel of unlinked loci. Anything larger turns the
+    /// windows into a **linked chromosome**, where a single interbreeding event
+    /// leaves a contiguous run that recombination has not yet broken up. Tract
+    /// length is the observable that carries *when* the interbreeding happened,
+    /// as opposed to when the lineages split, and it is the signal a
+    /// linkage-based detector would exploit.
+    #[serde(default = "one")]
+    pub tract_mean_windows: f64,
+}
+
+fn one() -> f64 {
+    1.0
+}
+
+/// One planted introgression tract on a linked chromosome.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Tract {
+    pub haplotype: usize,
+    pub start_window: usize,
+    pub length: usize,
+    pub source: ArchaicSource,
 }
 
 impl Default for DemographyConfig {
@@ -259,23 +283,27 @@ impl Default for DemographyConfig {
                     source: ArchaicSource::GhostDeepAfrican,
                     recipient_group: "ALL".to_string(),
                     fraction: 0.0075,
+                    tract_mean_windows: 1.0,
                 },
                 // Neanderthal into everyone outside Africa.
                 Pulse {
                     source: ArchaicSource::Neanderthal,
                     recipient_group: "NONAFR".to_string(),
                     fraction: 0.019,
+                    tract_mean_windows: 1.0,
                 },
                 // Denisovan, concentrated in Oceania.
                 Pulse {
                     source: ArchaicSource::Denisovan,
                     recipient_group: "OCE".to_string(),
                     fraction: 0.042,
+                    tract_mean_windows: 1.0,
                 },
                 Pulse {
                     source: ArchaicSource::Denisovan,
                     recipient_group: "EAS".to_string(),
                     fraction: 0.003,
+                    tract_mean_windows: 1.0,
                 },
                 // The super-archaic lineage reached modern humans only through
                 // Denisovans, so it is rare and Oceania-biased.
@@ -283,11 +311,13 @@ impl Default for DemographyConfig {
                     source: ArchaicSource::SuperArchaic,
                     recipient_group: "OCE".to_string(),
                     fraction: 0.0055,
+                    tract_mean_windows: 1.0,
                 },
                 Pulse {
                     source: ArchaicSource::SuperArchaic,
                     recipient_group: "EAS".to_string(),
                     fraction: 0.0006,
+                    tract_mean_windows: 1.0,
                 },
             ],
         }
@@ -307,6 +337,11 @@ pub struct Cohort {
     pub sequences: Vec<Vec<Vec<u8>>>,
     /// Ground truth: `(window, haplotype) -> donating lineage`.
     pub truth: HashMap<(usize, usize), ArchaicSource>,
+    /// Ground truth in tract form: one entry per planted contiguous run.
+    ///
+    /// With the default `tract_mean_windows = 1.0` every tract has
+    /// `length == 1`, so this is simply `truth` re-expressed as a list.
+    pub tracts: Vec<Tract>,
     /// True TMRCA in generations between every pair, per window — kept only for
     /// the calibration report, not used by the detector.
     pub calibration: Vec<CalibrationPoint>,
@@ -598,6 +633,7 @@ pub fn simulate_cohort(config: DemographyConfig) -> Cohort {
     // goes into exactly one carrier. That keeps truth unambiguous and matches
     // the low per-locus frequency of real archaic tracts.
     let mut truth: HashMap<(usize, usize), ArchaicSource> = HashMap::new();
+    let mut tracts: Vec<Tract> = Vec::new();
     for w in 0..config.n_windows {
         for pulse in &config.pulses {
             let eligible: Vec<usize> = (0..n_hap)
@@ -615,16 +651,47 @@ pub fn simulate_cohort(config: DemographyConfig) -> Cohort {
             if eligible.is_empty() {
                 continue;
             }
-            // Expected number of carriers at this window across the group.
-            let expected = pulse.fraction * eligible.len() as f64;
-            let n_carriers = {
+            // Expected number of tracts *starting* at this window. Longer tracts
+            // mean fewer starts for the same total burden, so the genome-wide
+            // archaic fraction stays put as tract length changes.
+            let mean_len = pulse.tract_mean_windows.max(1.0);
+            let expected = pulse.fraction * eligible.len() as f64 / mean_len;
+            let n_starts = {
                 let floor = expected.floor();
                 let frac = expected - floor;
                 floor as usize + usize::from(rng.gen::<f64>() < frac)
             };
-            for _ in 0..n_carriers {
+            for _ in 0..n_starts {
                 let h = eligible[rng.gen_range(0..eligible.len())];
-                truth.entry((w, h)).or_insert(pulse.source);
+                // Recombination breaks a tract at a constant rate per window, so
+                // its surviving length is geometric with the requested mean.
+                let len = if mean_len <= 1.0 {
+                    1
+                } else {
+                    let p = 1.0 / mean_len;
+                    let u: f64 = rng.gen::<f64>().max(1e-12);
+                    ((u.ln() / (1.0 - p).ln()).floor() as usize + 1).clamp(1, config.n_windows)
+                };
+                let end = (w + len).min(config.n_windows);
+                if end <= w {
+                    continue;
+                }
+                let mut placed = 0usize;
+                for ww in w..end {
+                    if truth.contains_key(&(ww, h)) {
+                        break; // do not overwrite an earlier tract
+                    }
+                    truth.insert((ww, h), pulse.source);
+                    placed += 1;
+                }
+                if placed > 0 {
+                    tracts.push(Tract {
+                        haplotype: h,
+                        start_window: w,
+                        length: placed,
+                        source: pulse.source,
+                    });
+                }
             }
         }
     }
@@ -667,6 +734,7 @@ pub fn simulate_cohort(config: DemographyConfig) -> Cohort {
         haplotypes,
         sequences,
         truth,
+        tracts,
         calibration,
     }
 }
@@ -947,6 +1015,132 @@ impl<'a> TraceEngine<'a> {
         Ok(self.indices.get(&key).unwrap())
     }
 
+    /// Coalescent depth, in ka, from segment `(w, h)` to its nearest relative
+    /// anywhere in the *modern* panel.
+    ///
+    /// This is the single measurement the whole method rests on, factored out so
+    /// that [`TraceEngine::detect`] and [`TraceEngine::depth_grid`] cannot drift
+    /// apart. HNSW proposes the handful of genealogically plausible relatives;
+    /// exact Jukes–Cantor-corrected divergence is computed only against those. If
+    /// HNSW returns nothing usable we fall back to the full panel rather than
+    /// make a call on missing evidence.
+    ///
+    /// Returns `(depth_ka, exact_comparisons_performed)`. The caller owns the
+    /// tally so that `detect`'s reported `exact_comparisons` stays exact.
+    fn modern_depth(
+        &self,
+        p: &DetectorParams,
+        key: (usize, usize, usize),
+        w: usize,
+        h: usize,
+        modern: &[usize],
+    ) -> Result<(f64, usize)> {
+        let mu = self.cohort.config.mu;
+        let mut exact = 0usize;
+
+        // --- HNSW retrieval: who is even plausibly related? ---------
+        let bundle = self.indices.get(&key).unwrap();
+        let query = bundle.vectors[w][h].clone();
+        let results = bundle
+            .db
+            .search(SearchQuery {
+                vector: query,
+                k: p.top_k,
+                filter: None,
+                ef_search: Some(p.ef_search),
+            })
+            .map_err(DnaError::VectorDbError)?;
+
+        let mut candidates: Vec<usize> = Vec::new();
+        for r in results {
+            if let Some(&(rw, rh)) = bundle.lookup.get(&r.id) {
+                // Only same-window haplotypes share a genealogy.
+                if rw == w && rh != h && self.cohort.haplotypes[rh].role == Role::Modern {
+                    candidates.push(rh);
+                }
+            }
+        }
+        candidates.sort_unstable();
+        candidates.dedup();
+
+        // --- exact divergence to the retrieved candidates -----------
+        let seq_h = &self.cohort.sequences[w][h];
+        let mut best_modern = f64::INFINITY;
+        for &c in &candidates {
+            let d = raw_divergence(seq_h, &self.cohort.sequences[w][c]);
+            exact += 1;
+            let t = gens_to_ka(divergence_to_tmrca_gens(d, mu));
+            if t < best_modern {
+                best_modern = t;
+            }
+        }
+        if candidates.is_empty() {
+            // HNSW returned nothing usable; fall back so we never make a
+            // call on missing evidence.
+            for &c in modern {
+                if c == h {
+                    continue;
+                }
+                let d = raw_divergence(seq_h, &self.cohort.sequences[w][c]);
+                exact += 1;
+                let t = gens_to_ka(divergence_to_tmrca_gens(d, mu));
+                if t < best_modern {
+                    best_modern = t;
+                }
+            }
+        }
+
+        Ok((best_modern, exact))
+    }
+
+    /// Coalescent depth to the nearest modern relative for **every** segment, as
+    /// a dense grid.
+    ///
+    /// `grid[i][j]` is the depth in ka of window `windows[i]` in the `j`-th
+    /// *modern* haplotype, where modern haplotypes are taken in ascending
+    /// cohort index order (the same order [`TraceEngine::modern_haplotypes`]
+    /// returns). Archaic reference genomes are neither rows nor columns: they are
+    /// the thing a call is later attributed *against*, not part of the panel a
+    /// segment is measured against.
+    ///
+    /// Thresholding this grid at `p.tau_archaic_ka` reproduces exactly the calls
+    /// [`TraceEngine::detect`] makes on a fresh engine — the grid is the raw
+    /// evidence, `detect` is one decision rule over it, and
+    /// [`crate::linkage`] is another that also looks sideways at neighbouring
+    /// windows.
+    pub fn depth_grid(&mut self, p: &DetectorParams, windows: &[usize]) -> Result<Vec<Vec<f64>>> {
+        self.index_for(p)?;
+        let key = (p.k, p.dims, p.hnsw_m);
+        let modern = self.modern_haplotypes();
+
+        let mut grid = Vec::with_capacity(windows.len());
+        let mut exact = 0usize;
+        for &w in windows {
+            let mut row = Vec::with_capacity(modern.len());
+            for &h in &modern {
+                let (depth, used) = self.modern_depth(p, key, w, h, &modern)?;
+                exact += used;
+                row.push(depth);
+            }
+            grid.push(row);
+        }
+        self.exact_comparisons += exact;
+        Ok(grid)
+    }
+
+    /// Indices of the modern haplotypes, ascending. These are the columns of
+    /// [`TraceEngine::depth_grid`].
+    pub fn modern_haplotypes(&self) -> Vec<usize> {
+        (0..self.cohort.haplotypes.len())
+            .filter(|&h| self.cohort.haplotypes[h].role == Role::Modern)
+            .collect()
+    }
+
+    /// The cohort this engine is reading.
+    pub fn cohort(&self) -> &Cohort {
+        self.cohort
+    }
+
     /// Run one detection pass over the given windows.
     pub fn detect(
         &mut self,
@@ -962,9 +1156,7 @@ impl<'a> TraceEngine<'a> {
 
         let mu = self.cohort.config.mu;
         let n_hap = self.cohort.haplotypes.len();
-        let modern: Vec<usize> = (0..n_hap)
-            .filter(|&h| self.cohort.haplotypes[h].role == Role::Modern)
-            .collect();
+        let modern = self.modern_haplotypes();
         let nea_refs: Vec<usize> = (0..n_hap)
             .filter(|&h| self.cohort.haplotypes[h].population == "NEA")
             .collect();
@@ -981,57 +1173,10 @@ impl<'a> TraceEngine<'a> {
             for &h in &modern {
                 bruteforce += modern.len() - 1 + nea_refs.len() + den_refs.len();
 
-                // --- HNSW retrieval: who is even plausibly related? ---------
-                let bundle = self.indices.get(&key).unwrap();
-                let query = bundle.vectors[w][h].clone();
-                let results = bundle
-                    .db
-                    .search(SearchQuery {
-                        vector: query,
-                        k: p.top_k,
-                        filter: None,
-                        ef_search: Some(p.ef_search),
-                    })
-                    .map_err(DnaError::VectorDbError)?;
-
-                let mut candidates: Vec<usize> = Vec::new();
-                for r in results {
-                    if let Some(&(rw, rh)) = bundle.lookup.get(&r.id) {
-                        // Only same-window haplotypes share a genealogy.
-                        if rw == w && rh != h && self.cohort.haplotypes[rh].role == Role::Modern {
-                            candidates.push(rh);
-                        }
-                    }
-                }
-                candidates.sort_unstable();
-                candidates.dedup();
-
-                // --- exact divergence to the retrieved candidates -----------
+                // --- coalescent depth to the nearest living relative ---------
+                let (best_modern, used) = self.modern_depth(p, key, w, h, &modern)?;
+                exact += used;
                 let seq_h = &self.cohort.sequences[w][h];
-                let mut best_modern = f64::INFINITY;
-                for &c in &candidates {
-                    let d = raw_divergence(seq_h, &self.cohort.sequences[w][c]);
-                    exact += 1;
-                    let t = gens_to_ka(divergence_to_tmrca_gens(d, mu));
-                    if t < best_modern {
-                        best_modern = t;
-                    }
-                }
-                if candidates.is_empty() {
-                    // HNSW returned nothing usable; fall back so we never make a
-                    // call on missing evidence.
-                    for &c in &modern {
-                        if c == h {
-                            continue;
-                        }
-                        let d = raw_divergence(seq_h, &self.cohort.sequences[w][c]);
-                        exact += 1;
-                        let t = gens_to_ka(divergence_to_tmrca_gens(d, mu));
-                        if t < best_modern {
-                            best_modern = t;
-                        }
-                    }
-                }
 
                 // The flywheel's payoff: once a ghost lineage has confirmed
                 // segments, a borderline segment can be rescued by matching one

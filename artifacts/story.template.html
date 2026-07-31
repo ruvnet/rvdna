@@ -1,4 +1,4 @@
-<title>Ghosts in the Genealogy — the story of everyone, told in DNA</title>
+<title>rUv — the history of humanity, read out of living DNA</title>
 
 <style>
 @font-face { font-family:'Outfit'; font-style:normal; font-weight:100 900; font-display:block; src:url(__FONT_OUTFIT__) format('woff2'); }
@@ -157,6 +157,20 @@ figcaption b { color:var(--muted-foreground); }
 .code .c { color:var(--dim-foreground); }
 .footer { padding:44px 0 76px; color:var(--dim-foreground); font-size:13.5px; border-top:1px solid var(--border-soft); }
 .badge { display:inline-flex; align-items:center; gap:9px; font-family:var(--font-mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase; border:1px solid var(--border); border-radius:999px; padding:7px 14px; color:var(--muted-foreground); margin-bottom:18px; }
+/* ═════════════════════════════════════ masthead */
+.masthead { position:relative; min-height:100svh; display:grid; place-items:center; padding:calc(var(--nav-h) + 32px) 20px 64px; text-align:center; overflow:hidden; }
+.masthead::before { content:''; position:absolute; left:50%; top:46%; width:min(150vw,1100px); aspect-ratio:1; transform:translate(-50%,-50%); border-radius:50%; background:radial-gradient(circle,rgba(29,212,224,.16),rgba(143,90,224,.09) 42%,transparent 68%); filter:blur(24px); animation:breathe 14s ease-in-out infinite; }
+@keyframes breathe { 0%,100%{transform:translate(-50%,-50%) scale(.94);opacity:.75} 50%{transform:translate(-50%,-50%) scale(1.06);opacity:1} }
+.mast-inner { position:relative; z-index:1; max-width:60ch; }
+.mast-kicker { display:block; font-family:var(--font-mono); font-size:10.5px; letter-spacing:.22em; text-transform:uppercase; color:var(--primary); margin-bottom:26px; opacity:0; animation:rise .9s var(--enter) .1s forwards; }
+.wordmark { font-size:clamp(88px,26vw,240px); line-height:.82; font-weight:200; letter-spacing:-.05em; color:var(--foreground); margin:0; opacity:0; animation:rise 1.1s var(--enter) .25s forwards; }
+.wordmark span { font-weight:700; background:linear-gradient(140deg,var(--primary),var(--data-ghost-b)); -webkit-background-clip:text; background-clip:text; color:transparent; }
+.mast-sub { font-size:clamp(17px,3.4vw,26px); font-weight:300; color:var(--foreground); margin:22px 0 0; opacity:0; animation:rise 1s var(--enter) .5s forwards; }
+.mast-lede { font-size:15.5px; line-height:1.75; color:var(--muted-foreground); margin:20px auto 0; max-width:52ch; opacity:0; animation:rise 1s var(--enter) .7s forwards; }
+.mast-scroll { display:inline-block; margin-top:44px; font-family:var(--font-mono); font-size:10px; letter-spacing:.24em; text-transform:uppercase; color:var(--dim-foreground); opacity:0; animation:rise 1s var(--enter) .95s forwards, drift 2.6s ease-in-out 2s infinite; }
+@keyframes rise { from{opacity:0;transform:translateY(22px)} to{opacity:1;transform:none} }
+@keyframes drift { 0%,100%{transform:translateY(0)} 50%{transform:translateY(7px)} }
+
 .rv { opacity:0; transform:translateY(24px); }
 .rv.in { opacity:1; transform:none; transition:opacity .6s var(--enter),transform .6s var(--enter); }
 @media (min-width:900px) { .nav-links{display:flex} .burger{display:none} section{padding:96px 0} }
@@ -167,12 +181,23 @@ figcaption b { color:var(--muted-foreground); }
 </style>
 
 <nav class="nav">
-  <div class="brand"><span class="dot"></span>rvDNA<span style="color:var(--dim-foreground)">/</span>TRACE-rv</div>
+  <div class="brand"><span class="dot"></span><span style="text-transform:none;font-weight:700">rUv</span><span style="color:var(--dim-foreground)">/</span>rvDNA<span style="color:var(--dim-foreground)">/</span>TRACE-rv</div>
   <div class="nav-links" id="navLinks"></div>
   <button class="burger" id="burger" type="button" aria-expanded="false" aria-controls="drawer" aria-label="Open menu"><span></span></button>
 </nav>
 <div class="progress" id="progress"></div>
 <div class="drawer" id="drawer"></div>
+
+<!-- ═══════════════════════════════════ masthead -->
+<header class="masthead" id="masthead">
+  <div class="mast-inner">
+    <span class="mast-kicker">rvDNA · TRACE-rv · RuVector · metaharness</span>
+    <h1 class="wordmark" aria-label="rUv">r<span>U</span>v</h1>
+    <p class="mast-sub">The history of humanity, read out of living DNA</p>
+    <p class="mast-lede">1.8 million years, 800 real human haplotypes, 20,880 simulated genome segments, and two extinct populations that no one has ever sequenced — recovered from the shape of the family tree alone.</p>
+    <span class="mast-scroll">scroll</span>
+  </div>
+</header>
 
 <!-- ═══════════════════════════════════ the 3D narrative -->
 <div class="saga" id="saga">
@@ -196,8 +221,53 @@ figcaption b { color:var(--muted-foreground); }
   <p class="lede">On 30 July 2026 a team at UC Berkeley reported that every living human carries DNA from at least two extinct populations that have never been sequenced — and they found them without a single fragment of ancient DNA.</p>
   <p>The technique is called <strong>TRACE</strong> — TRacking Archaic Contributions via ARG Estimation. It reconstructs an <strong>ancestral recombination graph</strong>: a running record, across the whole genome, of how every stretch of DNA in a sample is related to every other and how far back those relationships go. Read that graph carefully and two lineages fall out that match nothing anyone has ever sequenced.</p>
   <div class="finding" id="findingCards"></div>
-  <div class="pull">One is in everyone, which puts the interbreeding inside Africa. The other never met us at all — it interbred with Denisovans, and Denisovans passed it on.</div>
+  <div class="pull">One is in everyone, which puts the interbreeding inside Africa. The other never met us at all \u2014 it interbred with Denisovans, and Denisovans passed it on.</div>
+  <h3>What it beats, and what beats it</h3>
+  <p>TRACE was benchmarked against three existing methods \u2014 <strong>hmmix</strong>, <strong>Sprime</strong> and <strong>IBDmix</strong>. It is not uniformly better, and the shape of the trade is the interesting part.</p>
+  <div class="scroll-x"><table>
+    <thead><tr><th>Simulated truth</th><th class="num">TRACE</th><th class="num">hmmix</th><th class="num">IBDmix</th></tr></thead>
+    <tbody>
+      <tr><td class="mono">Neanderthal \u00b7 precision</td><td class="num">96.5%</td><td class="num">91.5%</td><td class="num">96.8%</td></tr>
+      <tr><td class="mono">Neanderthal \u00b7 recall</td><td class="num">52.9%</td><td class="num">54.8%</td><td class="num" style="color:var(--accent)">78.1%</td></tr>
+      <tr><td class="mono">Denisovan \u00b7 precision</td><td class="num" style="color:var(--accent)">72.8%</td><td class="num">44.6%</td><td class="num">17.6%</td></tr>
+      <tr><td class="mono">Ghost \u00b7 precision</td><td class="num" style="color:var(--accent)">94.1%</td><td class="num">\u2014</td><td class="num">\u2014</td></tr>
+      <tr><td class="mono">Ghost \u00b7 recall</td><td class="num">16.4%</td><td class="num">\u2014</td><td class="num">\u2014</td></tr>
+    </tbody></table></div>
+  <p>Two things stand out. <strong>IBDmix finds far more Neanderthal DNA than TRACE does</strong> \u2014 78% recall against 53% \u2014 and the authors say so plainly: their method recovers less total archaic ancestry than previous estimates. But IBDmix is almost useless on Denisovans here (17.6% precision), and neither competitor can represent a ghost at all, because both need an unadmixed outgroup to compare against and a ghost that introgressed before the split contaminates the outgroup too.</p>
+  <p>That is the actual claim. Not \u201cbetter\u201d \u2014 <em>able to see a category of thing the others are structurally blind to</em>, at the cost of missing more of what they can see. On a null model with no ghost at all, TRACE infers 0.07% ghost ancestry (95% CI 0\u20130.3%), against the 0.49\u20131.1% it reports on real data.</p>
+  <div class="aside" style="font-family:var(--font-display);font-size:15.5px;line-height:1.6;color:var(--muted-foreground);border-left:2px solid var(--border);padding-left:20px;margin:26px 0;max-width:58ch">
+    Ghost ancestry piles up in immune and metabolic regions \u2014 the MHC and lipoprotein complexes, <em>p</em> &lt; 10\u207b\u2075 \u2014 with high-frequency peaks at <strong>CSMD1</strong> and <strong>RBFOX1</strong>. The super-archaic fraction in Oceanians concentrates in <strong>RNF39</strong>, <strong>PPP1R11</strong>, <strong>POLR1H</strong> (all MHC) and <strong>CYP24A1</strong>, which regulates vitamin&nbsp;D breakdown.
+  </div>
   <p>Everything below rebuilds that reasoning from first principles on the <strong>ruvstack</strong>, against a simulated cohort where the truth is known, and then pushes it until it breaks.</p>
+</section>
+
+<section id="real">
+  <div class="eyebrow"><b>02</b> Real DNA</div>
+  <h2>The same question, asked of real people</h2>
+  <p class="lede">Everything else here is validated against a simulation where the answer is known. This section takes the statistic that validation licenses and points it at real human genomes.</p>
+  <p>800 phased haplotypes from <strong>400 people</strong> in the 1000 Genomes Project, 80 from each of the five superpopulations, across a 1 Mb stretch of <strong>chromosome 22</strong> carrying <span id="rVar"></span> real variable sites. Pulled straight out of the bgzipped VCF over HTTP range requests — no whole-genome download, no reference panel of our own, nothing simulated.</p>
+  <div class="tiles" id="realTiles"></div>
+
+  <h3>The result that had to come out right</h3>
+  <p>Before believing anything a method says about ghosts, it has to reproduce something already known. The oldest and firmest fact in human population genetics is that <strong>African genomes carry more variation than everyone else's</strong> — the non-African populations all descend from one small group that left, so their lineages meet each other much more recently.</p>
+  <p id="rHeadline"></p>
+  <div class="card"><svg class="chart" id="realChart" viewBox="0 0 860 300" preserveAspectRatio="xMidYMid meet" role="img" aria-labelledby="rlT"></svg><div class="legend" id="realLegend"></div></div>
+  <div class="scroll-x" style="margin-top:18px"><table id="realTable"></table></div>
+
+  <h3>The deep tail, at real coordinates</h3>
+  <p>These are the segments in this region that must reach furthest back before they meet anything else in the panel. They are real haplotypes at real positions on chromosome 22, and you could go and look them up.</p>
+  <div class="scroll-x"><table id="realDeep"></table></div>
+
+  <h3>Three sequenced archaics, over the same coordinates</h3>
+  <p>A deep segment is an outlier, not an attribution — it says a stretch of DNA is old, not where it came from. Answering the second question needs something to compare against, so the same range of chromosome 22 was pulled from three sequenced archaic genomes: the <strong>Altai Neanderthal</strong> (~52× coverage), <strong>Vindija 33.19</strong> (~30×) and <strong>Denisova 3</strong> (~30×), from the Max Planck Institute's snpAD call set.</p>
+  <p>The obvious comparison — measure how far each modern haplotype is from Neanderthal, and see whether non-Africans are closer — <em>does not work</em>, and it is worth saying why. GRCh37 is a European-weighted reference, the archaic genotypes were called against it, and African haplotypes therefore pick up extra apparent differences from <em>any</em> archaic genome for reasons that have nothing to do with interbreeding. Run it anyway and you get a number, in the right direction, that you cannot trust.</p>
+  <p>The statistic that survives that objection is <strong>Patterson's D</strong>. Take one African haplotype and one non-African haplotype. Find the sites where they differ and where the archaic carries the non-reference allele. The archaic now matches exactly one of them. Under a family tree with no interbreeding it should match each equally often — so count them.</p>
+  <div class="tiles" id="dTiles"></div>
+  <p id="dHeadline"></p>
+  <div class="scroll-x" style="margin-top:18px"><table id="dTable"></table></div>
+  <div class="card" style="margin-top:20px"><svg class="chart" id="dChart" viewBox="0 0 860 260" preserveAspectRatio="xMidYMid meet" role="img" aria-labelledby="dcT"></svg></div>
+  <p id="dPower"></p>
+  <p id="realCaveat"></p>
 </section>
 
 <section id="tree">
@@ -288,6 +358,22 @@ figcaption b { color:var(--muted-foreground); }
   <p>The pipeline lets an approximate index decide which comparisons to run. That is a shortcut, and shortcuts have to be audited rather than assumed. So we ran the detector twice on the same cohort — once with the index, once comparing everything against everything — and diffed the calls.</p>
   <div class="tiles" id="fidTiles"></div>
   <p id="fidFinding"></p>
+
+  <h3>Does looking sideways along the chromosome help?</h3>
+  <p>Everything above judges each window on its own. But introgression does not arrive one window at a time — it arrives in <strong>tracts</strong>, contiguous runs of chromosome inherited whole and then chopped up by recombination over the generations since. So a window that is borderline on its own evidence, sitting between two windows that are clearly archaic, is more likely archaic than the same window sitting alone.</p>
+  <p>The cohort was re-simulated with introgression planted as geometric tracts of mean 4.9 windows, and a linkage-aware rule added: call a window if its own depth clears the threshold, <em>or</em> if it clears a lower rescue threshold and its neighbours' decay-weighted depth clears a context threshold.</p>
+  <div class="tiles" id="linkTiles"></div>
+  <p id="linkHeadline"></p>
+  <div class="scroll-x" style="margin-top:18px"><table id="linkTable"></table></div>
+  <p id="linkTract"></p>
+
+  <h3>Which genomes should you actually sequence?</h3>
+  <p>The detector never looks at an archaic genome to decide <em>whether</em> a segment is archaic — it only compares against living people. So the reference panel is the budget item that matters, and the sweep asks two questions a real study has to answer: how many genomes, and <em>whose</em>?</p>
+  <div class="card"><svg class="chart" id="panelChart" viewBox="0 0 860 300" preserveAspectRatio="xMidYMid meet" role="img" aria-labelledby="pnT"></svg><div class="legend" id="panelLegend"></div></div>
+  <p id="panelHeadline"></p>
+  <p id="panelTwist"></p>
+  <div class="scroll-x" style="margin-top:18px"><table id="ablTable"></table></div>
+  <p id="ablFinding"></p>
 </section>
 
 <section id="method">
@@ -306,11 +392,16 @@ figcaption b { color:var(--muted-foreground); }
   </div>
   <h3>Sources</h3>
   <ul style="max-width:var(--measure);padding-left:18px;font-size:14.5px;line-height:1.8">
-    <li>Zhang, Biddanda, Johnson, O'Dushlaine &amp; Moorjani, <em>Recovering signatures of archaic hominin introgression using ancestral recombination graphs</em>, <strong>Science</strong>, 30 July 2026. <a href="https://www.science.org/doi/10.1126/science.aef8874">doi:10.1126/science.aef8874</a></li>
-    <li><a href="https://news.berkeley.edu/2026/07/30/new-technique-pinpoints-human-dna-inherited-from-ghost-ancestors/">UC Berkeley News — New technique pinpoints human DNA inherited from &lsquo;ghost&rsquo; ancestors</a></li>
-    <li><a href="https://www.livescience.com/archaeology/human-evolution/scientists-discover-2-new-ghost-lineages-that-contributed-dna-to-modern-humans">Live Science — Scientists discover 2 new &lsquo;ghost&rsquo; lineages</a></li>
+    <li>Zhang, Biddanda, Johnson, O'Dushlaine &amp; Moorjani, <em>Recovering signatures of archaic hominin introgression using ancestral recombination graphs</em>, <strong>Science</strong> eaef8874, 30 July 2026. <a href="https://www.science.org/doi/10.1126/science.aef8874">doi:10.1126/science.aef8874</a>. <strong>Every figure quoted here is from the <a href="https://www.biorxiv.org/content/10.64898/2026.03.03.709416v1">bioRxiv preprint</a> (March 2026)</strong>, which is the version that could be read in full; peer review may have revised them.</li>
+    <li>Deng, Nielsen &amp; Song, <em>Robust and accurate Bayesian inference of genome-wide genealogies</em> (SINGER), <strong>Nature Genetics</strong> 57:2124–2135, 2025 — the ARG engine TRACE runs on.</li>
+    <li>Liang &amp; Nielsen, <em>The lengths of admixture tracts</em>, <strong>Genetics</strong> 197(3):953–967, 2014. <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC4096373/">PMC4096373</a> — and note their actual thesis is that the exponential tract model is wrong in detail at both short and long timescales.</li>
+    <li>The 1000 Genomes Project Consortium, <em>A global reference for human genetic variation</em>, <strong>Nature</strong> 526:68–74, 2015 — the source of every real haplotype on this page. Data are openly available via <a href="https://www.internationalgenome.org/data">IGSR</a>.</li>
+    <li>Iasi et al., <strong>Science</strong> 386:eadq3010, 2024 — Neanderthal admixture at 46,364 years BP (95.5% CI 45,682–47,045).</li>
+    <li>Sankararaman et al., <strong>Nature</strong> 507:354–357, 2014 — per-individual Neanderthal tracts &ldquo;usually less than a hundred kilobases&rdquo;.</li>
     <li><a href="https://github.com/ruvnet/rvdna">ruvnet/rvdna</a> · <a href="https://github.com/ruvnet/ruvector">ruvnet/ruvector</a> · <a href="https://github.com/ruvnet/metaharness">ruvnet/metaharness</a></li>
   </ul>
+  <h3>Corrections</h3>
+  <p style="font-size:14.5px">Earlier versions of this page repeated the press-release claim that <em>&ldquo;Denisovans carry 3&ndash;5% super-archaic DNA&rdquo;</em>. <strong>That figure is not in the paper.</strong> TRACE's estimate is 0.3% of the Denisovan ancestry in Oceanians — a different denominator entirely, and an explicit lower bound. The same versions described 800 ka as the ghost's divergence time; it is a <em>coalescence</em> time, which bounds the divergence from above. The authors' own conservative statement is &ldquo;diverged over 500,000 years ago&rdquo;.</p>
   <div class="footer">
     <div class="badge"><span class="dot"></span>Powered by the ruvstack &amp; Cognitum One</div>
     <p>Built with rvDNA, RuVector and metaharness Darwin. Styled with the Cognitum design system — a dark-committed visual language, kept dark here on purpose. Typefaces Outfit and JetBrains Mono, embedded under the SIL Open Font License. The opening sequence is raw WebGL 2 with no library, so the whole page stays under a third of a megabyte.</p>
@@ -325,6 +416,9 @@ const REPORT = __TRACE_DATA__;
 const CALLS  = __CALLS_DATA__;
 const DEPTH  = __DEPTH_DATA__;
 const DISC   = __DISC_DATA__;
+const REAL   = __REAL_DATA__;
+const LINK   = __LINK_DATA__;
+const PANEL  = __PANEL_DATA__;
 const PART   = __PARTICLE_DATA__;
 
 const $ = s => document.querySelector(s);
@@ -343,33 +437,58 @@ const tip = $('#tip');
 function showTip(e,html){ tip.innerHTML=html; tip.classList.add('on'); const r=tip.getBoundingClientRect(),p=14; let x=e.clientX+p,y=e.clientY+p; if(x+r.width>innerWidth-8)x=e.clientX-r.width-p; if(y+r.height>innerHeight-8)y=e.clientY-r.height-p; tip.style.left=Math.max(8,x)+'px'; tip.style.top=Math.max(8,y)+'px'; }
 const hideTip = () => tip.classList.remove('on');
 function hoverable(node,html){ node.style.cursor='pointer'; node.addEventListener('mouseenter',e=>showTip(e,html)); node.addEventListener('mousemove',e=>showTip(e,html)); node.addEventListener('mouseleave',hideTip); }
+/* The Rust binaries emit plain text: `*emphasis*`, `->`, and straight quotes.
+   Render them as the typography the rest of the page uses rather than leaving
+   asterisks on screen. */
+const prose = s => String(s||'')
+  .replace(/\*([^*]+)\*/g, '<em>$1</em>')
+  .replace(/ -> /g, ' → ')
+  .replace(/'([^']+)'/g, '‘$1’');
 function tiles(host,items){ host.innerHTML = items.map(t=>`<div class="tile${t.hi?' hi':''}"><div class="k">${t.k}</div><div class="v">${t.v}${t.u?`<u>${t.u}</u>`:''}</div>${t.n?`<div class="n">${t.n}</div>`:''}</div>`).join(''); }
 
 /* ═══════════════════════════════════════════════ THE SAGA (WebGL 2) */
+/* The saga is 4D: three dimensions of population space, and time as the axis the
+   scroll actually travels. Each act names the epoch it passes through, and the
+   vertical axis is the SAME coalescent-time axis the analysis uses later — so
+   the ghost clouds at the end settle at exactly the depths of the branches you
+   flew past on the way up. */
 const ACTS = [
-  { eyebrow:'Now', h:'Two ancestors nobody has ever seen',
-    p:'Every point is one stretch of one living person’s DNA — 20,880 of them, drawn from 58 haplotypes across nine populations. Somewhere in here are fragments of two extinct human species that have never been dug up, never been sequenced, and have no name.',
-    hud:'20,880 segments · 58 haplotypes', fig:'' },
-  { eyebrow:'Dispersal',
-    h:'We were one population, and then we were not',
-    p:'Sort the same points by where their carriers live now and the shape of the last hundred thousand years appears: a deep, varied African core, and the thinner branches that left it. Nothing about the DNA has changed. Only how we are looking at it.',
-    hud:'sorted by population', fig:'AFR · EUR · SAS · EAS · AMR · OCE' },
-  { eyebrow:'The panel',
-    h:'Lay them flat and every genome is a ledger',
-    p:'Each row is one person’s copy of a chromosome; each column is an independent stretch of it. This is the whole dataset, and at this point it is completely uninformative — nothing has been measured yet.',
-    hud:'360 windows × 58 haplotypes', fig:'' },
-  { eyebrow:'Deep time',
-    h:'Now ask how old each fragment is',
-    p:'For every segment, find its nearest relative anywhere in the panel and ask how far back you have to go to reach them. That depth becomes height. Almost the entire surface is shallow — you share these stretches with a cousin, a population, a continent — but the landscape is not flat.',
-    hud:'coalescent depth · thousands of years', fig:'median 32 ka' },
-  { eyebrow:'The outliers',
-    h:'A few of them reach impossibly far back',
-    p:'A segment donated by a lineage that split 800,000 years ago cannot meet anyone until it gets back past that split, because until then there was nobody to meet. Drop everything below the threshold and what is left are the spikes: DNA that is far too old to be ordinary variation.',
-    hud:'above the tuned threshold', fig:'' },
-  { eyebrow:'Two ghosts',
-    h:'And they are not all the same ancestor',
-    p:'Sort the survivors by how deep they go and they fall into two groups — one clustering near 800,000 years, one near two million. Two separate extinct populations, recovered from the shape of living genealogies, with no reference genome for either. Height is divergence time: the higher bundle is the older ancestor.',
-    hud:'two recovered lineages', fig:'lower · Ghost-A ~800 ka&nbsp;&nbsp;&nbsp;upper · Ghost-B ~1.8 Ma' },
+  { ka:1800, mode:'tree', eyebrow:'1.8 million years ago',
+    h:'As far back as we can still see',
+    p:'This is the floor. Below it the genealogies of living people carry no usable signal — every thread has already merged. Homo erectus is walking out of Africa. A lineage that branches here will not be seen again for 1.8 million years, and then only as a stain inside somebody else\u2019s DNA.',
+    hud:'the deep root' },
+  { ka:800, mode:'tree', eyebrow:'800,000 years ago',
+    h:'A lineage walks away and is never found',
+    p:'A population splits off from the line that leads to us. It leaves no bones anyone has identified, no genome anyone has sequenced, and no name. It is a ghost \u2014 and it is still inside you.',
+    hud:'Ghost-A separates' },
+  { ka:650, mode:'tree', eyebrow:'650,000 years ago',
+    h:'The cousins we would meet again',
+    p:'The branch that becomes Neanderthals and Denisovans parts from ours. For most of the next half-million years these are simply different peoples in different places, unaware of one another.',
+    hud:'the archaic branch' },
+  { ka:300, mode:'tree', eyebrow:'300,000 years ago',
+    h:'Us \u2014 and we are not one people yet',
+    p:'Modern humans appear in Africa, already structured into deep, long-separated populations. That is why African genomes still carry more variation than every other population on Earth combined, and why they are the most informative thing you can put in a reference panel.',
+    hud:'modern humans, deeply structured' },
+  { ka:60, mode:'tree', eyebrow:'60,000 years ago',
+    h:'A small group leaves, and meets the others',
+    p:'One narrow branch walks out of Africa and runs into relatives who have been away for 600,000 years. They interbreed. Roughly 2% of every non-African genome alive today is Neanderthal; in Oceania a further slice is Denisovan. Those meetings are the only reason any of this is recoverable.',
+    hud:'out of Africa \u00b7 interbreeding' },
+  { ka:0, mode:'tree', eyebrow:'Today',
+    h:'Eight billion people, and a record written in all of them',
+    p:'Every point is one real stretch of one real chromosome. Nothing has been measured yet \u2014 this is the data as it arrives, sorted only by where its carriers live.',
+    hud:'the living panel' },
+  { ka:0, mode:'depth', eyebrow:'The reading',
+    h:'Now turn around and look back down the axis',
+    p:'For every segment, find its nearest relative anywhere in the panel, ask how far back you must go to reach them, and drop the segment to that depth. Almost everything falls near the present \u2014 you share these stretches with a cousin, a population, a continent.',
+    hud:'coalescent depth' },
+  { ka:0, mode:'threshold', eyebrow:'The outliers',
+    h:'A few refuse to come up',
+    p:'A segment donated by a lineage that split 800,000 years ago cannot meet anyone until it gets back past that split, because until then there was nobody to meet. Everything shallower falls away. What is left is DNA far too old to be ordinary variation.',
+    hud:'above the threshold' },
+  { ka:0, mode:'ghost', eyebrow:'Two ghosts',
+    h:'And they are not the same ancestor',
+    p:'The survivors settle into two clouds \u2014 at the exact depths of two branches you passed on the way up. One near 800,000 years. One near two million. Two extinct human populations, recovered from the shape of living genealogies, with no reference genome for either.',
+    hud:'two recovered lineages', fig:'nearer \u00b7 Ghost-A ~800 ka&nbsp;&nbsp;&nbsp;deeper \u00b7 Ghost-B ~1.8 Ma' },
 ];
 
 (function saga() {
@@ -387,102 +506,126 @@ const ACTS = [
   const depths = unb64(PART.depths, Uint16Array);
   const callK  = unb64(PART.calls,  Uint8Array);
   const truthK = unb64(PART.truth,  Uint8Array);
-  const GROUPS = ['AFR','EUR','SAS','EAS','AMR','OCE'];
-  const grpOf = new Float32Array(NH);
-  PART.roster.forEach((r,i)=>{ const g=GROUPS.indexOf(r.grp); grpOf[i] = g<0 ? 0 : g; });
 
-  const aW = new Float32Array(N), aH = new Float32Array(N), aD = new Float32Array(N);
-  const aC = new Float32Array(N), aG = new Float32Array(N), aT = new Float32Array(N);
-  for (let w=0, i=0; w<NW; w++) for (let r=0; r<NH; r++, i++) {
-    aW[i]=w; aH[i]=r; aD[i]=depths[i]; aC[i]=callK[i]; aT[i]=truthK[i]; aG[i]=grpOf[r];
+  // Population order round the circle, and the epoch at which each lineage
+  // parts from the trunk. These are the real divergence times the simulation
+  // was calibrated to, so the tree you fly through is the tree being tested.
+  const POPS = [...new Set(PART.roster.map(r => r.pop))];
+  const POP_SPLIT_KA = { SAN:200, YRI:120, MSL:120, LWK:110, CEU:60, SAS:60, CHB:58, AMR:45, PNG:55 };
+  // class -> {angle slot, split epoch, extinction epoch}
+  const CLASS_BRANCH = [
+    null,                                  // 0 = no archaic ancestry: use its population
+    { ang: 0.30, split: 650,  tMin: 40 },  // 1 Neanderthal
+    { ang: 0.42, split: 650,  tMin: 45 },  // 2 Denisovan
+    { ang: 0.62, split: 800,  tMin: 90 },  // 3 Ghost-A
+    { ang: 0.82, split: 1800, tMin: 200 }, // 4 Ghost-B
+  ];
+
+  const TAU = 6.28318530718;
+  const aAng = new Float32Array(N);   // angle on the tree
+  const aAngP = new Float32Array(N);  // angle by population, for the depth column
+  const aSplit = new Float32Array(N); // epoch this lineage leaves the trunk
+  const aT = new Float32Array(N);     // where along its branch this point sits
+  const aD = new Float32Array(N);     // measured coalescent depth, ka
+  const aC = new Float32Array(N);
+  const hash = n => { const s = Math.sin(n * 12.9898) * 43758.5453; return s - Math.floor(s); };
+
+  for (let w = 0, i = 0; w < NW; w++) for (let r = 0; r < NH; r++, i++) {
+    const pop = PART.roster[r].pop;
+    const cls = callK[i];
+    const popSlot = POPS.indexOf(pop) / Math.max(POPS.length, 1);
+    // Populations occupy the first two-thirds of the circle; archaic and ghost
+    // branches get their own quadrant so they read as separate limbs.
+    const angP = popSlot * TAU * 0.62 + 0.12;
+    const br = CLASS_BRANCH[cls];
+    aAngP[i] = angP;
+    aAng[i]  = br ? br.ang * TAU + (hash(i) - 0.5) * 0.16 : angP + (hash(i) - 0.5) * 0.09;
+    aSplit[i] = br ? br.split : (POP_SPLIT_KA[pop] || 90);
+    const tMin = br ? br.tMin : 0;
+    // Spread the points along the branch's lifespan, biased toward the present
+    // so the recent, dense part of the tree stays dense.
+    const u = hash(i + 3.1);
+    aT[i] = tMin + (aSplit[i] - tMin) * Math.pow(u, 1.9);
+    aD[i] = depths[i];
+    aC[i] = cls;
   }
 
-  // ---- shaders ---------------------------------------------------------
   const VS = `#version 300 es
   precision highp float;
-  in float aW, aH, aD, aC, aG;
+  in float aAng, aAngP, aSplit, aT, aD, aC;
   uniform mat4 uVP;
-  uniform float uWeights[6];
-  uniform float uNW, uNH, uTime, uTau, uPix;
+  uniform float uMode[4];        // tree · depth · threshold · ghost
+  uniform float uTime, uTau, uPix, uNowKa;
   uniform vec3 uCA, uCB, uCNea, uCDen, uCDim, uCWarm;
   out vec3 vCol; out float vAlpha;
 
+  const float TAU_C = 6.28318530718;
+  const float R = 3.15;          // radius of the present-day canopy
+  const float H = 9.0;           // depth of the time volume
+
   float hash(float n){ return fract(sin(n*12.9898)*43758.5453); }
 
+  // The one axis everything shares: deep time, square-rooted so the last
+  // hundred thousand years stay legible next to 1.8 million.
+  float yOf(float ka){ return -H * sqrt(clamp(ka, 0.0, 1800.0) / 1800.0); }
+
   void main() {
-    float id = aH*uNW + aW;
-    float h1 = hash(id), h2 = hash(id+7.7), h3 = hash(id+13.3);
+    float id = aT * 7.3 + aAng * 131.0 + aD * 0.017;
+    float h1 = hash(id), h2 = hash(id + 7.7), h3 = hash(id + 13.3);
 
-    // depth, log-normalised, floored so the shallow bulk stays low
-    float L0 = log(21.0), L1 = log(3001.0);
-    float dn = clamp((log(1.0+max(aD,0.0)) - L0) / (L1 - L0), 0.0, 1.0);
-    float deep = step(uTau, aD);
     float isGhost = step(2.5, aC);
-    float ghostB = step(3.5, aC);
+    float ghostB  = step(3.5, aC);
+    float deep    = step(uTau, aD);
 
-    // A Y-up world throughout: the ledger lies flat in XZ and coalescent depth
-    // extrudes upward in Y. Keeping one up-axis avoids the degenerate look-at
-    // that appears the moment the camera sits on the up vector.
-    float x = (aW/uNW - 0.5) * 7.0;
-    float z = (aH/uNH - 0.5) * 2.6;
+    // ---- TREE: a lineage's radius is zero before it splits and opens out
+    // to the full canopy by the present, so branches genuinely fan apart at
+    // their real divergence epochs.
+    float rTree = R * pow(clamp((aSplit - aT) / max(aSplit, 1.0), 0.0, 1.0), 0.7);
+    rTree *= 0.86 + 0.28 * h2;
+    vec3 Ptree = vec3(rTree * cos(aAng), yOf(aT), rTree * sin(aAng));
 
-    // 0 · sphere of everyone
-    float th = h1*6.28318, ph = acos(2.0*h2-1.0);
-    float rr = 2.05 + 0.12*h3;
-    vec3 P0 = rr*vec3(sin(ph)*cos(th), cos(ph), sin(ph)*sin(th));
+    // ---- DEPTH: same circle of populations, but every point drops to the
+    // depth actually measured for it.
+    float rD = R * (0.80 + 0.30 * h1);
+    vec3 Pdepth = vec3(rD * cos(aAngP), yOf(aD), rD * sin(aAngP));
 
-    // 1 · continental clusters — the African core is deliberately broader
-    float ga = (aG/6.0)*6.28318;
-    float spread = aG < 0.5 ? 1.05 : 0.60;
-    vec3 gc = vec3(cos(ga)*2.15, (aG < 0.5 ? -0.15 : 0.5), sin(ga)*2.15);
-    vec3 P1 = gc + spread*vec3(h1-0.5, h2-0.5, h3-0.5);
+    // ---- THRESHOLD: what fails the test sinks back to the surface.
+    vec3 Pthr = vec3(rD * cos(aAngP), mix(0.06 * h3, yOf(aD), deep), rD * sin(aAngP));
 
-    // 2 · the flat ledger
-    vec3 P2 = vec3(x, 0.0, z);
+    // ---- GHOST: the survivors gather into two clouds, each still hanging at
+    // its own depth.
+    float ga = h1 * TAU_C, gr = 0.34 + 0.46 * h2;
+    vec3 gpos = vec3(cos(ga) * gr + (ghostB * 2.7 - 1.35), yOf(aD), sin(ga) * gr);
+    vec3 Pghost = mix(vec3(rD * 0.22 * cos(aAngP), 0.04, rD * 0.22 * sin(aAngP)), gpos, isGhost);
 
-    // 3 · depth becomes height
-    vec3 P3 = vec3(x, dn*3.4, z);
+    vec3 pos = Ptree*uMode[0] + Pdepth*uMode[1] + Pthr*uMode[2] + Pghost*uMode[3];
+    pos.y += 0.010 * sin(uTime * 0.55 + id * 0.019);
 
-    // 4 · only the outliers still stand
-    vec3 P4 = vec3(x, dn*3.7*deep, z);
-
-    // 5 · two ghost columns, each at its own divergence depth
-    float ang = h1*6.28318, rad = 0.30 + 0.40*h2;
-    vec3 gpos = vec3(cos(ang)*rad + (ghostB*2.9 - 1.45), dn*3.7, sin(ang)*rad);
-    vec3 P5 = mix(vec3(x*0.20, 0.0, z*0.20), gpos, isGhost);
-
-    vec3 pos = P0*uWeights[0] + P1*uWeights[1] + P2*uWeights[2]
-             + P3*uWeights[3] + P4*uWeights[4] + P5*uWeights[5];
-
-    // a slow breath so nothing is ever completely still
-    pos.y += 0.012*sin(uTime*0.6 + id*0.021);
-
-    // ---- colour per act, blended the same way
+    // ---- colour
+    float dn = clamp((log(1.0 + max(aD,0.0)) - log(21.0)) / (log(3001.0) - log(21.0)), 0.0, 1.0);
+    vec3 lineage = aC < 0.5 ? uCWarm : (aC < 1.5 ? uCNea : (aC < 2.5 ? uCDen : mix(uCA, uCB, ghostB)));
     vec3 ramp = mix(uCDim, uCA, pow(dn, 0.85));
-    vec3 grpTint = mix(uCDim, uCWarm, 0.25 + 0.55*fract(aG*0.37));
-    vec3 attrib = aC < 0.5 ? uCDim*0.5 : (aC < 1.5 ? uCNea : (aC < 2.5 ? uCDen : uCA));
-    vec3 ghostCol = mix(uCA, uCB, ghostB);
 
-    vec3 c = uCDim*0.75*uWeights[0]
-           + grpTint*uWeights[1]
-           + uCDim*0.9*uWeights[2]
-           + ramp*uWeights[3]
-           + mix(uCDim*0.10, ramp*1.25, deep)*uWeights[4]
-           + mix(uCDim*0.06, ghostCol*1.3, isGhost)*uWeights[5];
-    vCol = c;
+    // In tree mode a point is lit only once time has reached its epoch — so the
+    // world literally builds itself as you travel forward.
+    float born = smoothstep(uNowKa + 90.0, uNowKa - 40.0, aT);
+    vec3 cTree = mix(uCDim * 0.35, lineage, born);
 
-    // 20,880 additive sprites saturate fast, so the per-point alpha stays low
-    // and the density does the work.
-    float aDim = mix(0.075, 1.0, deep);
-    float aGh  = mix(0.03, 1.0, isGhost);
-    vAlpha = 0.44*uWeights[0] + 0.48*uWeights[1] + 0.40*uWeights[2]
-           + (0.40 + 0.95*dn)*uWeights[3] + aDim*uWeights[4] + aGh*uWeights[5];
+    vCol = cTree*uMode[0] + ramp*uMode[1]
+         + mix(uCDim*0.10, ramp*1.25, deep)*uMode[2]
+         + mix(uCDim*0.05, mix(uCA,uCB,ghostB)*1.3, isGhost)*uMode[3];
+
+    vAlpha = (0.10 + 0.62*born)*uMode[0]
+           + (0.24 + 0.62*dn)*uMode[1]
+           + mix(0.05, 1.0, deep)*uMode[2]
+           + mix(0.025, 1.0, isGhost)*uMode[3];
 
     vec4 mv = uVP * vec4(pos, 1.0);
     gl_Position = mv;
-    float size = (1.35 + 2.1*dn*(uWeights[3]+uWeights[4]+uWeights[5]) + 1.3*isGhost*uWeights[5]);
-    gl_PointSize = clamp(size * uPix * 18.0 / max(mv.w, 0.6), 1.0, 15.0);
+    float size = 1.25 + 1.7*dn*(uMode[1]+uMode[2]+uMode[3]) + 1.3*isGhost*uMode[3] + 0.5*born*uMode[0];
+    gl_PointSize = clamp(size * uPix * 19.0 / max(mv.w, 0.6), 1.0, 16.0);
   }`;
+
 
   const FS = `#version 300 es
   precision highp float;
@@ -521,11 +664,11 @@ const ACTS = [
     gl.bufferData(gl.ARRAY_BUFFER, arr, gl.STATIC_DRAW);
     gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 1, gl.FLOAT, false, 0, 0);
   };
-  attach('aW', aW); attach('aH', aH); attach('aD', aD); attach('aC', aC); attach('aG', aG);
+  attach('aAng', aAng); attach('aAngP', aAngP); attach('aSplit', aSplit);
+  attach('aT', aT); attach('aD', aD); attach('aC', aC);
 
   const U = n => gl.getUniformLocation(prog, n);
-  const uVP = U('uVP'), uWeights = U('uWeights[0]'), uTime = U('uTime'), uPix = U('uPix');
-  gl.uniform1f(U('uNW'), NW); gl.uniform1f(U('uNH'), NH);
+  const uVP = U('uVP'), uMode = U('uMode[0]'), uTime = U('uTime'), uPix = U('uPix'), uNowKa = U('uNowKa');
   gl.uniform1f(U('uTau'), REPORT.darwin.evolved.tau_archaic_ka);
   gl.uniform3fv(U('uCA'), hex3(cv('--primary')));
   gl.uniform3fv(U('uCB'), hex3(cv('--data-ghost-b')));
@@ -539,17 +682,20 @@ const ACTS = [
   gl.blendFunc(gl.SRC_ALPHA, gl.ONE);      // additive: overlapping points glow
 
   // ---- camera ----------------------------------------------------------
-  // Distances are set so the widest layout (the 7-unit ledger) fits the frame
-  // at a 45-degree field of view rather than swallowing the camera. Up is
-  // always +Y, so no eye position can land on the up axis.
-  const CAM = [
-    { eye:[0, 0.2, 6.6],  tgt:[0, 0, 0] },
-    { eye:[0, 1.4, 7.8],  tgt:[0, 0.1, 0] },
-    { eye:[0, 3.4, 6.2],  tgt:[0, 0, 0] },
-    { eye:[0, 3.0, 7.9],  tgt:[0, 1.15, 0] },
-    { eye:[1.7, 2.8, 7.6],tgt:[0, 1.4, 0] },
-    { eye:[0, 3.1, 7.6],  tgt:[0, 2.9, 0] },
-  ];
+  // The camera is the fourth dimension made navigable: for every act in the
+  // ascent it sits at that act's epoch and rises as you scroll, so scrolling
+  // forward IS travelling forward through time. For the reading acts it pulls
+  // back to take in the whole column at once.
+  const H_TIME = 9.0;
+  const yOf = ka => -H_TIME * Math.sqrt(Math.max(0, Math.min(1800, ka)) / 1800);
+  const MODES = { tree:0, depth:1, threshold:2, ghost:3 };
+  const CAM = ACTS.map(a => {
+    const y = yOf(a.ka);
+    if (a.mode === 'tree') return { eye:[0, y + 1.35, 7.4], tgt:[0, y + 0.15, 0] };
+    if (a.mode === 'depth') return { eye:[0, -4.1, 12.4], tgt:[0, -4.1, 0] };
+    if (a.mode === 'threshold') return { eye:[0, -4.8, 11.6], tgt:[0, -4.6, 0] };
+    return { eye:[0, -5.6, 9.4], tgt:[0, -5.4, 0] };
+  });
   const lerp3 = (a,b,t) => [a[0]+(b[0]-a[0])*t, a[1]+(b[1]-a[1])*t, a[2]+(b[2]-a[2])*t];
 
   function perspective(fovy, ar, n, f) {
@@ -583,30 +729,37 @@ const ACTS = [
 
   const smooth = t => t*t*(3-2*t);
   let t0 = 0;
+  const modeW = new Float32Array(4);
 
   function frame(ms) {
     if (!t0) t0 = ms;
     const time = (ms - t0) / 1000;
-    cur += (target - cur) * (reduced ? 1 : 0.085);
+    cur += (target - cur) * (reduced ? 1 : 0.075);
 
-    const i = Math.min(ACTS.length-1, Math.floor(cur));
+    const i = Math.min(ACTS.length - 1, Math.max(0, Math.floor(cur)));
+    const j = Math.min(ACTS.length - 1, i + 1);
     const f = smooth(Math.min(1, Math.max(0, cur - i)));
-    const j = Math.min(ACTS.length-1, i+1);
-    weights.fill(0); weights[i] = 1-f; weights[j] += f;
+
+    modeW.fill(0);
+    modeW[MODES[ACTS[i].mode]] += 1 - f;
+    modeW[MODES[ACTS[j].mode]] += f;
+
+    const nowKa = ACTS[i].ka + (ACTS[j].ka - ACTS[i].ka) * f;
 
     const eye = lerp3(CAM[i].eye, CAM[j].eye, f);
     const tgt = lerp3(CAM[i].tgt, CAM[j].tgt, f);
-    // a slow orbit so the geometry always reads as three-dimensional
-    const orbit = reduced ? 0 : Math.sin(time*0.09) * 0.16;
-    const ex = eye[0]*Math.cos(orbit) - eye[2]*Math.sin(orbit);
-    const ez = eye[0]*Math.sin(orbit) + eye[2]*Math.cos(orbit);
+    // A slow orbit keeps the volume reading as a volume rather than a backdrop.
+    const orbit = reduced ? 0 : time * 0.035 + Math.sin(time * 0.07) * 0.25;
+    const ex = eye[0] * Math.cos(orbit) - eye[2] * Math.sin(orbit);
+    const ez = eye[0] * Math.sin(orbit) + eye[2] * Math.cos(orbit);
 
-    const P = perspective(Math.PI/4, cvs.width/cvs.height, 0.1, 100);
-    const V = lookAt([ex, eye[1], ez], tgt, [0,1,0]);
+    const P = perspective(Math.PI / 4, cvs.width / cvs.height, 0.1, 100);
+    const V = lookAt([ex, eye[1], ez], tgt, [0, 1, 0]);
     gl.uniformMatrix4fv(uVP, false, new Float32Array(mul(P, V)));
-    gl.uniform1fv(uWeights, weights);
+    gl.uniform1fv(uMode, modeW);
     gl.uniform1f(uTime, time);
     gl.uniform1f(uPix, dpr);
+    gl.uniform1f(uNowKa, nowKa);
 
     gl.clearColor(0.043, 0.055, 0.075, 1);
     gl.clear(gl.COLOR_BUFFER_BIT);
@@ -634,7 +787,7 @@ const ACTS = [
 })();
 
 /* ═══════════════════════════════════════════════ nav */
-const NAV_LABEL = { finding:'The discovery', tree:'Deep time', stack:'The platform', engine:'The engine', loops:'Darwin', result:'Results', limits:'New findings', method:'Fine print' };
+const NAV_LABEL = { finding:'The discovery', real:'Real DNA', tree:'Deep time', stack:'The platform', engine:'The engine', loops:'Darwin', result:'Results', limits:'New findings', method:'Fine print' };
 (function nav() {
   const secs = [...document.querySelectorAll('section')];
   $('#navLinks').innerHTML = secs.map(s=>`<a href="#${s.id}" data-id="${s.id}">${NAV_LABEL[s.id]||s.id}</a>`).join('');
@@ -658,16 +811,124 @@ const NAV_LABEL = { finding:'The discovery', tree:'Deep time', stack:'The platfo
 
 /* ═══════════════════════════════════════════════ 01 finding */
 $('#findingCards').innerHTML = `
-<div class="finding-card"><div class="lab">Ghost A · deep African</div><div class="big" style="color:var(--data-ghost-a)">800<u>ka</u></div>
-<p>Split from our lineage about 800,000 years ago, interbred inside Africa more than 50,000 years ago, and left <strong>0.5–1%</strong> of the genome of <strong>every living person</strong>.</p></div>
-<div class="finding-card"><div class="lab">Ghost B · super-archaic</div><div class="big" style="color:var(--data-ghost-b)">1.8<u>Ma</u></div>
-<p>A 1.8-million-year-old lineage that interbred with <strong>Denisovans</strong>, not with us. It reaches modern genomes second-hand, concentrated in <strong>Oceania</strong>.</p></div>
-<div class="finding-card"><div class="lab">Total archaic ancestry</div><div class="big">~2<u>%</u></div>
-<p>Neanderthal, Denisovan, and now two ghosts. Archaic segments cluster in regions tied to <strong>immunity and metabolism</strong>.</p></div>
+<div class="finding-card"><div class="lab">Ghost A \u00b7 deep African</div><div class="big" style="color:var(--data-ghost-a)">0.83<u>Ma</u></div>
+<p>Coalesces with our lineage about 830,000 years ago (95% CI 0.61\u20131.27 Ma). That is an <em>upper bound</em> on the split, which the authors state conservatively as <strong>over 500,000 years ago</strong>. It contributes <strong>0.49\u20131.1%</strong> of every individual genome, in all five populations tested.</p></div>
+<div class="finding-card"><div class="lab">Ghost B \u00b7 super-archaic</div><div class="big" style="color:var(--data-ghost-b)">1.77<u>Ma</u></div>
+<p>Coalescence 1.77 Ma (95% CI 1.13\u20133.98 Ma), rounded in the discussion to a <strong>~1.8 Ma split</strong> \u2014 candidate <em>Homo erectus</em>. It reaches us only through Denisovans and accounts for <strong>0.3%</strong> of the Denisovan ancestry in Oceanians, which the paper calls a very conservative lower bound.</p></div>
+<div class="finding-card"><div class="lab">What TRACE actually is</div><div class="big">2<u>-state HMM</u></div>
+<p>A two-state hidden Markov model run across the sequence of marginal trees in a <strong>SINGER</strong>-inferred ARG. Every emission uses just two numbers: the branch length subtending the focal sample, and how many other coalescences fall in the same time window.</p></div>
 <div class="finding-card"><div class="lab">Ancient genomes required</div><div class="big" style="color:var(--accent)">0</div>
-<p>TRACE works on present-day genomes only — which is the whole point, because neither ghost has ever been sequenced.</p></div>`;
+<p>503 present-day 1000 Genomes samples plus 92 Oceanians. The four sequenced archaic genomes are used only <em>afterwards</em>, to label what was already found \u2014 never to find it.</p></div>`;
 
-/* ═══════════════════════════════════════════════ 02 tree */
+
+/* ═══════════════════════════════════════════════ 02 real DNA */
+(function realDna(){
+  $('#rVar').textContent = fmt(REAL.n_variants);
+  const afr = REAL.by_superpopulation.find(g=>g.group==='AFR');
+  const nonAfr = REAL.by_superpopulation.filter(g=>g.group!=='AFR');
+  const nonAfrMed = nonAfr.reduce((a,g)=>a+g.median_ka,0)/Math.max(nonAfr.length,1);
+
+  tiles($('#realTiles'), [
+    { k:'Real haplotypes', v:fmt(REAL.n_haplotypes), n:`${fmt(REAL.n_haplotypes/2)} people, 80 per superpopulation, 1000 Genomes phase 3` },
+    { k:'Real variable sites', v:fmt(REAL.n_variants), n:`biallelic phased SNPs across ${REAL.region}` },
+    { k:'Exact comparisons', v:fmt(REAL.exact_comparisons), n:'every pair, every window, by popcount — no index, no approximation' },
+    { k:'African depth advantage', v:REAL.afr_vs_nonafr_median_ratio.toFixed(2)+'×', hi:true, n:'median coalescent depth, African against non-African' },
+  ]);
+
+  $('#rHeadline').innerHTML = `It comes out. African haplotypes meet their nearest relative a median <strong>${fmt(afr.median_ka,1)} ka</strong> ago; the non-African median is <strong>${fmt(nonAfrMed,1)} ka</strong> — a <strong>${REAL.afr_vs_nonafr_median_ratio.toFixed(2)}×</strong> difference, measured from scratch on real data by a pipeline that was never tuned for it. The deep tail behaves the same way: the 99th percentile in Africans reaches ${fmt(afr.p99_ka)} ka against ${fmt(nonAfr.reduce((a,g)=>a+g.p99_ka,0)/nonAfr.length)} ka elsewhere.`;
+
+  // distribution, per superpopulation, as small multiples on one shared axis
+  (function chart(){
+    const svg=$('#realChart'), W=860,H=300,ML=62,MR=30,MT=26,MB=54;
+    const iw=W-ML-MR, ih=H-MT-MB;
+    const t=svgEl('title',{id:'rlT'}); t.textContent='Distribution of nearest-relative coalescent depth for real 1000 Genomes haplotypes, by superpopulation.'; svg.appendChild(t);
+    const edges=REAL.histogram_edges_ka, hiKa=edges[edges.length-1];
+    const x=k=>ML+(Math.min(k,hiKa)/hiKa)*iw;
+    const groups=REAL.by_superpopulation;
+    const COL={AFR:'--data-ghost-a',EUR:'--data-deniso',EAS:'--data-neander',SAS:'--data-ghost-b',AMR:'--data-none'};
+    for(let i=0;i<=5;i++){ const k=hiKa*i/5, gx=x(k);
+      svg.appendChild(svgEl('line',{class:'gl',x1:gx,y1:MT,x2:gx,y2:MT+ih}));
+      const l=svgEl('text',{x:gx,y:MT+ih+18,'text-anchor':'middle'}); l.textContent=Math.round(k)+' ka'; svg.appendChild(l); }
+    svg.appendChild(svgEl('line',{class:'ax',x1:ML,y1:MT+ih,x2:ML+iw,y2:MT+ih}));
+    const rowH=ih/groups.length;
+    groups.forEach((g,i)=>{
+      const cy=MT+(i+0.85)*rowH, col=cv(COL[g.group]||'--data-none');
+      // median marker and the p90..p99 whisker
+      svg.appendChild(svgEl('line',{x1:x(g.p90_ka),y1:cy,x2:x(g.p99_ka),y2:cy,stroke:col,'stroke-width':2,'stroke-opacity':.45,'stroke-linecap':'round'}));
+      const bar=svgEl('rect',{x:ML,y:cy-6,width:Math.max(x(g.median_ka)-ML,2),height:12,fill:col,'fill-opacity':.30,rx:6});
+      bar.style.transformOrigin=`${ML}px ${cy}px`; bar.style.animation=`growRight .8s var(--enter) ${.1*i}s backwards`;
+      svg.appendChild(bar);
+      const dot=svgEl('circle',{cx:x(g.median_ka),cy,r:5.5,fill:col,stroke:cv('--card'),'stroke-width':2});
+      hoverable(dot,`<b>${g.group}</b><br>${fmt(g.n_haplotypes)} haplotypes<br>median ${fmt(g.median_ka,1)} ka<br>p90 ${fmt(g.p90_ka)} · p99 ${fmt(g.p99_ka)}<br>deepest ${fmt(g.max_ka)} ka`);
+      svg.appendChild(dot);
+      const lb=svgEl('text',{x:ML-12,y:cy+4,'text-anchor':'end',fill:col,'font-size':12}); lb.textContent=g.group; svg.appendChild(lb);
+      const vl=svgEl('text',{x:x(g.p99_ka)+10,y:cy+4,fill:cv('--dim-foreground'),'font-size':10.5}); vl.textContent=`median ${fmt(g.median_ka,1)} · p99 ${fmt(g.p99_ka)} ka`; svg.appendChild(vl);
+    });
+    const xl=svgEl('text',{x:ML+iw/2,y:MT+ih+40,'text-anchor':'middle',class:'lbl-in'}); xl.textContent='nearest-relative coalescent depth · bar to the median, whisker from the 90th to the 99th percentile'; svg.appendChild(xl);
+    $('#realLegend').innerHTML=groups.map(g=>`<span><i style="background:${cv(COL[g.group]||'--data-none')}"></i>${g.group}</span>`).join('');
+  })();
+
+  $('#realTable').innerHTML = `<thead><tr><th>Superpopulation</th><th class="num">Haplotypes</th><th class="num">Median</th><th class="num">90th pct</th><th class="num">99th pct</th><th class="num">Deepest</th></tr></thead><tbody>`+
+    REAL.by_superpopulation.map(g=>`<tr><td class="mono">${g.group}</td><td class="num">${fmt(g.n_haplotypes)}</td><td class="num">${fmt(g.median_ka,1)} ka</td><td class="num">${fmt(g.p90_ka)} ka</td><td class="num">${fmt(g.p99_ka)} ka</td><td class="num">${fmt(g.max_ka)} ka</td></tr>`).join('')+'</tbody>';
+
+  $('#realDeep').innerHTML = `<thead><tr><th>Position (GRCh37)</th><th>Haplotype</th><th>Population</th><th class="num">Depth</th><th>Nearest relative in panel</th></tr></thead><tbody>`+
+    REAL.deepest.slice(0,10).map(o=>`<tr><td class="mono">chr22:${fmt(o.start)}–${fmt(o.end)}</td><td class="mono" style="color:var(--foreground)">${o.haplotype}</td><td class="mono">${o.population} · ${o.superpopulation}</td><td class="num" style="color:var(--primary)">${fmt(o.depth_ka)} ka</td><td class="mono">${o.nearest}</td></tr>`).join('')+'</tbody>';
+
+  /* ─────────────────────────── the archaic comparison (Patterson's D) */
+  const D = REAL.d_statistics || [];
+  if (D.length) {
+    const nean = D[0], den = D.find(d=>d.archaic.startsWith('Denisova'));
+    tiles($('#dTiles'), [
+      { k:'D · Altai Neanderthal', v:(nean.d>=0?'+':'')+nean.d.toFixed(4), hi:true, n:`${fmt(nean.abba)} ABBA against ${fmt(nean.baba)} BABA site-patterns` },
+      { k:'D · Denisova 3', v:(den.d>=0?'+':'')+den.d.toFixed(4), n:'the control — no Oceanian samples in 1000 Genomes' },
+      { k:'Haplotype pairs', v:fmt(nean.n_afr_haplotypes*nean.n_nonafr_haplotypes), n:`${nean.n_afr_haplotypes} African × ${nean.n_nonafr_haplotypes} non-African, every pair counted` },
+      { k:'Significance', v:'Z = '+(nean.z_score>=0?'+':'')+nean.z_score.toFixed(1), n:`${nean.n_blocks}-block jackknife · not significant at 1 Mb` },
+    ]);
+
+    $('#dHeadline').innerHTML = `<strong>D comes out positive for both Neanderthals and flat for the Denisovan.</strong> Altai gives <strong>${(nean.d>=0?'+':'')+nean.d.toFixed(4)}</strong>, Vindija <strong>${(D[1].d>=0?'+':'')+D[1].d.toFixed(4)}</strong>, Denisova <strong>${(den.d>=0?'+':'')+den.d.toFixed(4)}</strong> — ${Math.abs(den.d/nean.d*100).toFixed(0)}% of the Neanderthal value. That is the pattern Neanderthal introgression predicts, and the pattern a reference-bias artefact does not: an artefact would push all three the same way, because all three were called against the same reference by the same pipeline.`;
+
+    $('#dTable').innerHTML = `<thead><tr><th>Archaic genome</th><th class="num">ABBA</th><th class="num">BABA</th><th class="num">D</th><th class="num">SE</th><th class="num">Z</th></tr></thead><tbody>`+
+      D.map(d=>`<tr><td class="mono" style="color:var(--foreground)">${d.archaic}</td><td class="num">${fmt(d.abba)}</td><td class="num">${fmt(d.baba)}</td><td class="num" style="color:${d.d>0.05?'var(--primary)':'var(--muted-foreground)'}">${(d.d>=0?'+':'')+d.d.toFixed(4)}</td><td class="num">${d.standard_error.toFixed(4)}</td><td class="num">${(d.z_score>=0?'+':'')+d.z_score.toFixed(1)}</td></tr>`).join('')+'</tbody>';
+
+    /* per-window D against Altai, in genome order — the tract structure */
+    (function dchart(){
+      const svg=$('#dChart'); if(!svg) return;
+      const W=860,H=260,ML=64,MR=18,MT=22,MB=52, iw=W-ML-MR, ih=H-MT-MB;
+      const ws=(REAL.neanderthal_windows||[]).slice().sort((a,b)=>a.start-b.start);
+      if(!ws.length) return;
+      const lim=Math.max(...ws.map(w=>Math.abs(w.d)))*1.15||1;
+      const y=v=>MT+ih/2-(v/lim)*(ih/2);
+      const bw=iw/ws.length;
+      const t=svgEl('title',{id:'dcT'}); t.textContent='Per-window Patterson D against the Altai Neanderthal across the region'; svg.appendChild(t);
+      svg.innerHTML='';svg.appendChild(t);
+      // zero line
+      svg.appendChild(svgEl('line',{x1:ML,x2:ML+iw,y1:y(0),y2:y(0),stroke:cv('--border'),'stroke-width':1}));
+      [lim*0.5,-lim*0.5].forEach(v=>{
+        svg.appendChild(svgEl('line',{x1:ML,x2:ML+iw,y1:y(v),y2:y(v),stroke:cv('--border-soft'),'stroke-width':1,'stroke-dasharray':'3 5'}));
+        const l=svgEl('text',{x:ML-10,y:y(v)+4,'text-anchor':'end',class:'lbl-in'}); l.textContent=(v>0?'+':'')+v.toFixed(2); svg.appendChild(l);
+      });
+      const zl=svgEl('text',{x:ML-10,y:y(0)+4,'text-anchor':'end',class:'lbl-in'}); zl.textContent='0'; svg.appendChild(zl);
+      ws.forEach((w,i)=>{
+        const h=Math.abs(y(w.d)-y(0));
+        const r=svgEl('rect',{x:ML+i*bw+bw*0.15,y:Math.min(y(w.d),y(0)),width:bw*0.7,height:Math.max(1,h),
+          fill:w.d>0?cv('--data-neander'):cv('--data-none'),rx:2,opacity:0});
+        r.appendChild(svgEl('animate',{attributeName:'opacity',from:0,to:w.d>0?0.92:0.55,dur:'.5s',begin:`${i*0.045}s`,fill:'freeze'}));
+        r.addEventListener('mousemove',e=>showTip(e,`<b>chr22:${fmt(w.start)}–${fmt(w.end)}</b><br>D = ${(w.d>=0?'+':'')+w.d.toFixed(3)}<br>${fmt(w.abba)} ABBA · ${fmt(w.baba)} BABA`));
+        r.addEventListener('mouseleave',hideTip);
+        svg.appendChild(r);
+      });
+      const xl=svgEl('text',{x:ML+iw/2,y:MT+ih+40,'text-anchor':'middle',class:'lbl-in'});
+      xl.textContent=`Patterson's D against Altai in each 50 kb window, left to right along chr22:${fmt(ws[0].start)}–${fmt(ws[ws.length-1].end)}`;
+      svg.appendChild(xl);
+    })();
+
+    $('#dPower').innerHTML = `<strong>It is also not significant, and that is the more useful number.</strong> Z = ${nean.z_score.toFixed(1)}. One megabase gives ${nean.n_blocks} jackknife blocks, and block-to-block variance at that scale swamps an effect this size. Extrapolating the standard error as 1/√length, this comparison needs roughly <strong>${fmt(nean.mb_for_z3)} Mb</strong> of chromosome before it reaches Z = 3 — about ${(nean.mb_for_z3/(nean.n_blocks*0.05)).toFixed(0)}× more sequence than was used here. That is a power limit, not a null result, and it is the real-data twin of the resolution floor the simulation reports below: a true signal can be present, correctly signed, and still unclaimable.`;
+  }
+
+  $('#realCaveat').innerHTML = `<strong>What this is not.</strong> ${REAL.caveats[0]} The depth estimate assumes a strict clock at μ = 1.25×10⁻⁸ per base per generation with a 29-year generation, so treat the absolute numbers as a scale, not a date.`;
+})();
+
+/* ═══════════════════════════════════════════════ 03 tree */
 (function plant(){
   const p=REPORT.cohort.planted_segments;
   const rows=Object.keys(p).sort().map(k=>`<tr><td class="mono"><span class="sw" style="background:${colorFor(k)}"></span>${k}</td><td class="num">${fmt(p[k])}</td><td class="num">${pct(p[k]/REPORT.cohort.planted_total)}</td></tr>`).join('');
@@ -927,7 +1188,77 @@ tiles($('#fidTiles'), [
   { k:'F1 difference', v:Math.abs(DISC.fidelity.exhaustive_f1-DISC.fidelity.indexed_f1).toFixed(4), n:`exhaustive ${DISC.fidelity.exhaustive_f1.toFixed(4)} vs indexed ${DISC.fidelity.indexed_f1.toFixed(4)}` },
   { k:'Work saved', v:DISC.fidelity.work_ratio.toFixed(1)+'×', n:`${fmt(DISC.fidelity.exact_comparisons_indexed)} comparisons instead of ${fmt(DISC.fidelity.exact_comparisons_exhaustive)}` },
 ]);
-$('#fidFinding').innerHTML=`<strong>Finding.</strong> ${DISC.findings[2]||''}`;
+$('#fidFinding').innerHTML=`<strong>Finding.</strong> `+prose(DISC.findings[2]);
+
+/* ═══════════════════════════════════════════════ 07d linkage */
+(function linkage(){
+  const pw=LINK.per_window.scores, lk=LINK.linkage.scores, d=LINK.delta, ho=LINK.held_out, uc=LINK.unlinked_control;
+  tiles($('#linkTiles'), [
+    { k:'F1 · per-window', v:pw.f1.toFixed(3), n:`precision ${pw.precision.toFixed(3)} · recall ${pw.recall.toFixed(3)}` },
+    { k:'F1 · linkage-aware', v:lk.f1.toFixed(3), hi:true, n:`precision ${lk.precision.toFixed(3)} · recall ${lk.recall.toFixed(3)}` },
+    { k:'Rescued windows', v:`${d.rescued_true} / ${d.rescued_windows}`, n:`${pct(d.rescued_precision,0)} of the windows the context rule saved were genuinely introgressed` },
+    { k:'Held-out F1 gain', v:'+'+(ho.linkage_test.f1-ho.per_window_test.f1).toFixed(3), n:`tuned on one half of the genome, scored on the other` },
+  ]);
+  $('#linkHeadline').innerHTML=`<strong>Looking sideways helps, and it helps in the way it should.</strong> The rule is monotone by construction — it can only add calls — so recall could only rise (+${d.recall.toFixed(3)}). The real question was whether precision would survive the extra calls, and it went <em>up</em> (+${d.precision.toFixed(3)}). Of the ${d.rescued_windows} borderline windows the context rule rescued, <strong>${d.rescued_true} were genuinely introgressed</strong> — cleaner than the ${pct(pw.precision,1)} precision of the calls the per-window detector was already making.`;
+  $('#linkTable').innerHTML=`<thead><tr><th>Arm</th><th class="num">Precision</th><th class="num">Recall</th><th class="num">F1</th></tr></thead><tbody>`+
+    [['Per-window, tracted cohort',pw],['Linkage-aware, tracted cohort',lk],
+     ['Per-window, held-out half',ho.per_window_test],['Linkage-aware, held-out half',ho.linkage_test],
+     ['Per-window, UNLINKED control',uc.per_window],['Linkage-aware, UNLINKED control',uc.linkage]]
+      .map(([n,s],i)=>`<tr${i%2?' style="color:var(--foreground)"':''}><td>${n}</td><td class="num">${s.precision.toFixed(3)}</td><td class="num">${s.recall.toFixed(3)}</td><td class="num">${s.f1.toFixed(3)}</td></tr>`).join('')+'</tbody>';
+  const tp=LINK.per_window.tract_comparison.planted, tr=LINK.per_window.tract_comparison.recovered;
+  $('#linkTract').innerHTML=`<strong>The control is the part that matters.</strong> Run the same rule on a cohort where introgressed windows are isolated by construction and it moves F1 by <strong>exactly ${(uc.linkage.f1-uc.per_window.f1).toFixed(4)}</strong>. There is nothing for it to exploit there, so any gain it shows on the tracted cohort is linkage rather than a relaxed threshold.<br><br>What neither detector does is recover tracts at their planted length. Planted tracts average <strong>${tp.mean_windows.toFixed(2)} windows</strong>; the per-window detector recovers ${tr.mean_windows.toFixed(2)} and the linkage rule ${LINK.linkage.tract_comparison.recovered.mean_windows.toFixed(2)}. Both <em>fragment</em> real tracts rather than fusing them, because one missed window in the middle of a run splits it in two — and that matters, because tract length is how admixture is dated. Inverting mean length gives ${fmt(LINK.admixture_time_truth.generations)} generations from the planted tracts and ${fmt(LINK.linkage.admixture_time.generations)} from the recovered ones. Fragmentation shortens the measured tracts, and a shorter tract always reads as an <em>older</em> pulse.`;
+})();
+
+/* ═══════════════════════════════════════════════ 07e panel design */
+(function panelDesign(){
+  const rows=PANEL.panel_design.filter(r=>r.available);
+  const bal=rows.filter(r=>r.composition==='balanced').sort((a,b)=>a.actual_size-b.actual_size);
+  const afr=rows.filter(r=>r.composition!=='balanced').sort((a,b)=>a.actual_size-b.actual_size);
+
+  (function chart(){
+    const svg=$('#panelChart'); const W=860,H=300,ML=58,MR=54,MT=22,MB=54,iw=W-ML-MR,ih=H-MT-MB;
+    const t=svgEl('title',{id:'pnT'}); t.textContent='Detection F1 and the ordinary-segment noise floor against reference panel size'; svg.appendChild(t);
+    const maxN=Math.max(...bal.map(r=>r.actual_size));
+    const x=n=>ML+(n/maxN)*iw, y=f=>MT+ih-f*ih;
+    const maxNoise=Math.max(...bal.map(r=>r.ordinary_median_ka));
+    const y2=v=>MT+ih-(v/maxNoise)*ih;
+    [0,.25,.5,.75,1].forEach(f=>{
+      svg.appendChild(svgEl('line',{x1:ML,x2:ML+iw,y1:y(f),y2:y(f),stroke:cv('--border-soft'),'stroke-width':1}));
+      const l=svgEl('text',{x:ML-10,y:y(f)+4,'text-anchor':'end',class:'lbl-in'}); l.textContent=f.toFixed(2); svg.appendChild(l);
+    });
+    const line=(pts,col,dash)=>{
+      const p=svgEl('path',{d:pts.map((q,i)=>`${i?'L':'M'}${q[0].toFixed(1)} ${q[1].toFixed(1)}`).join(' '),
+        fill:'none',stroke:col,'stroke-width':2.4,'stroke-linecap':'round','stroke-linejoin':'round'});
+      if(dash) p.setAttribute('stroke-dasharray','6 5');
+      const L=1400; p.setAttribute('stroke-dasharray',dash?'6 5':L); if(!dash){p.setAttribute('stroke-dashoffset',L);
+        p.style.animation='drawLine 1.5s var(--enter) forwards';}
+      svg.appendChild(p); return p;
+    };
+    line(bal.map(r=>[x(r.actual_size),y(r.f1)]),cv('--primary'));
+    line(afr.map(r=>[x(r.actual_size),y(r.f1)]),cv('--data-ghost-b'));
+    line(bal.map(r=>[x(r.actual_size),y2(r.ordinary_median_ka)]),cv('--data-none'),true);
+    [...bal.map(r=>[r,cv('--primary')]),...afr.map(r=>[r,cv('--data-ghost-b')])].forEach(([r,c])=>{
+      const dot=svgEl('circle',{cx:x(r.actual_size),cy:y(r.f1),r:4,fill:c});
+      hoverable(dot,`<b>${r.composition} · ${r.actual_size} haplotypes</b><br>F1 ${r.f1.toFixed(4)}<br>precision ${r.precision.toFixed(3)} · recall ${r.recall.toFixed(3)}<br>noise floor ${fmt(r.ordinary_median_ka)} ka`);
+      svg.appendChild(dot);
+    });
+    const xl=svgEl('text',{x:ML+iw/2,y:MT+ih+40,'text-anchor':'middle',class:'lbl-in'});
+    xl.textContent='modern reference haplotypes in the panel  ·  right axis: median depth assigned to ordinary segments (the noise floor)'; svg.appendChild(xl);
+    $('#panelLegend').innerHTML=`<span><i style="background:${cv('--primary')}"></i>balanced panel · F1</span><span><i style="background:${cv('--data-ghost-b')}"></i>African-only panel · F1</span><span><i style="background:${cv('--data-none')}"></i>noise floor (ka)</span>`;
+  })();
+
+  $('#panelHeadline').innerHTML=prose(PANEL.findings[0]).replace(/^([^.]+\.)/,'<strong>$1</strong>')
+    + ' ' + prose(PANEL.findings[2]);
+  $('#panelTwist').innerHTML=`<strong>And then the obvious corollary fails.</strong> `+prose(PANEL.findings[3]).replace(/^[^.]+\.\s*/,'')
+    + '<br><br>' + prose(PANEL.findings[5]);
+
+  const ab=PANEL.archaic_ablation||[];
+  $('#ablTable').innerHTML=`<thead><tr><th>Archaic references available</th><th class="num">Ghost precision</th><th class="num">Ghost recall</th><th class="num">Attribution accuracy</th></tr></thead><tbody>`+
+    ab.map(a=>`<tr><td class="mono">${a.reference_set}</td><td class="num" style="color:${a.ghost_precision>0.6?'var(--primary)':'var(--muted-foreground)'}">${a.ghost_precision.toFixed(3)}</td><td class="num">${a.ghost_recall.toFixed(3)}</td><td class="num">${a.attribution_accuracy.toFixed(3)}</td></tr>`).join('')+'</tbody>';
+  $('#ablFinding').innerHTML=`<strong>And the archaic genomes?</strong> `+prose(PANEL.findings[6])
+    +'<br><br>'+prose(PANEL.findings[9]||'')
+    +'<br><br>'+prose(PANEL.findings[PANEL.findings.length-1]||'');
+})();
 
 $('#caveatList').innerHTML = REPORT.caveats.map((c,i)=>`<div style="display:flex;gap:16px;max-width:var(--measure);margin-bottom:18px">
   <div style="font-family:var(--font-mono);font-size:11px;color:var(--primary);padding-top:5px;flex:0 0 24px">0${i+1}</div><div>${c}</div></div>`).join('');

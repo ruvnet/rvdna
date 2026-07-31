@@ -36,6 +36,14 @@ const report = readJson('trace-rv-report.json');
 const calls = readJson('archaic-calls.json');
 const depth = readJson('depth-distribution.json');
 const disc = readJson('discoveries.json');
+const real = readJson('real-dna.json');
+const link = readJson('linkage.json');
+const panel = readJson('panel.json');
+
+// The linkage study logs its whole held-out parameter sweep (66 KB). The page
+// quotes the tuned point and the two scores; the sweep stays in the JSON on
+// disk for anyone who wants to audit the tuning.
+delete link.held_out.sweep;
 
 // The report embeds the full call list under `flywheel.final_calls`; the calls
 // file is the same data. Carry it once.
@@ -119,6 +127,9 @@ const subs = {
   __CALLS_DATA__: JSON.stringify(callsSlim),
   __DEPTH_DATA__: JSON.stringify(depthSlim),
   __DISC_DATA__: JSON.stringify(disc),
+  __REAL_DATA__: JSON.stringify(real),
+  __LINK_DATA__: JSON.stringify(link),
+  __PANEL_DATA__: JSON.stringify(panel),
   __PARTICLE_DATA__: JSON.stringify(particles),
   __FONT_OUTFIT__: font('Outfit.woff2'),
   __FONT_MONO__: font('JetBrainsMono.woff2'),

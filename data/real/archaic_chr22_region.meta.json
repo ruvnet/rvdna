@@ -1,0 +1,61 @@
+{
+  "individuals": [
+    "AltaiNeandertal",
+    "Vindija33.19",
+    "Denisova3"
+  ],
+  "source_urls": [
+    "https://cdna.eva.mpg.de/neandertal/Vindija/VCF/Altai/chr22_mq25_mapab100.vcf.gz",
+    "https://cdna.eva.mpg.de/neandertal/Vindija/VCF/Vindija33.19/chr22_mq25_mapab100.vcf.gz",
+    "https://cdna.eva.mpg.de/neandertal/Vindija/VCF/Denisova/chr22_mq25_mapab100.vcf.gz",
+    "https://cdna.eva.mpg.de/neandertal/Vindija/VCF/README",
+    "https://cdna.eva.mpg.de/neandertal/Vindija/VCF/Altai/chr22_mq25_mapab100.vcf.gz.tbi",
+    "https://cdna.eva.mpg.de/neandertal/Vindija/VCF/Vindija33.19/chr22_mq25_mapab100.vcf.gz.tbi",
+    "https://cdna.eva.mpg.de/neandertal/Vindija/VCF/Denisova/chr22_mq25_mapab100.vcf.gz.tbi"
+  ],
+  "region": {
+    "chrom": "22",
+    "start": 20000000,
+    "end": 21000000,
+    "string": "chr22:20000000-21000000",
+    "coordinates": "1-based inclusive"
+  },
+  "build": "GRCh37/hg19",
+  "coverage_note": "snpAD genotype calls (Prufer et al. 2017, Science 358:655) from MPI-EVA. Altai Neandertal ~52x, Vindija 33.19 ~30x, Denisova 3 ~30x nuclear coverage. Calls restricted by the producers to mappable sites (Heng Li 35mer filter) with MQ>=25. These are all-sites VCFs, so a position absent from a file is genuinely uncallable in that individual and is reported as \".\" (no-call). Genotypes are the raw snpAD GT converted to alt-allele dosage; NO extra GQ/DP filter was applied here, so low-GQ calls are included as reported by the producers. Rows are the union of (a) every position in the modern 1000G panel file chr22_region.haplotypes.tsv and (b) every position where at least one archaic carries a called ALT allele; every modern-panel position is retained even when all three archaics are no-call, so this table joins 1:1 with chr22_region.haplotypes.tsv (9884 such all-no-call rows). Only biallelic SNVs are emitted. Where an archaic carries a third allele not matching the chosen REF/ALT pair, that individual is set to \".\" (10 such individual-site calls).",
+  "per_individual_dosage_counts": {
+    "AltaiNeandertal": {
+      "0": 11080,
+      "1": 57,
+      "2": 631,
+      ".": 9889
+    },
+    "Vindija33.19": {
+      "0": 11074,
+      "1": 61,
+      "2": 622,
+      ".": 9900
+    },
+    "Denisova3": {
+      "0": 11066,
+      "1": 98,
+      "2": 590,
+      ".": 9903
+    }
+  },
+  "n_sites": 21657,
+  "n_sites_skipped_non_snv": 0,
+  "retrieval_method": "pure-Python tabix (.tbi) index parse -> virtual offsets -> HTTP Range requests -> BGZF block inflate with zlib; no tabix/bcftools available",
+  "bytes_downloaded": {
+    "AltaiNeandertal": 10590316,
+    "Vindija33.19": 10504372,
+    "Denisova3": 9767553
+  },
+  "total_bytes_downloaded": 30862241,
+  "sites_callable_in_region": {
+    "AltaiNeandertal": 364941,
+    "Vindija33.19": 364780,
+    "Denisova3": 364697
+  },
+  "retrieved_utc": "2026-07-31T03:59:27Z",
+  "n_sites_modern_panel_uncallable_in_all_archaics": 9884
+}

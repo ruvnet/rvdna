@@ -1,0 +1,818 @@
+{
+  "title": "Coalescent depth in real human genomes — 1000 Genomes chr22",
+  "generated_utc": "2026-07-31T04:11:28.127273151+00:00",
+  "source": {
+    "access_method": "tabix linear index parsed in pure Python to get a coffset, then an HTTP Range request into the bgzipped VCF and per-BGZF-block raw-deflate decompression; no tabix/bcftools/pysam",
+    "build": "GRCh37",
+    "byte_range": "20604529-25373776",
+    "license_note": "1000 Genomes Project phase 3 (IGSR/EBI) data are openly available with no restrictions on use. Please cite The 1000 Genomes Project Consortium, 'A global reference for human genetic variation', Nature 526, 68-74 (2015). https://www.internationalgenome.org/data",
+    "n_haplotypes": 800,
+    "n_samples": 400,
+    "n_variants": 21418,
+    "region": "chr22:20000018-20999980",
+    "requested_region": "chr22:20000000-21000000",
+    "retrieved_utc": "2026-07-31T03:56:49Z",
+    "source_url": "https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/release/20130502/ALL.chr22.phase3_shapeit2_mvncall_integrated_v5b.20130502.genotypes.vcf.gz",
+    "subsample_note": "Subsampled to 400 of 2504 samples, 80 per superpopulation (AFR/AMR/EAS/EUR/SAS), round-robin across constituent populations, seed=20130502. Column order follows original VCF sample order.",
+    "subsampled": true,
+    "variant_filter": "biallelic SNPs (single-base ACGT REF and ALT) with fully phased '|' genotypes in all retained samples"
+  },
+  "region": "chr22:20000018-20999980 (GRCh37)",
+  "n_haplotypes": 800,
+  "n_variants": 21418,
+  "n_windows": 19,
+  "window_bp": 50000,
+  "n_segments": 15200,
+  "mu_per_bp_per_generation": 1.25e-8,
+  "generation_years": 29.0,
+  "by_superpopulation": [
+    {
+      "group": "AFR",
+      "n_haplotypes": 160,
+      "n_segments": 3040,
+      "median_ka": 46.40123737734338,
+      "mean_ka": 129.74731333440525,
+      "p90_ka": 394.48942436035935,
+      "p99_ka": 974.9460717716762,
+      "max_ka": 1346.6416715510206
+    },
+    {
+      "group": "AMR",
+      "n_haplotypes": 160,
+      "n_segments": 3040,
+      "median_ka": 23.20030933879151,
+      "mean_ka": 48.90171842622526,
+      "p90_ka": 139.2111371880252,
+      "p99_ka": 464.12377734505816,
+      "max_ka": 1067.8550851022073
+    },
+    {
+      "group": "EAS",
+      "n_haplotypes": 160,
+      "n_segments": 3040,
+      "median_ka": 23.20030933879151,
+      "mean_ka": 57.54214227294214,
+      "p90_ka": 162.4151592198448,
+      "p99_ka": 487.3364669500439,
+      "max_ka": 1044.626901571423
+    },
+    {
+      "group": "EUR",
+      "n_haplotypes": 160,
+      "n_segments": 3040,
+      "median_ka": 23.20030933879151,
+      "mean_ka": 49.47342280976045,
+      "p90_ka": 139.2111371880252,
+      "p99_ka": 440.9117070670819,
+      "max_ka": 765.9370617573986
+    },
+    {
+      "group": "SAS",
+      "n_haplotypes": 160,
+      "n_segments": 3040,
+      "median_ka": 23.20030933879151,
+      "mean_ka": 62.22070614031967,
+      "p90_ka": 162.4151592198448,
+      "p99_ka": 487.3364669500439,
+      "max_ka": 905.2708224652517
+    }
+  ],
+  "afr_vs_nonafr_median_ratio": 2.0000266677375427,
+  "histogram_edges_ka": [
+    0.0,
+    22.73091435041989,
+    45.46182870083978,
+    68.19274305125967,
+    90.92365740167956,
+    113.65457175209944,
+    136.38548610251934,
+    159.11640045293925,
+    181.84731480335913,
+    204.578229153779,
+    227.3091435041989,
+    250.0400578546188,
+    272.7709722050387,
+    295.50188655545855,
+    318.2328009058785,
+    340.96371525629837,
+    363.69462960671825,
+    386.42554395713813,
+    409.156458307558,
+    431.8873726579779,
+    454.6182870083978,
+    477.3492013588177,
+    500.0801157092376,
+    522.8110300596575,
+    545.5419444100773,
+    568.2728587604972,
+    591.0037731109171,
+    613.734687461337,
+    636.465601811757,
+    659.1965161621769,
+    681.9274305125967,
+    704.6583448630166,
+    727.3892592134365,
+    750.1201735638564,
+    772.8510879142763,
+    795.5820022646961,
+    818.312916615116,
+    841.0438309655359,
+    863.7747453159558,
+    886.5056596663757,
+    909.2365740167955,
+    931.9674883672155,
+    954.6984027176354,
+    977.4293170680553,
+    1000.1602314184752,
+    1022.8911457688951,
+    1045.622060119315,
+    1068.3529744697348,
+    1091.0838888201547
+  ],
+  "histogram_counts": [
+    5668,
+    3120,
+    1733,
+    1093,
+    746,
+    496,
+    396,
+    291,
+    252,
+    201,
+    134,
+    129,
+    113,
+    75,
+    83,
+    60,
+    58,
+    63,
+    56,
+    46,
+    42,
+    39,
+    32,
+    24,
+    17,
+    27,
+    27,
+    15,
+    15,
+    21,
+    9,
+    15,
+    13,
+    7,
+    10,
+    8,
+    9,
+    3,
+    9,
+    3,
+    5,
+    4,
+    3,
+    1,
+    2,
+    6,
+    5,
+    16
+  ],
+  "deepest": [
+    {
+      "window": 18,
+      "start": 20950018,
+      "end": 21000018,
+      "haplotype": "HG03472_B",
+      "population": "MSL",
+      "superpopulation": "AFR",
+      "depth_ka": 1346.6416715510206,
+      "nearest": "HG01941_B"
+    },
+    {
+      "window": 17,
+      "start": 20900018,
+      "end": 20950018,
+      "haplotype": "HG03055_A",
+      "population": "MSL",
+      "superpopulation": "AFR",
+      "depth_ka": 1300.1710361742014,
+      "nearest": "HG03442_A"
+    },
+    {
+      "window": 18,
+      "start": 20950018,
+      "end": 21000018,
+      "haplotype": "HG03055_B",
+      "population": "MSL",
+      "superpopulation": "AFR",
+      "depth_ka": 1300.1710361742014,
+      "nearest": "HG01883_B"
+    },
+    {
+      "window": 18,
+      "start": 20950018,
+      "end": 21000018,
+      "haplotype": "HG02808_B",
+      "population": "GWD",
+      "superpopulation": "AFR",
+      "depth_ka": 1276.9366492801644,
+      "nearest": "HG02887_A"
+    },
+    {
+      "window": 1,
+      "start": 20050018,
+      "end": 20100018,
+      "haplotype": "HG03401_B",
+      "population": "MSL",
+      "superpopulation": "AFR",
+      "depth_ka": 1253.702882871646,
+      "nearest": "HG02977_B"
+    },
+    {
+      "window": 18,
+      "start": 20950018,
+      "end": 21000018,
+      "haplotype": "HG02977_B",
+      "population": "ESN",
+      "superpopulation": "AFR",
+      "depth_ka": 1207.2372113782249,
+      "nearest": "NA19316_B"
+    },
+    {
+      "window": 18,
+      "start": 20950018,
+      "end": 21000018,
+      "haplotype": "NA19190_B",
+      "population": "YRI",
+      "superpopulation": "AFR",
+      "depth_ka": 1207.2372113782249,
+      "nearest": "HG03061_B"
+    },
+    {
+      "window": 18,
+      "start": 20950018,
+      "end": 21000018,
+      "haplotype": "NA19378_B",
+      "population": "LWK",
+      "superpopulation": "AFR",
+      "depth_ka": 1207.2372113782249,
+      "nearest": "HG01762_A"
+    },
+    {
+      "window": 18,
+      "start": 20950018,
+      "end": 21000018,
+      "haplotype": "NA20340_A",
+      "population": "ASW",
+      "superpopulation": "AFR",
+      "depth_ka": 1184.0053062271465,
+      "nearest": "HG03419_A"
+    },
+    {
+      "window": 18,
+      "start": 20950018,
+      "end": 21000018,
+      "haplotype": "NA19317_A",
+      "population": "LWK",
+      "superpopulation": "AFR",
+      "depth_ka": 1160.774021428851,
+      "nearest": "HG03342_A"
+    },
+    {
+      "window": 18,
+      "start": 20950018,
+      "end": 21000018,
+      "haplotype": "HG03442_B",
+      "population": "MSL",
+      "superpopulation": "AFR",
+      "depth_ka": 1137.5433569504023,
+      "nearest": "HG02614_B"
+    },
+    {
+      "window": 18,
+      "start": 20950018,
+      "end": 21000018,
+      "haplotype": "NA19328_B",
+      "population": "LWK",
+      "superpopulation": "AFR",
+      "depth_ka": 1137.5433569504023,
+      "nearest": "HG02885_B"
+    },
+    {
+      "window": 18,
+      "start": 20950018,
+      "end": 21000018,
+      "haplotype": "NA19921_A",
+      "population": "ASW",
+      "superpopulation": "AFR",
+      "depth_ka": 1137.5433569504023,
+      "nearest": "HG02455_B"
+    },
+    {
+      "window": 3,
+      "start": 20150018,
+      "end": 20200018,
+      "haplotype": "HG01883_A",
+      "population": "ACB",
+      "superpopulation": "AFR",
+      "depth_ka": 1114.3133127584804,
+      "nearest": "HG03342_A"
+    },
+    {
+      "window": 18,
+      "start": 20950018,
+      "end": 21000018,
+      "haplotype": "HG02470_A",
+      "population": "ACB",
+      "superpopulation": "AFR",
+      "depth_ka": 1114.3133127584804,
+      "nearest": "HG02614_A"
+    },
+    {
+      "window": 18,
+      "start": 20950018,
+      "end": 21000018,
+      "haplotype": "NA19141_B",
+      "population": "YRI",
+      "superpopulation": "AFR",
+      "depth_ka": 1091.0838888201547,
+      "nearest": "HG01444_B"
+    },
+    {
+      "window": 18,
+      "start": 20950018,
+      "end": 21000018,
+      "haplotype": "HG01254_A",
+      "population": "CLM",
+      "superpopulation": "AMR",
+      "depth_ka": 1067.8550851022073,
+      "nearest": "NA19317_B"
+    },
+    {
+      "window": 18,
+      "start": 20950018,
+      "end": 21000018,
+      "haplotype": "HG02545_A",
+      "population": "ACB",
+      "superpopulation": "AFR",
+      "depth_ka": 1067.8550851022073,
+      "nearest": "HG02121_A"
+    },
+    {
+      "window": 18,
+      "start": 20950018,
+      "end": 21000018,
+      "haplotype": "HG02807_A",
+      "population": "GWD",
+      "superpopulation": "AFR",
+      "depth_ka": 1067.8550851022073,
+      "nearest": "NA19909_A"
+    },
+    {
+      "window": 18,
+      "start": 20950018,
+      "end": 21000018,
+      "haplotype": "HG03419_A",
+      "population": "MSL",
+      "superpopulation": "AFR",
+      "depth_ka": 1067.8550851022073,
+      "nearest": "HG01351_A"
+    },
+    {
+      "window": 18,
+      "start": 20950018,
+      "end": 21000018,
+      "haplotype": "NA19317_B",
+      "population": "LWK",
+      "superpopulation": "AFR",
+      "depth_ka": 1067.8550851022073,
+      "nearest": "HG01254_A"
+    },
+    {
+      "window": 3,
+      "start": 20150018,
+      "end": 20200018,
+      "haplotype": "HG02944_A",
+      "population": "ESN",
+      "superpopulation": "AFR",
+      "depth_ka": 1044.626901571423,
+      "nearest": "HG02445_A"
+    },
+    {
+      "window": 3,
+      "start": 20150018,
+      "end": 20200018,
+      "haplotype": "HG03472_B",
+      "population": "MSL",
+      "superpopulation": "AFR",
+      "depth_ka": 1044.626901571423,
+      "nearest": "HG03442_A"
+    },
+    {
+      "window": 3,
+      "start": 20150018,
+      "end": 20200018,
+      "haplotype": "NA18560_A",
+      "population": "CHB",
+      "superpopulation": "EAS",
+      "depth_ka": 1044.626901571423,
+      "nearest": "HG03858_A"
+    },
+    {
+      "window": 18,
+      "start": 20950018,
+      "end": 21000018,
+      "haplotype": "HG02502_B",
+      "population": "ACB",
+      "superpopulation": "AFR",
+      "depth_ka": 1044.626901571423,
+      "nearest": "HG02317_B"
+    }
+  ],
+  "archaic_source": {
+    "build": "GRCh37/hg19",
+    "bytes_downloaded": {
+      "AltaiNeandertal": 10590316,
+      "Denisova3": 9767553,
+      "Vindija33.19": 10504372
+    },
+    "coverage_note": "snpAD genotype calls (Prufer et al. 2017, Science 358:655) from MPI-EVA. Altai Neandertal ~52x, Vindija 33.19 ~30x, Denisova 3 ~30x nuclear coverage. Calls restricted by the producers to mappable sites (Heng Li 35mer filter) with MQ>=25. These are all-sites VCFs, so a position absent from a file is genuinely uncallable in that individual and is reported as \".\" (no-call). Genotypes are the raw snpAD GT converted to alt-allele dosage; NO extra GQ/DP filter was applied here, so low-GQ calls are included as reported by the producers. Rows are the union of (a) every position in the modern 1000G panel file chr22_region.haplotypes.tsv and (b) every position where at least one archaic carries a called ALT allele; every modern-panel position is retained even when all three archaics are no-call, so this table joins 1:1 with chr22_region.haplotypes.tsv (9884 such all-no-call rows). Only biallelic SNVs are emitted. Where an archaic carries a third allele not matching the chosen REF/ALT pair, that individual is set to \".\" (10 such individual-site calls).",
+    "individuals": [
+      "AltaiNeandertal",
+      "Vindija33.19",
+      "Denisova3"
+    ],
+    "n_sites": 21657,
+    "n_sites_modern_panel_uncallable_in_all_archaics": 9884,
+    "n_sites_skipped_non_snv": 0,
+    "per_individual_dosage_counts": {
+      "AltaiNeandertal": {
+        ".": 9889,
+        "0": 11080,
+        "1": 57,
+        "2": 631
+      },
+      "Denisova3": {
+        ".": 9903,
+        "0": 11066,
+        "1": 98,
+        "2": 590
+      },
+      "Vindija33.19": {
+        ".": 9900,
+        "0": 11074,
+        "1": 61,
+        "2": 622
+      }
+    },
+    "region": {
+      "chrom": "22",
+      "coordinates": "1-based inclusive",
+      "end": 21000000,
+      "start": 20000000,
+      "string": "chr22:20000000-21000000"
+    },
+    "retrieval_method": "pure-Python tabix (.tbi) index parse -> virtual offsets -> HTTP Range requests -> BGZF block inflate with zlib; no tabix/bcftools available",
+    "retrieved_utc": "2026-07-31T03:59:27Z",
+    "sites_callable_in_region": {
+      "AltaiNeandertal": 364941,
+      "Denisova3": 364697,
+      "Vindija33.19": 364780
+    },
+    "source_urls": [
+      "https://cdna.eva.mpg.de/neandertal/Vindija/VCF/Altai/chr22_mq25_mapab100.vcf.gz",
+      "https://cdna.eva.mpg.de/neandertal/Vindija/VCF/Vindija33.19/chr22_mq25_mapab100.vcf.gz",
+      "https://cdna.eva.mpg.de/neandertal/Vindija/VCF/Denisova/chr22_mq25_mapab100.vcf.gz",
+      "https://cdna.eva.mpg.de/neandertal/Vindija/VCF/README",
+      "https://cdna.eva.mpg.de/neandertal/Vindija/VCF/Altai/chr22_mq25_mapab100.vcf.gz.tbi",
+      "https://cdna.eva.mpg.de/neandertal/Vindija/VCF/Vindija33.19/chr22_mq25_mapab100.vcf.gz.tbi",
+      "https://cdna.eva.mpg.de/neandertal/Vindija/VCF/Denisova/chr22_mq25_mapab100.vcf.gz.tbi"
+    ],
+    "total_bytes_downloaded": 30862241
+  },
+  "archaic_affinity": [
+    {
+      "archaic": "AltaiNeandertal",
+      "callable_sites_region": 364941.0,
+      "mean_ka": 2412.6477284014245,
+      "by_group": [
+        {
+          "group": "AFR",
+          "n_haplotypes": 160,
+          "mean_ka": 2442.8664369962485,
+          "sd_ka": 350.96502021438647
+        },
+        {
+          "group": "AMR",
+          "n_haplotypes": 160,
+          "mean_ka": 2424.3669201075754,
+          "sd_ka": 326.6403101137955
+        },
+        {
+          "group": "EAS",
+          "n_haplotypes": 160,
+          "mean_ka": 2206.6372661892196,
+          "sd_ka": 412.7156767882573
+        },
+        {
+          "group": "EUR",
+          "n_haplotypes": 160,
+          "mean_ka": 2503.42673598802,
+          "sd_ka": 349.7223129158992
+        },
+        {
+          "group": "SAS",
+          "n_haplotypes": 160,
+          "mean_ka": 2485.9412827260594,
+          "sd_ka": 361.4801166922425
+        }
+      ]
+    },
+    {
+      "archaic": "Vindija33.19",
+      "callable_sites_region": 364780.0,
+      "mean_ka": 2205.4528260100124,
+      "by_group": [
+        {
+          "group": "AFR",
+          "n_haplotypes": 160,
+          "mean_ka": 2293.406209248286,
+          "sd_ka": 359.12996721012473
+        },
+        {
+          "group": "AMR",
+          "n_haplotypes": 160,
+          "mean_ka": 2208.53842370164,
+          "sd_ka": 348.4831964380428
+        },
+        {
+          "group": "EAS",
+          "n_haplotypes": 160,
+          "mean_ka": 1969.218227585495,
+          "sd_ka": 427.98034139149587
+        },
+        {
+          "group": "EUR",
+          "n_haplotypes": 160,
+          "mean_ka": 2293.372234807565,
+          "sd_ka": 360.7844388464634
+        },
+        {
+          "group": "SAS",
+          "n_haplotypes": 160,
+          "mean_ka": 2262.72903470708,
+          "sd_ka": 381.09590150995916
+        }
+      ]
+    },
+    {
+      "archaic": "Denisova3",
+      "callable_sites_region": 364697.0,
+      "mean_ka": 1353.8741449251995,
+      "by_group": [
+        {
+          "group": "AFR",
+          "n_haplotypes": 160,
+          "mean_ka": 1436.103384900311,
+          "sd_ka": 425.3038055833208
+        },
+        {
+          "group": "AMR",
+          "n_haplotypes": 160,
+          "mean_ka": 1347.8591286290539,
+          "sd_ka": 61.30993463445401
+        },
+        {
+          "group": "EAS",
+          "n_haplotypes": 160,
+          "mean_ka": 1302.8647258075314,
+          "sd_ka": 97.94234339127196
+        },
+        {
+          "group": "EUR",
+          "n_haplotypes": 160,
+          "mean_ka": 1347.9560113314683,
+          "sd_ka": 78.94381569939169
+        },
+        {
+          "group": "SAS",
+          "n_haplotypes": 160,
+          "mean_ka": 1334.587473957631,
+          "sd_ka": 102.78068746306087
+        }
+      ]
+    }
+  ],
+  "d_statistics": [
+    {
+      "archaic": "AltaiNeandertal",
+      "d": 0.1146250550997057,
+      "standard_error": 0.1047122928030844,
+      "z_score": 1.0946666530859241,
+      "abba": 8832591.0,
+      "baba": 7015951.0,
+      "n_blocks": 19,
+      "n_afr_haplotypes": 160,
+      "n_nonafr_haplotypes": 640,
+      "mb_for_z3": 7.135137357123557
+    },
+    {
+      "archaic": "Vindija33.19",
+      "d": 0.12809259369837384,
+      "standard_error": 0.10071527032773224,
+      "z_score": 1.2718289220845507,
+      "abba": 9068240.0,
+      "baba": 7008880.0,
+      "n_blocks": 19,
+      "n_afr_haplotypes": 160,
+      "n_nonafr_haplotypes": 640,
+      "mb_for_z3": 5.285775590035562
+    },
+    {
+      "archaic": "Denisova3",
+      "d": 0.003972104400506743,
+      "standard_error": 0.12426530044141378,
+      "z_score": 0.031964710875820354,
+      "abba": 7380467.0,
+      "baba": 7322067.0,
+      "n_blocks": 19,
+      "n_afr_haplotypes": 160,
+      "n_nonafr_haplotypes": 640,
+      "mb_for_z3": 8368.055532741731
+    }
+  ],
+  "neanderthal_windows": [
+    {
+      "window": 3,
+      "start": 20150018,
+      "end": 20200018,
+      "abba": 2325839.0,
+      "baba": 876719.0,
+      "d": 0.4524882921714454
+    },
+    {
+      "window": 2,
+      "start": 20100018,
+      "end": 20150018,
+      "abba": 921109.0,
+      "baba": 484949.0,
+      "d": 0.3102005749407208
+    },
+    {
+      "window": 15,
+      "start": 20800018,
+      "end": 20850018,
+      "abba": 447586.0,
+      "baba": 243106.0,
+      "d": 0.29605091705130504
+    },
+    {
+      "window": 17,
+      "start": 20900018,
+      "end": 20950018,
+      "abba": 946890.0,
+      "baba": 632330.0,
+      "d": 0.19918694038829296
+    },
+    {
+      "window": 1,
+      "start": 20050018,
+      "end": 20100018,
+      "abba": 603078.0,
+      "baba": 405798.0,
+      "d": 0.19554434836392182
+    },
+    {
+      "window": 6,
+      "start": 20300018,
+      "end": 20350018,
+      "abba": 41360.0,
+      "baba": 29520.0,
+      "d": 0.1670428893905192
+    },
+    {
+      "window": 14,
+      "start": 20750018,
+      "end": 20800018,
+      "abba": 1188970.0,
+      "baba": 884810.0,
+      "d": 0.1466693670495424
+    },
+    {
+      "window": 13,
+      "start": 20700018,
+      "end": 20750018,
+      "abba": 142900.0,
+      "baba": 130100.0,
+      "d": 0.046886446886446886
+    },
+    {
+      "window": 7,
+      "start": 20350018,
+      "end": 20400018,
+      "abba": 0.0,
+      "baba": 0.0,
+      "d": 0.0
+    },
+    {
+      "window": 8,
+      "start": 20400018,
+      "end": 20450018,
+      "abba": 0.0,
+      "baba": 0.0,
+      "d": 0.0
+    },
+    {
+      "window": 9,
+      "start": 20450018,
+      "end": 20500018,
+      "abba": 0.0,
+      "baba": 0.0,
+      "d": 0.0
+    },
+    {
+      "window": 10,
+      "start": 20500018,
+      "end": 20550018,
+      "abba": 0.0,
+      "baba": 0.0,
+      "d": 0.0
+    },
+    {
+      "window": 11,
+      "start": 20600018,
+      "end": 20650018,
+      "abba": 0.0,
+      "baba": 0.0,
+      "d": 0.0
+    },
+    {
+      "window": 5,
+      "start": 20250018,
+      "end": 20300018,
+      "abba": 214468.0,
+      "baba": 272548.0,
+      "d": -0.11925686219754587
+    },
+    {
+      "window": 0,
+      "start": 20000018,
+      "end": 20050018,
+      "abba": 559774.0,
+      "baba": 740254.0,
+      "d": -0.13882777909398875
+    },
+    {
+      "window": 16,
+      "start": 20850018,
+      "end": 20900018,
+      "abba": 261945.0,
+      "baba": 364665.0,
+      "d": -0.16392971704888207
+    },
+    {
+      "window": 12,
+      "start": 20650018,
+      "end": 20700018,
+      "abba": 38340.0,
+      "baba": 54660.0,
+      "d": -0.17548387096774193
+    },
+    {
+      "window": 4,
+      "start": 20200018,
+      "end": 20250018,
+      "abba": 685981.0,
+      "baba": 993661.0,
+      "d": -0.18318189233181834
+    },
+    {
+      "window": 18,
+      "start": 20950018,
+      "end": 21000018,
+      "abba": 454351.0,
+      "baba": 902831.0,
+      "d": -0.3304494165115659
+    }
+  ],
+  "exact_comparisons": 6072400,
+  "elapsed_ms": 807,
+  "findings": [
+    "Across 15200 real segments from a 1 Mb window of chromosome 22, the median haplotype meets its nearest relative in the panel 23.2 ka ago. The distribution is heavily right-skewed: the 99th percentile sits at 650 ka and the deepest single segment at 1347 ka.",
+    "African haplotypes coalesce 2.00x deeper than the non-African average (46.4 ka against 23.2 ka). This is the signature of a larger, older, less bottlenecked ancestral population, it is one of the most firmly established results in human population genetics, and the pipeline reproduces it on real data without being tuned for it.",
+    "The exact statistic was computed over 6072400 pairwise comparisons by popcount on bit-packed haplotypes. No approximation, no index, no simulation.",
+    "D(African, non-African; Altai Neanderthal, reference) = +0.1146 +/- 0.1047 over 19 jackknife blocks, from 8832591 ABBA against 7015951 BABA site-patterns across 160 x 640 haplotype pairs. Under a tree with no gene flow this statistic is zero. It is not, and it leans the direction Neanderthal introgression requires: non-African haplotypes share the derived allele with Neanderthal more often than African ones do.",
+    "It is also not significant, and that is the more useful number. Z = +1.1. One megabase of chromosome 22 gives 19 jackknife blocks, and the block-to-block variance at that scale swamps an effect this size. Extrapolating the jackknife standard error as 1/sqrt(sequence length), this comparison needs roughly 7 Mb of chromosome before it reaches Z = 3 — about 8x more sequence than was used here. That is a power limit, not a null result, and it is the real-data counterpart of the resolution floor the simulation reports: below some quantity of evidence a true signal is present, correctly signed, and still unclaimable.",
+    "Denisova 3 is the control, and it behaves like one: D = +0.0040 (Z = +0.0), 3% the size of the Neanderthal value and indistinguishable from zero. That ordering is the expected one and it is informative both ways: 1000 Genomes has no Oceanian samples, so the large Denisovan component seen in Papuans is absent here, and most of what remains is the ancestry Denisovans and Neanderthals share with each other. The two genomes have comparable coverage and were called by the same pipeline, so the gap between them is about which population actually met whom.",
+    "The signal is not spread evenly. Per-window D across the 19 blocks runs from +0.452 down to -0.330, and the strongest single 50 kb window is chr22:20150018-20200018 at D = +0.452. Introgressed ancestry arrives in tracts, so a region-wide average understates what a tract-aware scan would see — which is the entire premise of the windowed detector this study is built on."
+  ],
+  "caveats": [
+    "The deep-tail table is an outlier statistic, not an archaic-ancestry call: it says a segment is old, not where it came from. The archaic-affinity section is the attribution measurement, and it is a population-level contrast — it does not assign ancestry to any named individual.",
+    "Divergence to an archaic genome is per callable base, but the archaic table stores only variable sites, so total callable bases from the producers' own count are apportioned across windows in proportion to local callable-site density. The AFR / non-African contrast is unaffected by this: both groups are measured over exactly the same sites.",
+    "Archaic genotypes are the producers' raw snpAD calls with no additional GQ or DP filter. Ancient DNA damage and reference bias inflate the absolute divergence; they do not act differently on African and non-African haplotypes, which is why the contrast rather than the absolute number carries the result.",
+    "Depth is estimated from a single 50 kb window under a strict-clock Jukes-Cantor model with mu = 1.25e-8 per base per generation and a 29-year generation. Real variation in mutation rate, recombination and selection is not modelled.",
+    "The panel is 400 of the 2,504 phase 3 samples, 80 per superpopulation. Pairwise divergence between two included haplotypes is exact regardless, because any site at which they differ is polymorphic and therefore present in the VCF."
+  ]
+}

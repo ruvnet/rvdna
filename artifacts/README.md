@@ -1,8 +1,10 @@
-# Ghosts in the Genealogy
+# rUv — the history of humanity, read out of living DNA
 
 A worked study on the rvDNA engine: recovering two extinct hominin lineages from
 present-day genomes alone, with no ancient DNA and no reference genome for
-either.
+either — and then running the same measurement on **800 real human haplotypes**
+from the 1000 Genomes Project, against three sequenced archaic genomes, to show
+the signal it depends on is there in actual people.
 
 **[→ Open the illustrated report](index.html)** (self-contained HTML, animated
 diagrams, light and dark).
@@ -27,6 +29,19 @@ ancestry reaches unusually far back in time. It recovered two previously unknown
 Neither has ever been sequenced. Both are visible only in the shape of living
 people's genealogies.
 
+**Two figures in the press coverage do not survive a read of the paper**, and
+this study does not repeat them:
+
+- *"Denisovans carry 3–5% super-archaic DNA."* That number is from the press
+  release, not the paper. TRACE's own estimate is **0.3% of the Denisovan
+  ancestry** found in Oceanian genomes.
+- *"The super-archaic lineage diverged 1.8 million years ago."* 1.8 Ma is a
+  **coalescence** time, which is an upper bound on the divergence, not the
+  divergence itself. The authors' conservative claim is "diverged over 500,000
+  years ago." The 800 ka and 1.8 Ma numbers are used here as the simulation's
+  *planted* splits — where the truth is known by construction — not as claims
+  about the real lineages.
+
 ## What is in here
 
 This directory holds a first-principles reimplementation of that *logic* on
@@ -48,8 +63,14 @@ artifacts/
     ├── trace-rv-report.json        the full study
     ├── archaic-calls.json          every call, for the visualisation layer
     ├── depth-distribution.json     the brute-force reference measurement + per-segment depths
-    └── discoveries.json            the three limit sweeps
+    ├── discoveries.json            the first three limit sweeps
+    ├── linkage.json                tract-aware detection and admixture dating
+    ├── panel.json                  panel size, composition, and archaic-reference ablation
+    └── real-dna.json               the same measurement on real 1000 Genomes and archaic genomes
 ```
+
+Real genotypes live outside `artifacts/` in [`data/real/`](../data/real/), with
+the fetch and verification scripts that produced them.
 
 ## Design
 
@@ -66,24 +87,26 @@ against the `#0B0E13` surface. Cognitum's brand cyan `#1DD4E0` stays reserved
 for active intelligence — navigation, focus, the flywheel — and its green
 `#26D968` for verified/positive, never for a data series.
 
-The report opens with a six-act scroll-driven sequence in **raw WebGL 2** — one
-GPU point per segment, 20,880 of them, morphing between six analytic layouts
-computed in the vertex shader from the real measurement. Height is coalescent
-depth throughout, so the closing shot separates the two ghost lineages by their
-actual divergence times rather than by decoration.
+The report opens with a **nine-act** scroll-driven sequence in **raw WebGL 2** —
+one GPU point per segment, 20,880 of them, morphing between analytic layouts
+computed in the vertex shader from the real measurement. The camera flies up a
+single axis: **coalescent time**, from 1.8 Ma to the present, and then turns
+around and looks back down it. Because height is that same axis throughout, the
+closing shot separates the two ghost lineages at their actual divergence times
+rather than by decoration.
 
 **Why not three.js.** The Artifact CSP blocks external scripts, so a library has
 to be inlined, and minified three.js is roughly 600 KB. The first version of this
 page was 811 KB and failed to load; adding three.js would have put it near 1 MB.
 Hand-written WebGL costs a few kilobytes and does everything this scene needs.
-The page is now **345 KB** end to end:
+The page is now **373 KB** end to end, real-genome section included:
 
 | | before | after |
 |---|--:|--:|
 | Per-segment depths | 253 KB of JSON numbers | 111 KB (base64 `Uint16Array` + class bytes) |
 | Archaic calls | 171 KB | 38 KB (six fields, not twenty) |
 | Mono webfont inside each SVG | 126 KB (×3 copies) | 0 |
-| **Total page** | **811 KB** | **345 KB** |
+| **Total page** | **811 KB** | **373 KB** |
 
 Everything still renders from the same generated JSON; `build.mjs` does the
 packing at build time.
@@ -101,8 +124,14 @@ cargo build --release
 ./target/release/depth-hist artifacts/data   # ~5 s   reference measurement
 ./target/release/trace-rv   artifacts/data   # ~10 min, Darwin dominates
 ./target/release/discover   artifacts/data   # ~2 min  the three limit sweeps
+./target/release/real-dna   artifacts/data   # ~1 s    real 1000 Genomes + 3 archaic genomes
+./target/release/linkage-study artifacts/data  # ~3 min  tract-aware detection
+./target/release/panel-study   artifacts/data  # ~4 min  panel size, composition, ablation
 node artifacts/build.mjs
 ```
+
+`real-dna` reads the checked-in genotype table in `data/real/`. To re-fetch it
+from EBI instead, run `python3 data/real/extract.py` (needs outbound HTTPS).
 
 ## The method in four steps
 
@@ -213,9 +242,96 @@ mode's segments against **11.2%** of the shallow one, a **3.4×** enrichment. Th
 is the fingerprint of an indirect route, and it is why the deep mode can be named
 super-archaic even though its segments cannot be separated one by one.
 
+## The same measurement on real people
+
+Everything above is simulated, so the obvious objection is that the signal was
+put there. The last stage removes that objection by running step 2 — *how far
+back must this haplotype go before it meets anybody?* — on real genotypes, with
+no simulation anywhere in the path.
+
+**800 haplotypes** (400 individuals, 80 per superpopulation, round-robin across
+the constituent populations, seed 20130502) over **chr22:20,000,000–21,000,000**,
+**21,418** biallelic phased SNPs, 19 windows of 50 kb, **6,072,400** exact
+pairwise comparisons in **0.2 s**.
+
+Acquisition ran without `tabix`, `bcftools` or `pysam`, none of which were
+available: parse the tabix `.tbi` linear index in pure Python to get the byte
+offset of the region, HTTP `Range` into the bgzipped VCF, and decode the BGZF
+blocks with `zlib`. Scripts in [`data/real/`](../data/real/).
+
+| Superpopulation | Median depth | p90 | p99 | Max |
+|---|--:|--:|--:|--:|
+| **AFR** | **46.4 ka** | 394 ka | 975 ka | **1,347 ka** |
+| AMR | 23.2 ka | 139 ka | 464 ka | 1,068 ka |
+| EAS | 23.2 ka | 162 ka | 487 ka | 1,045 ka |
+| EUR | 23.2 ka | 139 ka | 441 ka | 766 ka |
+| SAS | 23.2 ka | 162 ka | 487 ka | 905 ka |
+
+African haplotypes coalesce **2.00×** deeper than every other superpopulation,
+which all land on the same median. That is the textbook result — African
+populations retain the deep structure the out-of-Africa bottleneck removed from
+everyone else — recovered here from scratch by popcount over bitsets, and it is
+the property the whole ghost-detection argument depends on: a deep tail exists in
+real genomes, and it is African.
+
+**All ten of the deepest segments in the region are African**, the deepest being
+`HG03472_B` (MSL, Sierra Leone) at chr22:20,950,018–21,000,018, reaching
+**1,347 ka** before meeting its nearest relative among 799 other haplotypes.
+
+This is a depth measurement, not an introgression call — it says a segment is
+old, not where it came from.
+
+### Three sequenced archaic genomes, over the same coordinates
+
+Answering *where it came from* needs something to compare against, so the same
+range was pulled from the Max Planck snpAD call set: **Altai Neanderthal**
+(~52×), **Vindija 33.19** (~30×) and **Denisova 3** (~30×), by the same
+`.tbi` → HTTP Range → BGZF route (31 MB downloaded, ~365,000 callable bases each).
+
+The obvious comparison — measure each modern haplotype's divergence to
+Neanderthal and check whether non-Africans are closer — **is not safe**, and the
+code says so where it computes it. GRCh37 is a European-weighted reference, the
+archaic genotypes were called against it, and African haplotypes therefore
+accumulate apparent mismatches to *any* archaic for reasons unrelated to
+admixture. Run it anyway and it gives a number, in the right direction, that
+cannot be trusted.
+
+**Patterson's D** survives that objection, because ABBA and BABA both condition
+on the archaic carrying the derived allele, so bias in the archaic call set
+cancels. Over 160 African × 640 non-African haplotype pairs, with a
+leave-one-window-out jackknife across the 19 blocks:
+
+| Archaic genome | ABBA | BABA | D | SE | Z |
+|---|--:|--:|--:|--:|--:|
+| Altai Neanderthal | 8,832,591 | 7,015,951 | **+0.1146** | 0.1047 | +1.1 |
+| Vindija 33.19 | 9,068,240 | 7,008,880 | **+0.1281** | 0.1007 | +1.3 |
+| Denisova 3 | 7,380,467 | 7,322,067 | +0.0040 | 0.1243 | +0.0 |
+
+Both Neanderthals lean positive; the Denisovan is flat at **3%** of the
+Neanderthal value. That is the pattern Neanderthal introgression predicts and the
+pattern a reference-bias artefact does not — an artefact would push all three the
+same way, since all three were called against the same reference by the same
+pipeline. 1000 Genomes carries no Oceanian samples, so the large Denisovan
+component seen in Papuans is absent and what remains is mostly ancestry the two
+archaics share with each other.
+
+**It is not significant, and that is the more useful number.** Z = 1.1. One
+megabase gives 19 jackknife blocks, and block-to-block variance at that scale
+swamps an effect this size. Extrapolating the standard error as 1/√length, the
+comparison needs roughly **7 Mb** of chromosome to reach Z = 3 — about 8× more
+sequence than was used here.
+
+That is a power limit, not a null result, and it is the real-data twin of the
+resolution floor the simulation reports below: a true signal can be present,
+correctly signed, and still unclaimable. Per-window D across the region runs from
+**+0.45** to **−0.33**, which is the other half of the same point — introgressed
+ancestry arrives in tracts, so a region-wide average understates what a
+tract-aware scan sees, and a tract-aware scan is exactly what the rest of this
+study is.
+
 ## Pushing it until it breaks
 
-Getting a good answer on one cohort is worth little on its own. Three sweeps ask
+Getting a good answer on one cohort is worth little on its own. Five sweeps ask
 where the method stops working. Experiments 1 and 2 use an **exhaustive**
 detector on purpose, so the limits they report belong to the biology and the
 method rather than to the index.
@@ -273,11 +389,131 @@ study that moves between runs: the handful of extra calls the index makes drifts
 by a few either way, and the comparison count with it. The agreement figure has
 been 100% with zero missed calls on every run.
 
+### 4 · Looking sideways along the chromosome buys +0.033 F1 — and the control proves it
+
+Everything above judges each window on its own. Real introgression does not
+arrive one window at a time; it arrives in **tracts**, contiguous runs inherited
+whole and then chopped up by recombination. So the cohort was re-simulated with
+introgression planted as geometric tracts of mean 4.9 windows, and a
+linkage-aware rule added: call a window if its own depth clears the threshold,
+**or** if it clears a lower rescue threshold *and* its neighbours'
+decay-weighted depth clears a context threshold.
+
+| Arm | Precision | Recall | F1 |
+|---|--:|--:|--:|
+| Per-window, tracted cohort | 0.808 | 0.466 | 0.591 |
+| **Linkage-aware, tracted cohort** | **0.820** | **0.504** | **0.624** |
+| Per-window, held-out half | 0.815 | 0.524 | 0.638 |
+| **Linkage-aware, held-out half** | **0.835** | **0.643** | **0.726** |
+| Per-window, **unlinked control** | 0.894 | 0.741 | 0.810 |
+| Linkage-aware, **unlinked control** | 0.894 | 0.741 | 0.810 |
+
+The rule is monotone by construction — it can only *add* calls — so recall could
+only rise. The question was whether precision would survive the extra calls, and
+it went **up**: all 19 windows the context rule rescued were genuinely
+introgressed, cleaner than the 80.8% precision of the calls the per-window
+detector was already making. The advantage survives being tuned on one half of
+the genome and scored on the other (+0.089 F1 held out).
+
+**The control is the part that matters.** Run the same rule on a cohort where
+introgressed windows are isolated by construction and F1 moves by exactly
+**0.0000**. There is nothing there for it to exploit, so the gain on the tracted
+cohort is linkage and not a relaxed threshold.
+
+**Neither detector recovers tracts at their planted length**, and that has a
+consequence. Planted tracts average 4.86 windows; the per-window detector
+recovers 1.81 and the linkage rule 2.01. Both *fragment* real tracts rather than
+fusing them, because one missed window in the middle of a run splits it in two.
+Tract length is how admixture is dated — inverting mean length gives 95
+generations from the planted tracts against 229 from the recovered ones. A
+shorter measured tract always reads as an **older** pulse, so a fragmenting
+detector systematically over-ages the admixture it finds.
+
+### 5 · Which genomes should you actually sequence?
+
+The detector never consults an archaic genome to decide *whether* a segment is
+archaic — it only compares against living people. So the modern reference panel
+is the budget item that matters, and two questions follow: how many genomes, and
+*whose*?
+
+| Panel | n | Precision | Recall | F1 | Noise floor |
+|---|--:|--:|--:|--:|--:|
+| balanced | 6 | 0.191 | 0.969 | 0.319 | 140 ka |
+| balanced | 24 | 0.514 | 0.912 | 0.658 | 59 ka |
+| balanced | 58 | 0.848 | 0.839 | **0.843** | 32 ka |
+| African-only | 6 | 0.200 | 0.996 | 0.333 | 194 ka |
+| African-only | 12 | 0.376 | 0.996 | 0.546 | 145 ka |
+| **African-only** | **24** | 0.616 | **0.995** | **0.761** | 107 ka |
+
+**Size buys precision and costs recall.** Every extra haplotype is another chance
+for a segment to find a close relative, which suppresses false positives *and*
+hides some genuinely introgressed segments whose nearest relative happens to be
+shallow. The noise floor — the median depth assigned to ordinary segments, which
+is what the archaic threshold has to clear — falls 140 → 32 ka over that range.
+Returns had not saturated at the largest panel tested, so within this range the
+answer to "how many?" is bounded by budget, not by diminishing returns.
+
+**Composition beats count.** At every size where both could be built, an
+African-only panel scored higher: 24 African haplotypes (F1 0.761) beat 36
+balanced ones (0.744) and are worth **1.92×** the detection value per genome
+sequenced. Recall tells the same story — African-only holds recall at 0.995 at
+every size, while balanced trades it away as it grows.
+
+**And then the obvious corollary fails.** An African panel is *not* the better
+panel for everyone. Split by where the query comes from, an African-only panel of
+24 scores 0.355 precision on African queries and only **0.684** on non-African
+ones; a balanced panel of the same size scores 0.142 and **0.851**. The African
+panel wins overall *despite* being strictly worse for every non-African query,
+because African queries are where the false positives are concentrated — a
+balanced panel spends most of its slots on populations whose internal diversity
+is shallow, leaving African queries with no close relative and 0.142 precision.
+The lesson is not "African haplotypes are better haplotypes" but **a panel is
+only informative about the populations it actually contains, and African
+populations take the most coverage to cover.**
+
+It also runs out: an African-only panel cannot be scaled past 24 haplotypes in
+this cohort at all, which is why the best *overall* result still belongs to the
+largest balanced panel. Composition and count are not independent knobs.
+
+**The archaic references do something different.** Removing them never changes
+*which* segments are called — detection reads only the modern panel — but it
+changes *what they are called*:
+
+| Archaic references | Ghost precision | Ghost recall | Attribution accuracy |
+|---|--:|--:|--:|
+| all four (3 NEA + 1 DEN) | **0.685** | 1.000 | 0.991 |
+| Neanderthal only (3) | 0.563 | 1.000 | 0.825 |
+| single Neanderthal (1) | 0.555 | 1.000 | 0.823 |
+| Denisovan only (1) | 0.484 | 1.000 | 0.570 |
+| none | 0.339 | 1.000 | 0.400 |
+
+With nothing to attribute against, "ghost" degenerates into "not modern" and
+every real Neanderthal and Denisovan segment is filed as a new lineage. Three
+things fall out of that table. Reference value is **steeply diminishing** — going
+from three Neanderthal genomes to one costs almost nothing (0.563 → 0.555) next
+to going to zero (0.339), so n=1 is a long way from n=0, which is the reassuring
+reading of the single-Denisovan problem. References are **partly substitutable** —
+with only a Denisovan reference, 84 of 196 called Neanderthal segments are still
+caught as archaic-and-named, because the two lineages split 400 ka, inside the
+520 ka attribution margin. And ghost **recall is 1.000 in every arm**, because a
+ghost segment is deeper than any observed archaic could match: the failure mode
+of an under-referenced study is *inventing* lineages, never missing them.
+
+One caveat on the headline. Even with all four references, ghost precision is
+0.685, and 82 of the 84 impurities in the ghost pile are detection false
+positives — segments never introgressed at all — against just 2 genuinely archaic
+segments filed under the wrong lineage. Better archaic references cannot move
+that ceiling; a better modern panel can. The two sweeps are the two halves of the
+same error budget.
+
 ## What this is not
 
-- The genomes are **simulated** against a demography calibrated to published
-  divergence times. This is not an analysis of 1000 Genomes, HGDP, or SGDP data,
-  and it says nothing about any living person's ancestry.
+- The **detection** results are simulated, against a demography calibrated to
+  published divergence times. The real-genome stage measures coalescent depth
+  only — it makes no introgression calls and says nothing about any named
+  person's ancestry.
+- 1 Mb of chr22 is far too little sequence to identify a ghost lineage. It is
+  enough to establish that the depth axis behaves as the method assumes.
 - It reproduces the *reasoning* of an ARG-based method. It is not a
   reimplementation of TRACE, and the published results are theirs, not
   reproduced here.
@@ -295,3 +531,15 @@ been 100% with zero missed calls on every run.
 - [UC Berkeley News — New technique pinpoints human DNA inherited from 'ghost' ancestors](https://news.berkeley.edu/2026/07/30/new-technique-pinpoints-human-dna-inherited-from-ghost-ancestors/)
 - [Live Science — Scientists discover 2 new 'ghost' lineages that contributed DNA to modern humans](https://www.livescience.com/archaeology/human-evolution/scientists-discover-2-new-ghost-lineages-that-contributed-dna-to-modern-humans)
 - [ruvnet/metaharness](https://github.com/ruvnet/metaharness) — Darwin mode, flywheel
+- Prüfer et al., *A high-coverage Neandertal genome from Vindija Cave in
+  Croatia*, **Science** 358, 655–658 (2017) — the snpAD archaic genotype calls
+  used here, via [cdna.eva.mpg.de](https://cdna.eva.mpg.de/neandertal/Vindija/VCF/).
+- Green et al., *A draft sequence of the Neandertal genome*, **Science** 328,
+  710–722 (2010) — the ABBA/BABA D-statistic.
+- The 1000 Genomes Project Consortium, *A global reference for human genetic
+  variation*, **Nature** 526, 68–74 (2015). Phase 3 data are openly available
+  from [IGSR/EBI](https://www.internationalgenome.org/data) with no restrictions
+  on use.
+- Liang & Nielsen, *The lengths of admixture tracts*, **Genetics** 197, 953–967
+  (2014) — the tract-length model used to plant introgression as contiguous
+  haplotype blocks rather than independent segments.

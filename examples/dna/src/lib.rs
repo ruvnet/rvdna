@@ -26,6 +26,7 @@ pub mod genotyping;
 pub mod health;
 pub mod kmer;
 pub mod kmer_pagerank;
+pub mod linkage;
 pub mod pharma;
 pub mod pipeline;
 pub mod protein;
@@ -37,12 +38,17 @@ pub mod variant;
 pub use alignment::{AlignmentConfig, SmithWaterman};
 pub use archaic::{
     build_population_tree, simulate_cohort, ArchaicCall, ArchaicSource, Cohort, DemographyConfig,
-    DetectionRun, DetectorParams, GhostCluster, Haplotype, Role, Scores, TraceEngine,
+    DetectionRun, DetectorParams, GhostCluster, Haplotype, Pulse, Role, Scores, TraceEngine, Tract,
 };
 pub use epigenomics::{
     CancerSignalDetector, CancerSignalResult, CpGSite, HorvathClock, MethylationProfile,
 };
 pub use error::{DnaError, Result};
+pub use linkage::{
+    admixture_time_from_tracts, call_linkage, call_per_window, compare_tract_lengths,
+    reconstruct_tracts, run_linkage, smooth_depth_grid, AdmixtureTimeEstimate, CalledTract,
+    LinkageParams, LinkageRun, MorganScale, TractComparison, TractLengthStats,
+};
 pub use pharma::{
     call_cyp2c19_allele, call_star_allele, get_recommendations, predict_cyp2c19_phenotype,
     predict_phenotype, Cyp2c19Allele, DrugRecommendation, MetabolizerPhenotype, PharmaVariant,
