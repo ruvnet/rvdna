@@ -31,6 +31,7 @@ pub mod pharma;
 pub mod pipeline;
 pub mod protein;
 pub mod real_data;
+pub mod real_panel;
 pub mod rvdna;
 pub mod types;
 pub mod variant;

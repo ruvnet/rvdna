@@ -310,8 +310,35 @@ figure img, .card { will-change:transform; }
   <p id="realCaveat"></p>
 </section>
 
+<section id="us">
+  <div class="eyebrow"><b>03</b> Us</div>
+  <h2>Where the Neanderthal DNA actually is</h2>
+  <p class="lede">Everything up to here measures a method. This measures the people. Same megabase, same 800 living haplotypes, same three archaic genomes — but the question changes from <em>does the detector work</em> to <em>what does this DNA say about us</em>.</p>
+
+  <p>The trick is to stop asking how similar somebody is to a Neanderthal and start asking a sharper question: <strong>is there an allele in this person that Neanderthals have and Africa does not?</strong> Find the positions where a high-coverage Neanderthal carries the non-reference letter and not one of the 160 African haplotypes carries it. Anyone outside Africa with a run of those letters inherited them from somebody — and there is only one somebody available.</p>
+  <p>It also sidesteps the reference-template problem entirely. The test never asks how far from the template anyone is. It asks what is <em>missing from Africa</em>.</p>
+
+  <div class="tiles" id="usTiles"></div>
+  <p id="usControl"></p>
+
+  <h3>The map</h3>
+  <p>Every row is one real living haplotype; the axis runs left to right along the megabase. A lit block is a stretch of chromosome that carries Neanderthal letters absent from Africa. The African rows are at the top — and they are the point.</p>
+  <div class="card"><svg class="chart" id="tractMap" viewBox="0 0 860 470" preserveAspectRatio="xMidYMid meet" role="img" aria-labelledby="tmT"></svg><div class="legend" id="tractLegend"></div></div>
+  <div class="scroll-x" style="margin-top:18px"><table id="tractTable"></table></div>
+
+  <h3>When it happened — and a mistake the simulation saw coming</h3>
+  <p>Recombination has been chopping these inherited stretches shorter every generation since the interbreeding, so what survives is a clock: the shorter the average stretch, the longer ago it arrived.</p>
+  <p id="usDate"></p>
+
+  <h3>The family, with no family tree assumed</h3>
+  <p>Last question, and the simplest one. Take two people from the same population at random and measure how different their DNA is. Do it for all 26 populations. Nothing is assumed here — no tree, no model of migration, no groupings beyond the labels the 1000 Genomes Project already ships.</p>
+  <div class="card"><svg class="chart" id="popChart" viewBox="0 0 860 560" preserveAspectRatio="xMidYMid meet" role="img" aria-labelledby="pcT"></svg><div class="legend" id="popLegend"></div></div>
+  <p id="usFamily"></p>
+  <p id="usCaveat"></p>
+</section>
+
 <section id="tree">
-  <div class="eyebrow"><b>02</b> Deep time</div>
+  <div class="eyebrow"><b>04</b> Deep time</div>
   <h2>Four archaic sources, two of them invisible</h2>
   <p>To know whether a detector works you need a world where you already know the answer. The cohort is simulated under a structured coalescent on a hominin population tree calibrated to the published divergence times, with interbreeding planted at known coordinates.</p>
   <figure>
@@ -323,7 +350,7 @@ figure img, .card { will-change:transform; }
 </section>
 
 <section id="stack">
-  <div class="eyebrow"><b>03</b> The platform</div>
+  <div class="eyebrow"><b>05</b> The platform</div>
   <h2>What is actually running underneath</h2>
   <p class="lede">Nothing here is a notebook full of Python. The whole study is a Rust binary that compiles to native code or WebAssembly and runs the same on a laptop, a browser tab, or a Raspberry Pi on a shelf. That property is the reason the stack looks the way it does.</p>
   <div class="stack-grid" id="stackGrid"></div>
@@ -335,7 +362,7 @@ figure img, .card { will-change:transform; }
 </section>
 
 <section id="engine">
-  <div class="eyebrow"><b>04</b> The engine</div>
+  <div class="eyebrow"><b>06</b> The engine</div>
   <h2>Making a quadratic question cheap</h2>
   <p>Asking "who is this segment related to?" the obvious way means comparing it with every other segment, in every window. That is quadratic, and almost all of the work is wasted on haplotypes that were never going to matter.</p>
   <p>So the pipeline splits the question in two. Every window is turned into a <strong>k-mer profile vector</strong> — a numeric fingerprint of which short sequences it contains — and inserted into a <strong>RuVector HNSW graph</strong>. The index answers <em>which segments are even worth looking at</em>. The exact genetics, which decides the answer, runs only on what comes back.</p>
@@ -344,7 +371,7 @@ figure img, .card { will-change:transform; }
 </section>
 
 <section id="loops">
-  <div class="eyebrow"><b>05</b> Darwin &amp; the flywheel</div>
+  <div class="eyebrow"><b>07</b> Darwin &amp; the flywheel</div>
   <h2>Two loops around a frozen model</h2>
   <p>A detector like this has eight dials. Hand-tuning them is guesswork, and guesswork that touches the thresholds is guesswork that decides the answer. <strong>Darwin mode</strong> does it mechanically: change one dial, test the change in a sandbox against a training split, keep it only if it clears an explicit margin. Then score the survivor once on a split it has never seen.</p>
   <figure>
@@ -363,7 +390,7 @@ figure img, .card { will-change:transform; }
 </section>
 
 <section id="result">
-  <div class="eyebrow"><b>06</b> What came out</div>
+  <div class="eyebrow"><b>08</b> What came out</div>
   <h2>Two lineages, and no reference genome for either</h2>
   <p>Every segment flagged as archaic that could not be matched to a Neanderthal or Denisovan reference is a ghost candidate. Clustering those by coalescent depth finds <strong>two modes</strong> that bracket the two planted lineages.</p>
   <p>They do not separate cleanly. Ghost-A's own depth distribution runs to 2.5 million years, so its deep tail lands on top of Ghost-B, and with only <span id="gbCount"></span> super-archaic segments depth can tell you two sources are present but cannot assign individual segments between them.</p>
@@ -379,7 +406,7 @@ figure img, .card { will-change:transform; }
 </section>
 
 <section id="limits">
-  <div class="eyebrow"><b>07</b> Pushing it until it breaks</div>
+  <div class="eyebrow"><b>09</b> Pushing it until it breaks</div>
   <h2>Three things the first run could not tell us</h2>
   <p class="lede">Getting a good answer on one cohort is worth very little on its own. These three sweeps ask the harder question: where does this stop working, and why?</p>
 
@@ -417,7 +444,7 @@ figure img, .card { will-change:transform; }
 </section>
 
 <section id="method">
-  <div class="eyebrow"><b>08</b> Fine print</div>
+  <div class="eyebrow"><b>10</b> Fine print</div>
   <h2>Read this before the headline</h2>
   <div id="caveatList"></div>
   <h3>Reproduce it</h3>
@@ -459,6 +486,7 @@ const DISC   = __DISC_DATA__;
 const REAL   = __REAL_DATA__;
 const LINK   = __LINK_DATA__;
 const PANEL  = __PANEL_DATA__;
+const HUMAN  = __HUMAN_DATA__;
 const PART   = __PARTICLE_DATA__;
 
 const $ = s => document.querySelector(s);
@@ -743,8 +771,11 @@ const ACTS = [
   // ---- data ------------------------------------------------------------
   const N = PART.n, NW = PART.windows, NH = PART.haplotypes;
   const depths = unb64(PART.depths, Uint16Array);
-  const callK  = unb64(PART.calls,  Uint8Array);
-  const truthK = unb64(PART.truth,  Uint8Array);
+  // one byte per segment: low nibble is what the detector concluded, high
+  // nibble is what the segment actually is
+  const packed = unb64(PART.packed, Uint8Array);
+  const callK  = packed.map(v => v & 15);
+  const truthK = packed.map(v => v >> 4);
 
   // Population order round the circle, and the epoch at which each lineage
   // parts from the trunk. These are the real divergence times the simulation
@@ -1026,7 +1057,7 @@ const ACTS = [
 })();
 
 /* ═══════════════════════════════════════════════ nav */
-const NAV_LABEL = { finding:'The discovery', real:'Real DNA', tree:'Deep time', stack:'The platform', engine:'The engine', loops:'Darwin', result:'Results', limits:'New findings', method:'Fine print' };
+const NAV_LABEL = { finding:'The discovery', real:'Real DNA', us:'Us', tree:'Deep time', stack:'The platform', engine:'The engine', loops:'Darwin', result:'Results', limits:'New findings', method:'Fine print' };
 (function nav() {
   const secs = [...document.querySelectorAll('section')];
   $('#navLinks').innerHTML = secs.map(s=>`<a href="#${s.id}" data-id="${s.id}">${NAV_LABEL[s.id]||s.id}</a>`).join('');
@@ -1171,7 +1202,126 @@ $('#findingCards').innerHTML = `
   $('#realCaveat').innerHTML = `<strong>What this is not.</strong> ${REAL.caveats[0]} The depth estimate assumes a strict clock at μ = 1.25×10⁻⁸ per base per generation with a 29-year generation, so treat the absolute numbers as a scale, not a date.`;
 })();
 
-/* ═══════════════════════════════════════════════ 03 tree */
+/* ═══════════════════════════════════════════════ 03 us
+   Two drawings, both of real people. The tract map is one row per haplotype
+   with the called stretches lit; the population chart is 26 bars of internal
+   diversity. Both animate in on scroll rather than on load, so the reveal
+   lands when the reader is actually looking at it. */
+(function us(){
+  const T = HUMAN, test = T.tract_scan[0], ctrl = T.tract_scan[1];
+  const SUPCOL = { AFR:'--data-ghost-b', EUR:'--primary', EAS:'--data-neander', SAS:'--accent', AMR:'--data-deniso' };
+
+  tiles($('#usTiles'), [
+    { k:'Neanderthal-informative sites', v:fmt(T.informative_sites), n:'a Neanderthal has this letter · no African in the panel does' },
+    { k:'Stretches found', v:fmt(test.n_tracts), hi:true, n:`in ${fmt(test.haplotypes_with_a_tract)} of ${fmt(test.n_haplotypes)} non-African haplotypes` },
+    { k:'Found in Africans', v:fmt(ctrl.n_tracts), n:`the same scan, ${fmt(ctrl.n_haplotypes)} African haplotypes — the control` },
+    { k:'Share of sequence', v:pct(test.genome_fraction,2), hi:true, n:'the published figure for Neanderthal ancestry is about 2%' },
+  ]);
+
+  $('#usControl').innerHTML = `<strong>Run the identical scan on the ${fmt(ctrl.n_haplotypes)} African haplotypes and it finds ${ctrl.n_tracts === 0 ? '<em>nothing</em>' : fmt(ctrl.n_tracts)+' stretches'}.</strong> Not a small number — ${ctrl.n_tracts === 0 ? 'zero' : 'far fewer'}. That is what makes the rest of this worth reading: the method is not lighting up wherever it is pointed. And the stretches it does find cover <strong>${pct(test.genome_fraction,2)}</strong> of the non-African sequence scanned. The published figure for Neanderthal ancestry in people outside Africa — from whole genomes and far more careful methods — is about <strong>2%</strong>. Nobody put that number in. It falls out of one megabase, three archaic genomes, and a rule about what is missing from Africa.`;
+
+  /* ── the tract map ─────────────────────────────────────────────────────
+     One row per living haplotype, all 800 of them, grouped by continent with
+     Africa first. Every haplotype gets a row whether or not it carries
+     anything, because the empty rows are the control and hiding them would
+     hide the result. */
+  (function tractMap(){
+    const svg=$('#tractMap'), M=T.tract_map;
+    const W=860,H=470,ML=52,MR=16,MT=22,MB=52,iw=W-ML-MR,ih=H-MT-MB;
+    const t=svgEl('title',{id:'tmT'}); t.textContent='Called Neanderthal stretches in all 800 living haplotypes along one megabase of chromosome 22'; svg.appendChild(t);
+
+    const ORDER=['AFR','EUR','SAS','AMR','EAS'];
+    const total=Object.fromEntries(M.total_by_superpopulation);
+    // rows: every haplotype, carriers packed to the top of their own band
+    const bandStart={}; let cursor=0;
+    for(const g of ORDER){ bandStart[g]=cursor; cursor+=total[g]||0; }
+    const nRows=cursor;
+    const rowOf=new Map(); const seat={...bandStart};
+    M.carriers.forEach((c,i)=>{ rowOf.set(i, seat[c[2]]++); });
+
+    const y=r=>MT+(r/nRows)*ih, rh=Math.max(1.1, ih/nRows-0.15);
+    const x=w=>ML+(w/M.n_windows)*iw, bw=iw/M.n_windows;
+
+    // continent bands
+    ORDER.forEach(g=>{
+      const y0=y(bandStart[g]), y1=y(bandStart[g]+(total[g]||0));
+      svg.appendChild(svgEl('rect',{x:ML,y:y0,width:iw,height:Math.max(1,y1-y0-1),
+        fill:cv('--surface-elevated'),opacity:.55,rx:2}));
+      const l=svgEl('text',{x:ML-9,y:(y0+y1)/2+4,'text-anchor':'end',class:'lbl-in',fill:cv(SUPCOL[g])});
+      l.textContent=g; svg.appendChild(l);
+    });
+
+    const marks=[];
+    M.tracts.forEach(([ci,w0,w1])=>{
+      const c=M.carriers[ci], r=rowOf.get(ci);
+      const rect=svgEl('rect',{x:x(w0),y:y(r),width:Math.max(1.6,(w1-w0+1)*bw),height:rh,
+        fill:cv(SUPCOL[c[2]]||'--data-none'),opacity:0});
+      const s0=M.region_start+w0*M.window_bp, s1=M.region_start+(w1+1)*M.window_bp;
+      hoverable(rect,`<b>${c[0]}</b> · ${c[1]} (${c[2]})<br>chr22:${fmt(s0)}–${fmt(s1)}<br>${fmt(s1-s0)} bp`);
+      svg.appendChild(rect); marks.push([rect,w0]);
+    });
+
+    const xl=svgEl('text',{x:ML+iw/2,y:MT+ih+36,'text-anchor':'middle',class:'lbl-in'});
+    xl.textContent=`chr22:${fmt(M.region_start)}–${fmt(M.region_end)} (GRCh37) · all ${fmt(nRows)} living haplotypes · ${fmt(M.tracts.length)} called stretches`;
+    svg.appendChild(xl);
+    $('#tractLegend').innerHTML=ORDER.map(g=>`<span><i style="background:${cv(SUPCOL[g])}"></i>${g}${g==='AFR'?' — nothing to draw':''}</span>`).join('');
+
+    // sweep the reveal left to right across the chromosome
+    new IntersectionObserver((en,ob)=>{ if(!en[0].isIntersecting) return; ob.disconnect();
+      marks.forEach(([m,w0])=>{ m.style.transition='opacity .45s var(--enter)';
+        setTimeout(()=>m.style.opacity=.9, (w0/M.n_windows)*1400 + Math.random()*120); });
+    },{threshold:.12}).observe(svg);
+  })();
+
+  $('#tractTable').innerHTML=`<thead><tr><th>Position (GRCh37)</th><th>Haplotype</th><th>Population</th><th class="num">Length</th><th class="num">Neanderthal letters</th></tr></thead><tbody>`+
+    T.tracts.slice(0,10).map(t=>`<tr><td class="mono">chr22:${fmt(t.start)}–${fmt(t.end)}</td><td class="mono" style="color:var(--foreground)">${t.haplotype}</td><td class="mono">${t.population} · ${t.superpopulation}</td><td class="num" style="color:var(--primary)">${fmt(t.length_bp)} bp</td><td class="num">${t.informative_carried} / ${t.informative_available}</td></tr>`).join('')+'</tbody>';
+
+  const d=T.admixture_date, over=d.ka/55;
+  $('#usDate').innerHTML = `The average surviving stretch here is <strong>${fmt(d.mean_length_bp)} bases</strong> long. Convert that to the units recombination works in and invert it, and you get <strong>${fmt(d.generations)} generations</strong> — about <strong>${fmt(d.ka)},000 years ago</strong>.
+    <br><br><strong>That is wrong, and it is wrong in a way this study already predicted.</strong> The real answer, from whole genomes, is 50–60,000 years. This estimate is ${over.toFixed(0)}× too old. The reason is in the simulation further down: a detector that <em>breaks</em> long stretches into short ones instead of joining them always reads the event as older than it was, because a shorter stretch inverts to more generations. In simulation, where the truth was known, that error was 2.4×. Here, tracing stretches through only ${T.informative_sites} informative letters across a megabase, the breakage is far worse and the error is ${over.toFixed(0)}×.
+    <br><br>A simulation that predicts the <em>direction and the mechanism</em> of a mistake later made on real human DNA is doing more work than one that simply scores well.`;
+
+  /* ── the family ────────────────────────────────────────────────────────── */
+  (function popChart(){
+    const svg=$('#popChart'); const W=860,H=560,ML=58,MR=120,MT=24,MB=46,iw=W-ML-MR,ih=H-MT-MB;
+    const t=svgEl('title',{id:'pcT'}); t.textContent='Internal genetic diversity of each of the 26 populations'; svg.appendChild(t);
+    const ps=T.populations.slice().sort((a,b)=>b.within_ka-a.within_ka);
+    const max=Math.max(...ps.map(p=>p.within_ka))*1.04, min=Math.min(...ps.map(p=>p.within_ka))*0.94;
+    const bh=ih/ps.length, x=v=>ML+((v-min)/(max-min))*iw;
+    ps.forEach((p,i)=>{
+      const y=MT+i*bh;
+      const r=svgEl('rect',{x:ML,y:y+bh*0.16,width:1,height:bh*0.68,rx:2,fill:cv(SUPCOL[p.superpopulation]||'--data-none'),opacity:.9});
+      hoverable(r,`<b>${p.population}</b> · ${p.superpopulation}<br>two of its own haplotypes differ by <b>${fmt(p.within_ka)} ka</b><br>${fmt(p.neanderthal_alleles_per_haplotype,1)} Neanderthal letters per haplotype`);
+      svg.appendChild(r);
+      const lab=svgEl('text',{x:ML-9,y:y+bh*0.65,'text-anchor':'end',class:'lbl-in',
+        fill:p.superpopulation==='AFR'?cv('--foreground'):cv('--dim-foreground')});
+      lab.textContent=p.population; svg.appendChild(lab);
+      const val=svgEl('text',{x:0,y:y+bh*0.65,class:'lbl-in',opacity:0}); val.textContent=`${fmt(p.within_ka)} ka`;
+      svg.appendChild(val);
+      r.dataset.w=x(p.within_ka)-ML; r._val=val;
+    });
+    const xl=svgEl('text',{x:ML+iw/2,y:MT+ih+34,'text-anchor':'middle',class:'lbl-in'});
+    xl.textContent='how far back two randomly chosen haplotypes from the SAME population must go to meet'; svg.appendChild(xl);
+    $('#popLegend').innerHTML=['AFR','EUR','SAS','AMR','EAS'].map(g=>`<span><i style="background:${cv(SUPCOL[g])}"></i>${g}</span>`).join('');
+
+    new IntersectionObserver((en,ob)=>{ if(!en[0].isIntersecting) return; ob.disconnect();
+      [...svg.querySelectorAll('rect')].forEach((r,i)=>{
+        const w=+r.dataset.w;
+        const a=svgEl('animate',{attributeName:'width',from:1,to:w,dur:'.85s',begin:`${i*0.035}s`,fill:'freeze',calcMode:'spline',keySplines:'.22 1 .36 1',keyTimes:'0;1'});
+        r.appendChild(a);
+        setTimeout(()=>{ r._val.setAttribute('x', ML+w+9); r._val.setAttribute('opacity',.75); }, i*35+700);
+      });
+    },{threshold:.12}).observe(svg);
+  })();
+
+  const top=T.populations.slice().sort((a,b)=>b.within_ka-a.within_ka);
+  $('#usFamily').innerHTML = `<strong>The seven most internally diverse populations on this list are all African.</strong> ${top[0].population} is at the top: two of its own members differ by <strong>${fmt(top[0].within_ka)},000 years</strong> of separation. ${top[top.length-1].population} is at the bottom at ${fmt(top[top.length-1].within_ka)},000. Two people from ${top[0].population} are further apart than any European and any East Asian in this panel.
+    <br><br>Everyone alive outside Africa descends from one small group that walked out, and every group that left carried only a slice of what was already there. That is usually written as a sentence. Here it is a measurement, and it took 0.6 seconds.`;
+
+  $('#usCaveat').innerHTML = `<strong>What this is not.</strong> ${T.caveats[0]} ${T.caveats[1]}`;
+})();
+
+/* ═══════════════════════════════════════════════ 04 tree */
 (function plant(){
   const p=REPORT.cohort.planted_segments;
   const rows=Object.keys(p).sort().map(k=>`<tr><td class="mono"><span class="sw" style="background:${colorFor(k)}"></span>${k}</td><td class="num">${fmt(p[k])}</td><td class="num">${pct(p[k]/REPORT.cohort.planted_total)}</td></tr>`).join('');

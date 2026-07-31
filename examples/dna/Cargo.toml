@@ -90,6 +90,10 @@ path = "src/bin/linkage_study.rs"
 name = "panel-study"
 path = "src/bin/panel_study.rs"
 
+[[bin]]
+name = "human-story"
+path = "src/bin/human_story.rs"
+
 [dev-dependencies]
 criterion = { version = "0.5", features = ["html_reports"] }
 tempfile = "3.8"

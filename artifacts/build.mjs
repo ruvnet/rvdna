@@ -39,11 +39,24 @@ const disc = readJson('discoveries.json');
 const real = readJson('real-dna.json');
 const link = readJson('linkage.json');
 const panel = readJson('panel.json');
+const human = readJson('human-story.json');
 
 // The linkage study logs its whole held-out parameter sweep (66 KB). The page
 // quotes the tuned point and the two scores; the sweep stays in the JSON on
 // disk for anyone who wants to audit the tuning.
 delete link.held_out.sweep;
+
+// The human-story scan ships the whole tract map, so the top-40 tract records
+// are only needed for the ten-row table; the 26x26 divergence matrix does not
+// need fifteen significant figures to be drawn as bars.
+human.tracts = human.tracts.slice(0, 12);
+human.divergence_matrix_ka = human.divergence_matrix_ka.map((r) => r.map((v) => +v.toFixed(1)));
+human.populations = human.populations.map((p) => ({
+  population: p.population, superpopulation: p.superpopulation,
+  n_haplotypes: p.n_haplotypes,
+  within_ka: +p.within_ka.toFixed(1), between_ka: +p.between_ka.toFixed(1),
+  neanderthal_alleles_per_haplotype: +p.neanderthal_alleles_per_haplotype.toFixed(2),
+}));
 
 // The report embeds the full call list under `flywheel.final_calls`; the calls
 // file is the same data. Carry it once.
@@ -61,8 +74,9 @@ const nH = roster.length;
 const N = nW * nH;
 
 const depths = new Uint16Array(N);        // coalescent depth in ka, capped
-const klass = new Uint8Array(N);          // what the detector concluded
-const truthK = new Uint8Array(N);         // what the segment actually is
+// Detector call in the low nibble, ground truth in the high nibble. Both are
+// 0-4, so one byte carries what two were carrying — 28 KB off the page.
+const klass = new Uint8Array(N);
 
 // 0 nothing · 1 Neanderthal · 2 Denisovan · 3 ghost mode 0 · 4 ghost mode 1
 const CALL_CLASS = { Neanderthal: 1, Denisovan: 2 };
@@ -77,9 +91,9 @@ for (let w = 0; w < nW; w++) {
     const i = w * nH + r;
     const h = roster[r].index;
     depths[i] = Math.min(65535, depth.depth_map[w][hapCol.get(h)] | 0);
-    truthK[i] = TRUTH_CLASS[truthRow[h]] ?? 0;
     const c = callAt.get(w * 4096 + h);
-    klass[i] = !c ? 0 : (CALL_CLASS[c.attribution] ?? (c.ghost_cluster === 1 ? 4 : 3));
+    const call = !c ? 0 : (CALL_CLASS[c.attribution] ?? (c.ghost_cluster === 1 ? 4 : 3));
+    klass[i] = call | ((TRUTH_CLASS[truthRow[h]] ?? 0) << 4);
   }
 }
 
@@ -88,8 +102,7 @@ const b64 = (buf) => Buffer.from(buf.buffer, buf.byteOffset, buf.byteLength).toS
 const particles = {
   n: N, windows: nW, haplotypes: nH,
   depths: b64(depths),
-  calls: b64(klass),
-  truth: b64(truthK),
+  packed: b64(klass),      // low nibble = call, high nibble = truth
   roster: roster.map((r) => ({ id: r.id, pop: r.population, grp: r.group })),
 };
 
@@ -130,6 +143,7 @@ const subs = {
   __REAL_DATA__: JSON.stringify(real),
   __LINK_DATA__: JSON.stringify(link),
   __PANEL_DATA__: JSON.stringify(panel),
+  __HUMAN_DATA__: JSON.stringify(human),
   __PARTICLE_DATA__: JSON.stringify(particles),
   __FONT_OUTFIT__: font('Outfit.woff2'),
   __FONT_MONO__: font('JetBrainsMono.woff2'),

@@ -66,7 +66,8 @@ artifacts/
     ├── discoveries.json            the first three limit sweeps
     ├── linkage.json                tract-aware detection and admixture dating
     ├── panel.json                  panel size, composition, and archaic-reference ablation
-    └── real-dna.json               the same measurement on real 1000 Genomes and archaic genomes
+    ├── real-dna.json               the same measurement on real 1000 Genomes and archaic genomes
+    └── human-story.json            Neanderthal tracts in named haplotypes, dating, and the 26-population matrix
 ```
 
 Real genotypes live outside `artifacts/` in [`data/real/`](../data/real/), with
@@ -87,7 +88,12 @@ against the `#0B0E13` surface. Cognitum's brand cyan `#1DD4E0` stays reserved
 for active intelligence — navigation, focus, the flywheel — and its green
 `#26D968` for verified/positive, never for a data series.
 
-The report opens with a **nine-act** scroll-driven sequence in **raw WebGL 2** —
+The report opens on a **title sequence**: letterbox bars retract, 34,000 points
+assemble out of a scattered sphere into a DNA double helix staggered from the
+middle outwards, the camera dollies from far to close, and the wordmark resolves
+out of blur. Scrolling flies the helix past the lens rather than cutting.
+
+Then a **nine-act** scroll-driven sequence in **raw WebGL 2** —
 one GPU point per segment, 20,880 of them, morphing between analytic layouts
 computed in the vertex shader from the real measurement. The camera flies up a
 single axis: **coalescent time**, from 1.8 Ma to the present, and then turns
@@ -99,14 +105,18 @@ rather than by decoration.
 to be inlined, and minified three.js is roughly 600 KB. The first version of this
 page was 811 KB and failed to load; adding three.js would have put it near 1 MB.
 Hand-written WebGL costs a few kilobytes and does everything this scene needs.
-The page is now **373 KB** end to end, real-genome section included:
+The page is now **457 KB** end to end — a cinematic WebGL cold open, the
+nine-act saga, the real-genome sections, seven studies and four animated SVGs
+included:
 
 | | before | after |
 |---|--:|--:|
-| Per-segment depths | 253 KB of JSON numbers | 111 KB (base64 `Uint16Array` + class bytes) |
+| Per-segment depths | 253 KB of JSON numbers | 56 KB (base64 `Uint16Array`) |
+| Detector call + ground truth | 56 KB (one byte each) | 28 KB (both nibbles of one byte) |
 | Archaic calls | 171 KB | 38 KB (six fields, not twenty) |
+| Neanderthal tract map | ~150 KB as records | 16 KB as index triples |
 | Mono webfont inside each SVG | 126 KB (×3 copies) | 0 |
-| **Total page** | **811 KB** | **373 KB** |
+| **Total page** | **811 KB** and failing to load | **457 KB** |
 
 Everything still renders from the same generated JSON; `build.mjs` does the
 packing at build time.
@@ -127,11 +137,13 @@ cargo build --release
 ./target/release/real-dna   artifacts/data   # ~1 s    real 1000 Genomes + 3 archaic genomes
 ./target/release/linkage-study artifacts/data  # ~3 min  tract-aware detection
 ./target/release/panel-study   artifacts/data  # ~4 min  panel size, composition, ablation
+./target/release/human-story   artifacts/data  # ~1 s    what the real panel says about us
 node artifacts/build.mjs
 ```
 
-`real-dna` reads the checked-in genotype table in `data/real/`. To re-fetch it
-from EBI instead, run `python3 data/real/extract.py` (needs outbound HTTPS).
+`real-dna` and `human-story` read the checked-in genotype tables in
+`data/real/`. To re-fetch the archaic genomes from MPI-EVA instead, run
+`python3 data/real/_fetch_archaic.py` (needs outbound HTTPS).
 
 ## The method in four steps
 
@@ -328,6 +340,82 @@ correctly signed, and still unclaimable. Per-window D across the region runs fro
 ancestry arrives in tracts, so a region-wide average understates what a
 tract-aware scan sees, and a tract-aware scan is exactly what the rest of this
 study is.
+
+## What the panel says about us
+
+Everything else here measures a *method*. This measures the people. Same
+megabase, same 800 living haplotypes, same three archaic genomes — but the
+question changes from *does the detector work* to *what does this DNA say*.
+
+The trick is to stop asking how similar someone is to a Neanderthal and ask a
+sharper question: **is there an allele in this person that Neanderthals have and
+Africa does not?** 117 positions in this megabase qualify — a high-coverage
+Neanderthal carries the non-reference allele and not one of the 160 African
+haplotypes does. Conditioning on *absence in Africa* is also what makes the test
+immune to the European weighting of the reference: it never asks how far from the
+reference anyone is.
+
+| | Non-African (the test) | African (the control) |
+|---|--:|--:|
+| Haplotypes scanned | 640 | 160 |
+| Stretches found | **847** | **0** |
+| Haplotypes carrying one | 254 (39.7%) | 0 |
+| Share of sequence in a stretch | **1.83%** | 0% |
+
+**The control returns zero.** Not a small number — nothing. And the stretches it
+does find cover **1.83%** of non-African sequence, against a published figure for
+Neanderthal ancestry in non-Africans of about **2%**. Nobody put that number in;
+it falls out of one megabase, three archaic genomes, and a rule about what is
+missing from Africa.
+
+**The ranking is the published one, the magnitude is not.** Neanderthal-informative
+alleles per haplotype: EAS **24.8**, SAS 9.0, AMR 5.8, EUR 2.5, AFR **0.0**. East
+Asians carrying more Neanderthal ancestry than Europeans — counter-intuitive,
+since Neanderthals lived in Europe — is a real result, and the ordering falls out
+of a single megabase. The 10× gap does not: genome-wide the East Asian excess is
+roughly 20%. One megabase is one locus, and a locus can carry a Neanderthal
+haplotype that drifted high in one place and not another.
+
+### Dating the pulse, and a mistake the simulation saw coming
+
+Mean surviving stretch length is 13,825 bp = 1.38 × 10⁻⁴ Morgans, which inverts
+to **7,233 generations ≈ 210 ka**. The right answer, from whole genomes, is
+50–60 ka. **The estimate is 4× too old.**
+
+That failure was predicted. Sweep 4 above reports that a detector which
+*fragments* tracts rather than fusing them always reads admixture as older than
+it was, because a shorter measured tract inverts to more generations — there it
+over-aged a *planted* pulse by 2.4×. Here, tracing tracts through only 117
+informative sites across a megabase, fragmentation is far worse and the error is
+4×.
+
+A simulation that predicts the direction *and the mechanism* of an error later
+observed in real human DNA is doing more work than one that merely scores well.
+This is the closest thing in the study to an out-of-sample validation of the
+simulation itself.
+
+### The family, with no family tree assumed
+
+Take two haplotypes from the same population at random and measure how far back
+they must go to meet. Nothing is assumed — no tree, no migration model, no
+grouping beyond the labels 1000 Genomes already ships.
+
+| Rank | Population | Superpop | Two of its own meet at |
+|--:|---|---|--:|
+| 1 | MSL | AFR | **864 ka** |
+| 2 | ESN | AFR | 860 ka |
+| 3 | GWD | AFR | 859 ka |
+| … | *(the top 7 are all African)* | | |
+| 24 | CDX | EAS | 694 ka |
+| 25 | FIN | EUR | 693 ka |
+| 26 | PEL | AMR | **641 ka** |
+
+**The seven most internally diverse populations are all African.** Two people
+from MSL (Mende, Sierra Leone) are further apart than *any* European and *any*
+East Asian in the panel — the widest such pair is 847 ka. Everyone alive outside
+Africa descends from one small group that walked out, and every group that left
+carried only a slice of what was already there. Usually that is a sentence. Here
+it is a measurement, and it took 0.6 s.
 
 ## Pushing it until it breaks
 

@@ -168,3 +168,59 @@ is a number in the output rather than a hedge in the prose.
   a ratio of site-pattern counts and does not use it.
 - `data/real/` is checked in (~35 MB) so the stage is reproducible without
   network access. Re-fetching needs outbound HTTPS to EBI and MPI-EVA.
+
+## Addendum — the human-story scan (`human-story`)
+
+A third real-data stage, and the only one whose subject is the people rather
+than the detector.
+
+### Why the tract scan conditions on absence in Africa
+
+The scan does not measure how similar a living haplotype is to a Neanderthal.
+It defines a **Neanderthal-informative site**: a position where the Altai or
+Vindija genome carries the non-reference allele at a callable site, and none of
+the 160 African haplotypes in the panel carries it. A non-African haplotype
+carrying a run of those alleles inherited them from somewhere, and the only
+available source is Neanderthal introgression.
+
+Two properties follow, and both matter more than the convenience:
+
+- It is immune to the European weighting of GRCh37, the objection that sinks a
+  divergence contrast, because the test never references distance from the
+  reference. It asks only what is missing from Africa.
+- It has a free control. Run the identical scan on the African haplotypes and
+  the expected answer is zero, because the filter defines those alleles as
+  absent there. Any nonzero result would be a bug in the scan, so the control
+  is a correctness check as well as a biological one. It returns 0.
+
+The filter uses 160 African haplotypes, not all of Africa. An allele segregating
+in unsampled African populations passes wrongly — which inflates tract counts,
+never deflates them, so the direction of the bias is known.
+
+### Why the wrong date is reported prominently
+
+Inverting mean tract length gives ~7,200 generations (210 ka) where the
+published answer is 50–60 ka: a 4x over-estimate. It is reported as a headline
+rather than buried, because sweep 4 (`linkage-study`) predicted exactly this on
+simulated data where truth was known — a detector that fragments tracts instead
+of fusing them always dates the pulse too old, because a shorter measured tract
+inverts to more generations. There the error was 2.4x on a planted pulse.
+
+A simulation that predicts the direction and the mechanism of an error later
+observed on real human DNA is worth more than one that only scores well, and
+suppressing the real-data failure would throw that away. The two numbers are
+reported together for that reason.
+
+### Consequences
+
+- `real_panel.rs` was extracted from `real_dna.rs` so both binaries share one
+  loader, one archaic aligner, and the two bit-parallel comparison primitives.
+  Haplotypes are one bit per variant, so a pairwise comparison over a window is
+  a masked XOR and a popcount — which is why the 26x26 all-pairs population
+  matrix over 800 haplotypes is affordable at all.
+- The tract map ships to the page as `[carrier index, first window, last
+  window]` triples against a carrier roster, not as records. 847 tracts cost
+  ~16 KB that way against ~150 KB as objects.
+- Tract dating assumes a uniform 1 cM/Mb and truncates any tract running off the
+  edge of the 1 Mb region. Both push the estimate older, on top of the
+  fragmentation bias.
